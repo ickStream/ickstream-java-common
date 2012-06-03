@@ -5,8 +5,12 @@
 
 package com.ickstream.protocol.cloud.core;
 
-import com.sun.jersey.api.client.*;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -16,24 +20,17 @@ import java.io.IOException;
 public class CoreServiceTest {
     private static final String ENDPOINT = "http://example.org/ickstream-cloud-core/jsonrpc";
 
-    private Client createClient(final String endpoint, final String resultFile) {
-        Client client = new Client(new ClientHandler() {
-            @Override
-            public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
-                Assert.assertEquals(cr.getURI().toString(), ENDPOINT);
-                Assert.assertEquals(cr.getMethod(), "POST");
-                ClientResponse clientResponse = Mockito.mock(ClientResponse.class);
-                Mockito.when(clientResponse.getStatus()).thenReturn(ClientResponse.Status.OK.getStatusCode());
-                Mockito.when(clientResponse.getClientResponseStatus()).thenReturn(ClientResponse.Status.OK);
-                try {
-                    Mockito.when(clientResponse.getEntity(String.class)).thenReturn(IOUtils.toString(getClass().getResourceAsStream(resultFile)));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return clientResponse;
-            }
-        });
-        return client;
+    private HttpClient createClient(final String endpoint, final String resultFile) {
+        try {
+            HttpClient client = Mockito.mock(HttpClient.class);
+            HttpResponse response = Mockito.mock(HttpResponse.class);
+            HttpEntity entity = new StringEntity(IOUtils.toString(getClass().getResource(resultFile)));
+            Mockito.when(response.getEntity()).thenReturn(entity);
+            Mockito.when(client.execute(Mockito.any(HttpPost.class))).thenReturn(response);
+            return client;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

@@ -5,37 +5,30 @@
 
 package com.ickstream.protocol;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 
 public class JsonRpcClient {
     private Integer id = 1;
     private String endpoint;
-    private Client client;
+    private HttpClient client;
+    private String accessToken;
 
-    public JsonRpcClient(Client client, String endpoint) {
+    public JsonRpcClient(HttpClient client, String endpoint) {
         this.client = client;
         this.endpoint = endpoint;
     }
 
     public void setAccessToken(final String accessToken) {
-        client.removeAllFilters();
-        client.addFilter(new ClientFilter() {
-            @Override
-            public ClientResponse handle(ClientRequest clientRequest) throws ClientHandlerException {
-                clientRequest.getHeaders().add("Authorization", "OAuth " + accessToken);
-                return getNext().handle(clientRequest);
-            }
-        });
+        this.accessToken = accessToken;
     }
 
     public <T> T callMethod(String method, Object parameters, Class<T> responseClass) {
@@ -52,7 +45,12 @@ public class JsonRpcClient {
         try {
             String requestString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.valueToTree(request));
             System.out.println("SENDING Cloud REQUEST (" + endpoint + "):\n" + requestString + "\n");
-            String responseString = client.resource(endpoint).type(MediaType.APPLICATION_JSON_TYPE).post(String.class, requestString);
+            HttpClient httpclient = client;
+            HttpPost httpRequest = new HttpPost(endpoint);
+            httpRequest.setEntity(new StringEntity(requestString));
+            httpRequest.setHeader("Authorization", "OAuth " + accessToken);
+            HttpResponse httpResponse = httpclient.execute(httpRequest);
+            String responseString = EntityUtils.toString(httpResponse.getEntity());
             JsonRpcResponse response = mapper.treeToValue(mapper.readTree(responseString), JsonRpcResponse.class);
             System.out.println("RECEIVING Cloud RESPONSE:\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response) + "\n");
             if (response.getError() == null) {

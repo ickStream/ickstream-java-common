@@ -7,12 +7,12 @@ package com.ickstream.protocol.cloud.core;
 
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.JsonRpcClient;
-import com.sun.jersey.api.client.Client;
+import org.apache.http.client.HttpClient;
 
 public class CoreService {
     private JsonRpcClient jsonRpcClient;
 
-    public CoreService(Client client, String endpoint) {
+    public CoreService(HttpClient client, String endpoint) {
         jsonRpcClient = new JsonRpcClient(client, endpoint);
     }
 

@@ -7,7 +7,7 @@ package com.ickstream.protocol.cloud.content;
 
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.JsonRpcClient;
-import com.sun.jersey.api.client.Client;
+import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,12 +20,12 @@ public class ContentService {
         return id;
     }
 
-    public ContentService(Client client, String id, String endpoint) {
+    public ContentService(HttpClient client, String id, String endpoint) {
         this.id = id;
         jsonRpcClient = new JsonRpcClient(client, endpoint);
     }
 
-    public ContentService(Client client, String id, String endpoint, String accessToken) {
+    public ContentService(HttpClient client, String id, String endpoint, String accessToken) {
         this.id = id;
         jsonRpcClient = new JsonRpcClient(client, endpoint);
         jsonRpcClient.setAccessToken(accessToken);
