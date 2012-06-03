@@ -6,13 +6,13 @@
 package com.ickstream.protocol.cloud.core;
 
 public class SetDeviceAddressRequest extends DeviceRequest {
-    private String name;
+    private String address;
 
     public String getAddress() {
-        return name;
+        return address;
     }
 
-    public void setAddress(String name) {
-        this.name = name;
+    public void setAddress(String address) {
+        this.address = address;
     }
 }
