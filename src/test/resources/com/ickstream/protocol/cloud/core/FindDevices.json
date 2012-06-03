@@ -1,0 +1,23 @@
+{
+  "jsonrpc" : "2.0",
+  "id" : "1",
+  "result" : {
+    "offset" : 0,
+    "count" : 2,
+    "countAll": 2,
+    "items_loop": [
+        {
+            "id": "0CA286CC-993F-4B90-B44A-3E6DB00C89B0",
+            "name": "Test Device 1",
+            "model": "Test Model 1",
+            "address": "127.0.0.1"
+        },
+        {
+            "id": "F75C0B6A-06DB-44B4-8558-F8842C0EEB99",
+            "name": "My Device",
+            "model": "Test Model",
+            "address": "127.0.0.2"
+        }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "jsonrpc" : "2.0",
+  "id" : "1",
+  "result" : {
+    "id" : "2E560913-F9BB-41A2-BAC4-A6EB272500EC",
+    "name" : "Some User",
+    "identities" : [ {
+      "type" : "email",
+      "identity" : "user@example.org"
+    } ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "jsonrpc" : "2.0",
+  "id" : "1",
+  "result" : {
+    "id" : "F75C0B6A-06DB-44B4-8558-F8842C0EEB99",
+    "name" : "My Device",
+    "address" : "127.0.0.2",
+    "model" : "Test Device",
+    "accessToken" : "EFA8B8EC-E949-462B-917F-F73D7890EE2B"
+  }
+}
