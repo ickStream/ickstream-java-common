@@ -10,6 +10,15 @@ public class VolumeRequest {
     private Double relativeVolumeLevel;
     private Boolean muted;
 
+    public VolumeRequest() {
+    }
+
+    public VolumeRequest(Double volumeLevel, Double relativeVolumeLevel, Boolean muted) {
+        this.volumeLevel = volumeLevel;
+        this.relativeVolumeLevel = relativeVolumeLevel;
+        this.muted = muted;
+    }
+
     public Double getVolumeLevel() {
         return volumeLevel;
     }

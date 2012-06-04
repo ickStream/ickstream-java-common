@@ -12,6 +12,18 @@ public class PlaylistAddTracksRequest {
     private Integer playlistPos;
     private List<PlaylistItem> tracks_loop = new ArrayList<PlaylistItem>();
 
+    public PlaylistAddTracksRequest() {
+    }
+
+    public PlaylistAddTracksRequest(List<PlaylistItem> tracks_loop) {
+        this.tracks_loop = tracks_loop;
+    }
+
+    public PlaylistAddTracksRequest(Integer playlistPos, List<PlaylistItem> tracks_loop) {
+        this.playlistPos = playlistPos;
+        this.tracks_loop = tracks_loop;
+    }
+
     public Integer getPlaylistPos() {
         return playlistPos;
     }

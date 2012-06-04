@@ -11,6 +11,13 @@ import java.util.List;
 public class PlaylistRemoveTracksRequest {
     private List<PlaylistItemReference> tracks_loop = new ArrayList<PlaylistItemReference>();
 
+    public PlaylistRemoveTracksRequest() {
+    }
+
+    public PlaylistRemoveTracksRequest(List<PlaylistItemReference> tracks_loop) {
+        this.tracks_loop = tracks_loop;
+    }
+
     public List<PlaylistItemReference> getTracks_loop() {
         return tracks_loop;
     }

@@ -12,6 +12,24 @@ public class AddDeviceRequest {
     private String address;
     private String applicationId;
 
+    public AddDeviceRequest() {
+    }
+
+    public AddDeviceRequest(String model, String name, String address, String applicationId) {
+        this.model = model;
+        this.name = name;
+        this.address = address;
+        this.applicationId = applicationId;
+    }
+
+    public AddDeviceRequest(String id, String model, String name, String address, String applicationId) {
+        this.id = id;
+        this.model = model;
+        this.name = name;
+        this.address = address;
+        this.applicationId = applicationId;
+    }
+
     public String getId() {
         return id;
     }

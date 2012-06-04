@@ -9,6 +9,14 @@ public class ChunkedRequest {
     private Integer offset;
     private Integer count;
 
+    public ChunkedRequest() {
+    }
+
+    public ChunkedRequest(Integer offset, Integer count) {
+        this.offset = offset;
+        this.count = count;
+    }
+
     public Integer getOffset() {
         return offset;
     }

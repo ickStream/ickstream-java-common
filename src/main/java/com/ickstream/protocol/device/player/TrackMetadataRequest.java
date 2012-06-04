@@ -10,6 +10,15 @@ public class TrackMetadataRequest {
     private Boolean replace;
     private PlaylistItem track;
 
+    public TrackMetadataRequest() {
+    }
+
+    public TrackMetadataRequest(Integer playlistPos, Boolean replace, PlaylistItem track) {
+        this.playlistPos = playlistPos;
+        this.replace = replace;
+        this.track = track;
+    }
+
     public Integer getPlaylistPos() {
         return playlistPos;
     }

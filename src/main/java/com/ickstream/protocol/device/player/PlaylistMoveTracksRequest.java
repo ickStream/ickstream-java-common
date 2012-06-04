@@ -12,6 +12,14 @@ public class PlaylistMoveTracksRequest {
     private Integer playlistPos;
     private List<PlaylistItemReference> tracks_loop = new ArrayList<PlaylistItemReference>();
 
+    public PlaylistMoveTracksRequest() {
+    }
+
+    public PlaylistMoveTracksRequest(Integer playlistPos, List<PlaylistItemReference> tracks_loop) {
+        this.playlistPos = playlistPos;
+        this.tracks_loop = tracks_loop;
+    }
+
     public Integer getPlaylistPos() {
         return playlistPos;
     }

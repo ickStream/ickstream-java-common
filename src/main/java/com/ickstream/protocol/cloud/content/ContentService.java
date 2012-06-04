@@ -35,6 +35,10 @@ public class ContentService {
         jsonRpcClient.setAccessToken(accessToken);
     }
 
+    public ProtocolDescriptionResponse getProtocolDescription() {
+        return jsonRpcClient.callMethod("getProtocolDescription", null, ProtocolDescriptionResponse.class);
+    }
+
     public ContentResponse findTopLevelItems(ChunkedRequest request) {
         return jsonRpcClient.callMethod("findTopLevelItems", request, ContentResponse.class);
     }
