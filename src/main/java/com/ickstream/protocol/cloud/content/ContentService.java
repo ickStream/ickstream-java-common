@@ -7,6 +7,7 @@ package com.ickstream.protocol.cloud.content;
 
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.JsonRpcClient;
+import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;
@@ -35,15 +36,15 @@ public class ContentService {
         jsonRpcClient.setAccessToken(accessToken);
     }
 
-    public ProtocolDescriptionResponse getProtocolDescription() {
+    public ProtocolDescriptionResponse getProtocolDescription() throws ServerException {
         return jsonRpcClient.callMethod("getProtocolDescription", null, ProtocolDescriptionResponse.class);
     }
 
-    public ContentResponse findTopLevelItems(ChunkedRequest request) {
+    public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServerException {
         return jsonRpcClient.callMethod("findTopLevelItems", request, ContentResponse.class);
     }
 
-    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) {
+    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServerException {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {

@@ -5,6 +5,7 @@
 
 package com.ickstream.protocol;
 
+import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -31,7 +32,7 @@ public class JsonRpcClient {
         this.accessToken = accessToken;
     }
 
-    public <T> T callMethod(String method, Object parameters, Class<T> responseClass) {
+    public <T> T callMethod(String method, Object parameters, Class<T> responseClass) throws ServerException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
         mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -62,7 +63,7 @@ public class JsonRpcClient {
             } else {
                 String code = response.getError().get("code").getTextValue();
                 String message = response.getError().get("message").getTextValue();
-                throw new RuntimeException("Cloud server error: " + code + ": " + message);
+                throw new ServerException(code, message);
             }
         } catch (IOException e) {
             throw new RuntimeException("Cloud server access error", e);
