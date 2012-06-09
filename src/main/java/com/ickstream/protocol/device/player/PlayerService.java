@@ -155,7 +155,7 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
         try {
             List<MessageHandler> notificationHandlers = this.notificationHandlers.get(message.getMethod());
             Object parameters = null;
-            if (message.getMethod().equals("playerStatusChanged")) {
+            if (notificationHandlers != null && message.getMethod().equals("playerStatusChanged")) {
                 if (message.getParams() != null) {
                     parameters = mapper.treeToValue(message.getParams(), PlayerStatusResponse.class);
                     for (MessageHandler notificationHandler : notificationHandlers) {

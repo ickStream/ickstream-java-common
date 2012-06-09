@@ -7,4 +7,5 @@ package com.ickstream.protocol.device;
 
 public interface MessageSender {
     void sendMessage(String deviceId, String message);
+    void sendMessage(String message);
 }
