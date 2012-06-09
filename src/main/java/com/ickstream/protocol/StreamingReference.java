@@ -3,11 +3,19 @@
  * All rights reserved.
  */
 
-package com.ickstream.protocol.cloud.content;
+package com.ickstream.protocol;
 
 public class StreamingReference {
     private String format;
     private String url;
+
+    public StreamingReference() {
+    }
+
+    public StreamingReference(String format, String url) {
+        this.url = url;
+        this.format = format;
+    }
 
     public String getFormat() {
         return format;

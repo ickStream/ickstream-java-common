@@ -11,9 +11,6 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.IOException;
 
@@ -22,6 +19,7 @@ public class JsonRpcClient {
     private String endpoint;
     private HttpClient client;
     private String accessToken;
+    JsonHelper jsonHelper = new JsonHelper();
 
     public JsonRpcClient(HttpClient client, String endpoint) {
         this.client = client;
@@ -33,18 +31,14 @@ public class JsonRpcClient {
     }
 
     public <T> T callMethod(String method, Object parameters, Class<T> responseClass) throws ServerException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
         JsonRpcRequest request = new JsonRpcRequest();
         request.setMethod(method);
         request.setId(id++);
         if (parameters != null) {
-            request.setParams(mapper.valueToTree(parameters));
+            request.setParams(jsonHelper.objectToJson(parameters));
         }
         try {
-            String requestString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.valueToTree(request));
+            String requestString = jsonHelper.objectToString(request);
             System.out.println("SENDING Cloud REQUEST (" + endpoint + "):\n" + requestString + "\n");
             HttpClient httpclient = client;
             HttpPost httpRequest = new HttpPost(endpoint);
@@ -52,11 +46,11 @@ public class JsonRpcClient {
             httpRequest.setHeader("Authorization", "OAuth " + accessToken);
             HttpResponse httpResponse = httpclient.execute(httpRequest);
             String responseString = EntityUtils.toString(httpResponse.getEntity());
-            JsonRpcResponse response = mapper.treeToValue(mapper.readTree(responseString), JsonRpcResponse.class);
-            System.out.println("RECEIVING Cloud RESPONSE:\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(response) + "\n");
+            JsonRpcResponse response = jsonHelper.stringToObject(responseString, JsonRpcResponse.class);
+            System.out.println("RECEIVING Cloud RESPONSE:\n" + jsonHelper.objectToString(response) + "\n");
             if (response.getError() == null) {
                 if (responseClass != null) {
-                    return mapper.treeToValue(response.getResult(), responseClass);
+                    return jsonHelper.jsonToObject(response.getResult(), responseClass);
                 } else {
                     return null;
                 }

@@ -5,6 +5,9 @@
 
 package com.ickstream.protocol.device.player;
 
+import com.ickstream.protocol.StreamingReference;
+import org.codehaus.jackson.JsonNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +17,7 @@ public class PlaylistItem {
     private String type;
     private String image;
     private List<StreamingReference> streamingRefs = new ArrayList<StreamingReference>();
+    private JsonNode itemAttributes;
 
     public PlaylistItem() {
     }
@@ -71,5 +75,13 @@ public class PlaylistItem {
 
     public void setStreamingRefs(List<StreamingReference> streamingRefs) {
         this.streamingRefs = streamingRefs;
+    }
+
+    public JsonNode getItemAttributes() {
+        return itemAttributes;
+    }
+
+    public void setItemAttributes(JsonNode itemAttributes) {
+        this.itemAttributes = itemAttributes;
     }
 }

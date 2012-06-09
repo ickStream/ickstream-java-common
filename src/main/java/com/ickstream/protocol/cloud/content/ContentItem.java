@@ -5,6 +5,9 @@
 
 package com.ickstream.protocol.cloud.content;
 
+import com.ickstream.protocol.StreamingReference;
+import org.codehaus.jackson.JsonNode;
+
 import java.util.List;
 
 public class ContentItem {
@@ -13,6 +16,7 @@ public class ContentItem {
     private String type;
     private String image;
     private List<StreamingReference> streamingRefs;
+    private JsonNode itemAttributes;
 
     public String getId() {
         return id;
@@ -52,5 +56,13 @@ public class ContentItem {
 
     public void setStreamingRefs(List<StreamingReference> streamingRefs) {
         this.streamingRefs = streamingRefs;
+    }
+
+    public JsonNode getItemAttributes() {
+        return itemAttributes;
+    }
+
+    public void setItemAttributes(JsonNode itemAttributes) {
+        this.itemAttributes = itemAttributes;
     }
 }
