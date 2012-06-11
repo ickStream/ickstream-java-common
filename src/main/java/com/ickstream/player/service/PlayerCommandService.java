@@ -5,9 +5,9 @@
 
 package com.ickstream.player.service;
 
+import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.player.*;
-import com.ickstream.player.model.PlayerStatus;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -163,7 +163,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         } else {
             playerStatus.setSeekPos(null);
             playerStatus.setPlaylistPos(null);
-            if(player != null && playerStatus.getPlaying()) {
+            if (player != null && playerStatus.getPlaying()) {
                 player.pause();
             }
         }
@@ -172,7 +172,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
 
 
     @ResultName("playing")
-    public Boolean play(@ParamName("play") Boolean play) {
+    public Boolean play(@ParamName("playing") Boolean play) {
         if (playerStatus.getPlaylistPos() != null && play != null) {
             if (!playerStatus.getPlaying() && play) {
                 if (player == null || player.play()) {
