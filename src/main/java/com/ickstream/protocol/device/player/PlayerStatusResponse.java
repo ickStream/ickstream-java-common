@@ -8,9 +8,9 @@ package com.ickstream.protocol.device.player;
 public class PlayerStatusResponse {
     private Boolean playing;
     private Double seekPos;
-    private String playlistId;
-    private String playlistName;
     private Integer playlistPos;
+    private Double volumeLevel;
+    private Boolean muted;
     private PlaylistItem track;
 
     public Boolean getPlaying() {
@@ -29,28 +29,28 @@ public class PlayerStatusResponse {
         this.seekPos = seekPos;
     }
 
-    public String getPlaylistId() {
-        return playlistId;
-    }
-
-    public void setPlaylistId(String playlistId) {
-        this.playlistId = playlistId;
-    }
-
-    public String getPlaylistName() {
-        return playlistName;
-    }
-
-    public void setPlaylistName(String playlistName) {
-        this.playlistName = playlistName;
-    }
-
     public Integer getPlaylistPos() {
         return playlistPos;
     }
 
     public void setPlaylistPos(Integer playlistPos) {
         this.playlistPos = playlistPos;
+    }
+
+    public Double getVolumeLevel() {
+        return volumeLevel;
+    }
+
+    public void setVolumeLevel(Double volumeLevel) {
+        this.volumeLevel = volumeLevel;
+    }
+
+    public Boolean getMuted() {
+        return muted;
+    }
+
+    public void setMuted(Boolean muted) {
+        this.muted = muted;
     }
 
     public PlaylistItem getTrack() {
