@@ -9,6 +9,7 @@ import com.ickstream.protocol.JsonHelper;
 import com.ickstream.protocol.JsonRpcRequest;
 import com.ickstream.protocol.device.MessageSender;
 import com.ickstream.protocol.device.player.PlayerStatusResponse;
+import com.ickstream.protocol.device.player.PlaylistChangedNotification;
 
 public class PlayerNotificationSender {
     private MessageSender messageSender;
@@ -22,6 +23,13 @@ public class PlayerNotificationSender {
         JsonRpcRequest notification = new JsonRpcRequest();
         notification.setMethod("playerStatusChanged");
         notification.setParams(jsonHelper.objectToJson(status));
+        messageSender.sendMessage(jsonHelper.objectToString(notification));
+    }
+
+    public void playlistChanged(PlaylistChangedNotification playlistChanged) {
+        JsonRpcRequest notification = new JsonRpcRequest();
+        notification.setMethod("playlistChanged");
+        notification.setParams(jsonHelper.objectToJson(playlistChanged));
         messageSender.sendMessage(jsonHelper.objectToString(notification));
     }
 }
