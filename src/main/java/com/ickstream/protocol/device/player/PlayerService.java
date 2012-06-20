@@ -51,7 +51,7 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
 
     public Integer play(Boolean play) {
         Map<String, Boolean> parameters = new HashMap<String, Boolean>();
-        parameters.put("play", play);
+        parameters.put("playing", play);
         return sendRequest("play", parameters, null, null);
     }
 
@@ -125,6 +125,23 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
         }
     }
 
+    public void addPlaylistChangedListener(MessageHandler<PlaylistChangedNotification> messageHandler) {
+        synchronized (notificationHandlers) {
+            if (!notificationHandlers.containsKey("playlistChanged")) {
+                notificationHandlers.put("playlistChanged", new ArrayList<MessageHandler>());
+            }
+            notificationHandlers.get("playlistChanged").add(messageHandler);
+        }
+    }
+
+    public void removePlaylistChangedListener(MessageHandler<PlaylistChangedNotification> messageHandler) {
+        synchronized (notificationHandlers) {
+            if (notificationHandlers.containsKey("playlistChanged")) {
+                notificationHandlers.get("playlistChanged").remove(messageHandler);
+            }
+        }
+    }
+
     private Integer sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
         synchronized (messageHandlers) {
             if (messageResponseClass != null && messageHandler != null) {
@@ -162,7 +179,15 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
                         notificationHandler.onMessage(parameters);
                     }
                 }
+            }else if (notificationHandlers != null && message.getMethod().equals("playlistChanged")) {
+                if (message.getParams() != null) {
+                    parameters = mapper.treeToValue(message.getParams(), PlaylistChangedNotification.class);
+                    for (MessageHandler notificationHandler : notificationHandlers) {
+                        notificationHandler.onMessage(parameters);
+                    }
+                }
             }
+
         } catch (JsonMappingException e) {
             e.printStackTrace();
         } catch (JsonParseException e) {
