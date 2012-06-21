@@ -378,25 +378,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
 
     private void sendPlayerStatusChangedNotification() {
         if (notificationSender != null) {
-            PlayerStatusResponse notification = new PlayerStatusResponse();
-            notification.setPlaying(playerStatus.getPlaying());
-            notification.setPlaylistPos(playerStatus.getPlaylistPos());
-            if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaying()) {
-                if (player != null) {
-                    playerStatus.setSeekPos(player.getSeekPosition());
-                }
-            }
-            notification.setSeekPos(playerStatus.getSeekPos());
-            if (playerStatus.getPlaylist().getItems().size() > 0) {
-                notification.setTrack(playerStatus.getPlaylist().getItems().get(playerStatus.getPlaylistPos()));
-            }
-            if (player != null && !playerStatus.getMuted()) {
-                notification.setVolumeLevel(player.getVolume());
-            } else {
-                notification.setVolumeLevel(playerStatus.getVolumeLevel());
-            }
-            notification.setMuted(playerStatus.getMuted());
-            notificationSender.playerStatusChanged(notification);
+            notificationSender.playerStatusChanged(getPlayerStatus());
         }
     }
 }
