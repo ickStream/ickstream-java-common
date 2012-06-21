@@ -49,6 +49,18 @@ public class PlayerCommandServicePlaylistManagementTest {
     }
 
     @Test
+    public void testSetPlaylistName() {
+        PlayerStatus status = getDefaultPlayerStatus(3);
+        PlayerCommandService service = new PlayerCommandService(status);
+
+        SetPlaylistNameResponse playlist = service.setPlaylistName(new SetPlaylistNameRequest("someid", "somename"));
+
+        Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
+        Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
+        Assert.assertEquals(playlist.getCountAll(), new Integer(3));
+    }
+
+    @Test
     public void testGetPlaylist() {
         PlayerStatus status = getDefaultPlayerStatus(3);
         PlayerCommandService service = new PlayerCommandService(status);

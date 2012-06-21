@@ -6,6 +6,7 @@
 package com.ickstream.player.service;
 
 import com.ickstream.player.model.PlayerStatus;
+import com.ickstream.player.model.Playlist;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.player.*;
 
@@ -76,6 +77,16 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         }
         response.setMuted(playerStatus.getMuted());
         return response;
+    }
+
+    public SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request) {
+        if (playerStatus.getPlaylist() == null) {
+            playerStatus.setPlaylist(new Playlist());
+        }
+        playerStatus.getPlaylist().setId(request.getPlaylistId());
+        playerStatus.getPlaylist().setName(request.getPlaylistName());
+        sendPlaylistChangedNotification();
+        return new SetPlaylistNameResponse(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size());
     }
 
     public PlaylistResponse getPlaylist(ChunkedRequest request) {
