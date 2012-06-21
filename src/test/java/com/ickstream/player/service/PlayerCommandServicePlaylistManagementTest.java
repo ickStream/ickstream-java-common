@@ -27,8 +27,6 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(returnedStatus.getPlaying(), status.getPlaying());
         Assert.assertEquals(returnedStatus.getPlaylistPos(), status.getPlaylistPos());
         Assert.assertEquals(returnedStatus.getSeekPos(), status.getSeekPos());
-        Assert.assertEquals(returnedStatus.getPlaylistId(), status.getPlaylist().getId());
-        Assert.assertEquals(returnedStatus.getPlaylistName(), status.getPlaylist().getName());
         Assert.assertNull(returnedStatus.getTrack());
     }
 
@@ -47,8 +45,6 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(returnedStatus.getPlaying(), status.getPlaying());
         Assert.assertEquals(returnedStatus.getPlaylistPos(), status.getPlaylistPos());
         Assert.assertEquals(returnedStatus.getSeekPos(), status.getSeekPos());
-        Assert.assertEquals(returnedStatus.getPlaylistId(), status.getPlaylist().getId());
-        Assert.assertEquals(returnedStatus.getPlaylistName(), status.getPlaylist().getName());
         Assert.assertNull(returnedStatus.getTrack());
     }
 
