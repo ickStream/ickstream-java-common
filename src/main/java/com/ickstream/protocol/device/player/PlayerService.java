@@ -87,7 +87,7 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
         return sendRequest("setVolume", request, VolumeResponse.class, messageHandler);
     }
 
-    public Integer setPlaylist(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messagesHandler) {
+    public Integer setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messagesHandler) {
         return sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, messagesHandler);
     }
 
