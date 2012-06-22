@@ -10,6 +10,7 @@ import com.ickstream.protocol.ChunkedResponse;
 import java.util.List;
 
 public class PlaylistResponse extends ChunkedResponse {
+    private Long lastChanged;
     private String playlistId;
     private String playlistName;
     private List<PlaylistItem> tracks_loop;
@@ -28,6 +29,14 @@ public class PlaylistResponse extends ChunkedResponse {
 
     public void setPlaylistName(String playlistName) {
         this.playlistName = playlistName;
+    }
+
+    public Long getLastChanged() {
+        return lastChanged;
+    }
+
+    public void setLastChanged(Long lastChanged) {
+        this.lastChanged = lastChanged;
     }
 
     public List<PlaylistItem> getTracks_loop() {

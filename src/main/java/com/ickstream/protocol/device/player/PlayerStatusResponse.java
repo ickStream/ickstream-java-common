@@ -6,12 +6,21 @@
 package com.ickstream.protocol.device.player;
 
 public class PlayerStatusResponse {
+    private Long lastChanged;
     private Boolean playing;
     private Double seekPos;
     private Integer playlistPos;
     private Double volumeLevel;
     private Boolean muted;
     private PlaylistItem track;
+
+    public Long getLastChanged() {
+        return lastChanged;
+    }
+
+    public void setLastChanged(Long lastChanged) {
+        this.lastChanged = lastChanged;
+    }
 
     public Boolean getPlaying() {
         return playing;
