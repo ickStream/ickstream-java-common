@@ -6,18 +6,16 @@
 package com.ickstream.player.service;
 
 import com.ickstream.player.model.PlayerStatus;
-import com.ickstream.player.model.Playlist;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.player.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class PlayerCommandService extends AbstractJsonRpcService {
     private PlayerStatus playerStatus;
     private PlayerManager player;
     private PlayerNotificationSender notificationSender;
+    private Timer volumeNotificationTimer;
 
     public PlayerCommandService(PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
@@ -39,7 +37,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         this.player = player;
     }
 
-    public PlayerConfigurationResponse setPlayerConfiguration(PlayerConfigurationRequest configuration) {
+    public synchronized PlayerConfigurationResponse setPlayerConfiguration(PlayerConfigurationRequest configuration) {
         if (configuration.getAccessToken() != null) {
             player.setAccessToken(configuration.getAccessToken());
         }
@@ -52,14 +50,14 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public PlayerConfigurationResponse getPlayerConfiguration() {
+    public synchronized PlayerConfigurationResponse getPlayerConfiguration() {
         PlayerConfigurationResponse response = new PlayerConfigurationResponse();
         response.setPlayerName(player.getName());
         response.setHardwareId(player.getHardwareId());
         return response;
     }
 
-    public PlayerStatusResponse getPlayerStatus() {
+    public synchronized PlayerStatusResponse getPlayerStatus() {
         PlayerStatusResponse response = new PlayerStatusResponse();
         response.setPlaying(playerStatus.getPlaying());
         response.setPlaylistPos(playerStatus.getPlaylistPos());
@@ -75,21 +73,19 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         } else {
             response.setVolumeLevel(playerStatus.getVolumeLevel());
         }
+        response.setLastChanged(playerStatus.getChangedTimestamp());
         response.setMuted(playerStatus.getMuted());
         return response;
     }
 
-    public SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request) {
-        if (playerStatus.getPlaylist() == null) {
-            playerStatus.setPlaylist(new Playlist());
-        }
+    public synchronized SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
         sendPlaylistChangedNotification();
         return new SetPlaylistNameResponse(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size());
     }
 
-    public PlaylistResponse getPlaylist(ChunkedRequest request) {
+    public synchronized PlaylistResponse getPlaylist(ChunkedRequest request) {
         PlaylistResponse response = new PlaylistResponse();
         response.setPlaylistId(playerStatus.getPlaylist().getId());
         response.setPlaylistName(playerStatus.getPlaylist().getName());
@@ -106,19 +102,22 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         } else {
             response.setTracks_loop(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
         }
+        response.setLastChanged(playerStatus.getPlaylist().getChangedTimestamp());
         return response;
     }
 
-    public PlaylistModificationResponse addTracks(PlaylistAddTracksRequest request) {
+    public synchronized PlaylistModificationResponse addTracks(PlaylistAddTracksRequest request) {
         if (request.getPlaylistPos() != null) {
             // Insert tracks in middle
             playerStatus.getPlaylist().getItems().addAll(request.getPlaylistPos(), request.getTracks_loop());
+            playerStatus.getPlaylist().updateTimestamp();
             if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos() >= request.getPlaylistPos()) {
                 playerStatus.setPlaylistPos(playerStatus.getPlaylistPos() + request.getTracks_loop().size());
             }
         } else {
             // Add tracks at end
             playerStatus.getPlaylist().getItems().addAll(request.getTracks_loop());
+            playerStatus.getPlaylist().updateTimestamp();
         }
         // Set playlist position to first track if there weren't any tracks in the playlist before
         if (playerStatus.getPlaylistPos() == null) {
@@ -128,7 +127,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
-    public PlaylistModificationResponse removeTracks(PlaylistRemoveTracksRequest request) {
+    public synchronized PlaylistModificationResponse removeTracks(PlaylistRemoveTracksRequest request) {
 
         List<PlaylistItem> modifiedPlaylist = new ArrayList<PlaylistItem>(playerStatus.getPlaylist().getItems());
         int modifiedPlaylistPos = playerStatus.getPlaylistPos();
@@ -182,11 +181,11 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
-    public PlaylistModificationResponse moveTracks(PlaylistMoveTracksRequest request) {
+    public synchronized PlaylistModificationResponse moveTracks(PlaylistMoveTracksRequest request) {
         throw new IllegalArgumentException("moveTracks method Not Implemented");
     }
 
-    public PlaylistModificationResponse setTracks(PlaylistSetTracksRequest request) {
+    public synchronized PlaylistModificationResponse setTracks(PlaylistSetTracksRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
         playerStatus.getPlaylist().setItems(request.getTracks_loop());
@@ -207,7 +206,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
 
 
     @ResultName("playing")
-    public Boolean play(@ParamName("playing") Boolean play) {
+    public synchronized Boolean play(@ParamName("playing") Boolean play) {
         if (playerStatus.getPlaylistPos() != null && play != null) {
             if (!playerStatus.getPlaying() && play) {
                 if (player == null || player.play()) {
@@ -222,7 +221,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return playerStatus.getPlaying();
     }
 
-    public SeekPosition getSeekPosition() {
+    public synchronized SeekPosition getSeekPosition() {
         SeekPosition response = new SeekPosition();
         response.setPlaylistPos(playerStatus.getPlaylistPos());
         if (player != null && playerStatus.getPlaylistPos() != null && playerStatus.getPlaying()) {
@@ -232,7 +231,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public SeekPosition setSeekPosition(SeekPosition request) {
+    public synchronized SeekPosition setSeekPosition(SeekPosition request) {
         if (request.getPlaylistPos() != null && playerStatus.getPlaylist().getItems().size() > request.getPlaylistPos()) {
             playerStatus.setPlaylistPos(request.getPlaylistPos());
             Double seekPosition = request.getSeekPos() != null ? request.getSeekPos() : 0;
@@ -244,7 +243,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         }
     }
 
-    public TrackResponse getTrack(@ParamName("playlistPos") Integer playlistPos) {
+    public synchronized TrackResponse getTrack(@ParamName("playlistPos") Integer playlistPos) {
         TrackResponse response = new TrackResponse();
         response.setPlaylistId(playerStatus.getPlaylist().getId());
         response.setPlaylistName(playerStatus.getPlaylist().getName());
@@ -259,13 +258,15 @@ public class PlayerCommandService extends AbstractJsonRpcService {
     }
 
     @ResultName("playlistPos")
-    public Integer setTrack(@ParamName("playlistPos") Integer playlistPos) {
+    public synchronized Integer setTrack(@ParamName("playlistPos") Integer playlistPos) {
         if (playlistPos != null && playlistPos < playerStatus.getPlaylist().getItems().size()) {
             playerStatus.setPlaylistPos(playlistPos);
             playerStatus.setSeekPos(0d);
             // Make sure we make the player aware that it should change track
             if (playerStatus.getPlaying() && player != null) {
                 player.play();
+            } else {
+                sendPlayerStatusChangedNotification();
             }
             return playlistPos;
         } else {
@@ -274,27 +275,36 @@ public class PlayerCommandService extends AbstractJsonRpcService {
     }
 
     @ResultName("track")
-    public PlaylistItem setTrackMetadata(TrackMetadataRequest request) {
+    public synchronized PlaylistItem setTrackMetadata(TrackMetadataRequest request) {
         if (request.getPlaylistPos() != null) {
             if (request.getPlaylistPos() < playerStatus.getPlaylist().getItems().size()) {
                 if (request.getTrack().getId().equals(playerStatus.getPlaylist().getItems().get(request.getPlaylistPos()).getId())) {
                     if (request.getReplace()) {
                         playerStatus.getPlaylist().getItems().set(request.getPlaylistPos(), request.getTrack());
+                        playerStatus.getPlaylist().updateTimestamp();
                     } else {
                         PlaylistItem item = playerStatus.getPlaylist().getItems().get(request.getPlaylistPos());
                         if (request.getTrack().getImage() != null) {
                             item.setImage(request.getTrack().getImage());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getText() != null) {
                             item.setText(request.getTrack().getText());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getType() != null) {
                             item.setType(request.getTrack().getType());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getStreamingRefs() != null) {
                             item.setStreamingRefs(request.getTrack().getStreamingRefs());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         //TODO: Implement copying of item attributes
+                    }
+                    if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos().equals(request.getPlaylistPos())) {
+                        playerStatus.updateTimestamp();
+                        sendPlayerStatusChangedNotification();
                     }
                     sendPlaylistChangedNotification();
                     return playerStatus.getPlaylist().getItems().get(request.getPlaylistPos());
@@ -311,31 +321,40 @@ public class PlayerCommandService extends AbstractJsonRpcService {
                 if (request.getTrack().getId().equals(item.getId())) {
                     if (request.getReplace()) {
                         playerStatus.getPlaylist().getItems().set(playlistPos, request.getTrack());
+                        playerStatus.getPlaylist().updateTimestamp();
                         response = request.getTrack();
                     } else {
                         if (request.getTrack().getImage() != null) {
                             item.setImage(request.getTrack().getImage());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getText() != null) {
                             item.setText(request.getTrack().getText());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getType() != null) {
                             item.setType(request.getTrack().getType());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         if (request.getTrack().getStreamingRefs() != null) {
                             item.setStreamingRefs(request.getTrack().getStreamingRefs());
+                            playerStatus.getPlaylist().updateTimestamp();
                         }
                         //TODO: Implement copying of item attributes
                         response = item;
                     }
-                    sendPlaylistChangedNotification();
+                    if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos().equals(playlistPos)) {
+                        playerStatus.updateTimestamp();
+                        sendPlayerStatusChangedNotification();
+                    }
                 }
             }
+            sendPlaylistChangedNotification();
             return response;
         }
     }
 
-    public VolumeResponse getVolume() {
+    public synchronized VolumeResponse getVolume() {
         VolumeResponse response = new VolumeResponse();
         if (player != null && !playerStatus.getMuted()) {
             response.setVolumeLevel(player.getVolume());
@@ -346,7 +365,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public VolumeResponse setVolume(VolumeRequest request) {
+    public synchronized VolumeResponse setVolume(VolumeRequest request) {
         Double volume = playerStatus.getVolumeLevel();
         if (request.getVolumeLevel() != null) {
             volume = request.getVolumeLevel();
@@ -373,21 +392,26 @@ public class PlayerCommandService extends AbstractJsonRpcService {
                 player.setVolume(0.0);
             }
         }
-
+        if (volumeNotificationTimer == null) {
+            volumeNotificationTimer = new Timer();
+            volumeNotificationTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    sendPlayerStatusChangedNotification();
+                    volumeNotificationTimer = null;
+                }
+            }, 2000);
+        }
         return getVolume();
     }
 
-    private void sendPlaylistChangedNotification() {
+    private synchronized void sendPlaylistChangedNotification() {
         if (notificationSender != null) {
-            if (playerStatus.getPlaylist() != null) {
-                notificationSender.playlistChanged(new PlaylistChangedNotification(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size()));
-            } else {
-                notificationSender.playlistChanged(new PlaylistChangedNotification(playerStatus.getPlaylist().getItems().size()));
-            }
+            notificationSender.playlistChanged(new PlaylistChangedNotification(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size(), playerStatus.getPlaylist().getChangedTimestamp()));
         }
     }
 
-    private void sendPlayerStatusChangedNotification() {
+    private synchronized void sendPlayerStatusChangedNotification() {
         if (notificationSender != null) {
             notificationSender.playerStatusChanged(getPlayerStatus());
         }

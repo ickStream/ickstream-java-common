@@ -8,6 +8,7 @@ package com.ickstream.player.model;
 import com.ickstream.protocol.device.player.PlaylistItem;
 
 public class PlayerStatus {
+    private Long changedTimestamp = System.currentTimeMillis();
     private Boolean playing = Boolean.FALSE;
     private Double volumeLevel = 0.1;
     private Boolean muted = Boolean.FALSE;
@@ -15,12 +16,21 @@ public class PlayerStatus {
     private Integer playlistPos;
     private Playlist playlist = new Playlist();
 
+    public void updateTimestamp() {
+        Long newTimestamp = System.currentTimeMillis();
+        if (newTimestamp.equals(changedTimestamp)) {
+            newTimestamp++;
+        }
+        changedTimestamp = newTimestamp;
+    }
+
     public Boolean getPlaying() {
         return playing;
     }
 
     public void setPlaying(Boolean playing) {
         this.playing = playing;
+        updateTimestamp();
     }
 
     public Double getVolumeLevel() {
@@ -29,6 +39,7 @@ public class PlayerStatus {
 
     public void setVolumeLevel(Double volumeLevel) {
         this.volumeLevel = volumeLevel;
+        updateTimestamp();
     }
 
     public Boolean getMuted() {
@@ -37,6 +48,7 @@ public class PlayerStatus {
 
     public void setMuted(Boolean muted) {
         this.muted = muted;
+        updateTimestamp();
     }
 
     public Double getSeekPos() {
@@ -52,7 +64,10 @@ public class PlayerStatus {
     }
 
     public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+        if ((playlistPos == null && this.playlistPos != null) || (playlistPos != null && !playlistPos.equals(this.playlistPos))) {
+            this.playlistPos = playlistPos;
+            updateTimestamp();
+        }
     }
 
     public Playlist getPlaylist() {
@@ -60,7 +75,12 @@ public class PlayerStatus {
     }
 
     public void setPlaylist(Playlist playlist) {
-        this.playlist = playlist;
+        if (playlist != null) {
+            this.playlist = playlist;
+        } else {
+            this.playlist = new Playlist();
+        }
+        updateTimestamp();
     }
 
     public PlaylistItem getCurrentPlaylistItem() {
@@ -70,4 +90,7 @@ public class PlayerStatus {
         return null;
     }
 
+    public Long getChangedTimestamp() {
+        return changedTimestamp;
+    }
 }
