@@ -152,22 +152,22 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
                 messageHandlers.put(id, messageHandler);
                 messageHandlerTypes.put(id, messageResponseClass);
             }
-            JsonRpcRequest jsonRpcRequest = new JsonRpcRequest();
-            jsonRpcRequest.setId(id++);
-            jsonRpcRequest.setMethod(method);
-            if (params != null) {
-                jsonRpcRequest.setParams(mapper.valueToTree(params));
-            } else {
-                jsonRpcRequest.setParams(mapper.valueToTree(new HashMap()));
-            }
-            try {
-                String requestString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.valueToTree(jsonRpcRequest));
-                System.out.println("SENDING Device REQUEST (" + deviceId + "):\n" + requestString + "\n");
-                messageSender.sendMessage(deviceId, requestString);
-                return jsonRpcRequest.getId();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        }
+        JsonRpcRequest jsonRpcRequest = new JsonRpcRequest();
+        jsonRpcRequest.setId(id++);
+        jsonRpcRequest.setMethod(method);
+        if (params != null) {
+            jsonRpcRequest.setParams(mapper.valueToTree(params));
+        } else {
+            jsonRpcRequest.setParams(mapper.valueToTree(new HashMap()));
+        }
+        try {
+            String requestString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.valueToTree(jsonRpcRequest));
+            System.out.println("SENDING Device REQUEST (" + deviceId + "):\n" + requestString + "\n");
+            messageSender.sendMessage(deviceId, requestString);
+            return jsonRpcRequest.getId();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -203,19 +203,21 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
 
     @Override
     public void onResponse(JsonRpcResponse message) {
+        MessageHandler messageHandler;
+        Class responseType;
         synchronized (messageHandlers) {
-            MessageHandler messageHandler = messageHandlers.get(message.getId());
-            Class responseType = messageHandlerTypes.get(message.getId());
-            if (messageHandler != null) {
-                try {
-                    Object parameters = null;
-                    if (responseType != null) {
-                        parameters = mapper.treeToValue(message.getResult(), responseType);
-                    }
-                    messageHandlers.get(message.getId()).onMessage(parameters);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            messageHandler = messageHandlers.get(message.getId());
+            responseType = messageHandlerTypes.get(message.getId());
+        }
+        if (messageHandler != null) {
+            try {
+                Object parameters = null;
+                if (responseType != null) {
+                    parameters = mapper.treeToValue(message.getResult(), responseType);
                 }
+                messageHandler.onMessage(parameters);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
