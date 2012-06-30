@@ -8,28 +8,30 @@ package com.ickstream.protocol.cloud.content;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.JsonRpcClient;
 import com.ickstream.protocol.cloud.ServerException;
-import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class ContentService {
-    private JsonRpcClient jsonRpcClient;
-    private String id;
+    protected JsonRpcClient jsonRpcClient;
+    protected String id;
+
+    public ContentService(String id, JsonRpcClient jsonRpcClient) {
+        this.id = id;
+        this.jsonRpcClient = jsonRpcClient;
+    }
+
+    public ContentService(String id, JsonRpcClient jsonRpcClient, String accessToken) {
+        this(id,jsonRpcClient);
+        this.jsonRpcClient.setAccessToken(accessToken);
+    }
+
+    protected JsonRpcClient getJsonRpcClient() {
+        return jsonRpcClient;
+    }
 
     public String getId() {
         return id;
-    }
-
-    public ContentService(HttpClient client, String id, String endpoint) {
-        this.id = id;
-        jsonRpcClient = new JsonRpcClient(client, endpoint);
-    }
-
-    public ContentService(HttpClient client, String id, String endpoint, String accessToken) {
-        this.id = id;
-        jsonRpcClient = new JsonRpcClient(client, endpoint);
-        jsonRpcClient.setAccessToken(accessToken);
     }
 
     public void setAccessToken(String accessToken) {

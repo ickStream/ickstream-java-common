@@ -6,6 +6,7 @@
 package com.ickstream.protocol.cloud.core;
 
 import com.ickstream.protocol.ChunkedRequest;
+import com.ickstream.protocol.HttpJsonRpcClient;
 import com.ickstream.protocol.JsonRpcClient;
 import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.client.HttpClient;
@@ -14,7 +15,7 @@ public class CoreService {
     private JsonRpcClient jsonRpcClient;
 
     public CoreService(HttpClient client, String endpoint) {
-        jsonRpcClient = new JsonRpcClient(client, endpoint);
+        jsonRpcClient = new HttpJsonRpcClient(client, endpoint);
     }
 
     public void setAccessToken(String accessToken) {
