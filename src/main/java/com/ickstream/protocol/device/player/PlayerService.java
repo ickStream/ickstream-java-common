@@ -183,7 +183,7 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
                         notificationHandler.onMessage(parameters);
                     }
                 }
-            }else if (notificationHandlers != null && message.getMethod().equals("playlistChanged")) {
+            } else if (notificationHandlers != null && message.getMethod().equals("playlistChanged")) {
                 if (message.getParams() != null) {
                     parameters = mapper.treeToValue(message.getParams(), PlaylistChangedNotification.class);
                     for (MessageHandler notificationHandler : notificationHandlers) {
@@ -203,17 +203,19 @@ public class PlayerService implements JsonRpcResponseHandler, JsonRpcRequestHand
 
     @Override
     public void onResponse(JsonRpcResponse message) {
-        MessageHandler messageHandler = messageHandlers.get(message.getId());
-        Class responseType = messageHandlerTypes.get(message.getId());
-        if (messageHandler != null) {
-            try {
-                Object parameters = null;
-                if (responseType != null) {
-                    parameters = mapper.treeToValue(message.getResult(), responseType);
+        synchronized (messageHandlers) {
+            MessageHandler messageHandler = messageHandlers.get(message.getId());
+            Class responseType = messageHandlerTypes.get(message.getId());
+            if (messageHandler != null) {
+                try {
+                    Object parameters = null;
+                    if (responseType != null) {
+                        parameters = mapper.treeToValue(message.getResult(), responseType);
+                    }
+                    messageHandlers.get(message.getId()).onMessage(parameters);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                messageHandlers.get(message.getId()).onMessage(parameters);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
