@@ -85,7 +85,9 @@ public class PlayerStatus {
 
     public PlaylistItem getCurrentPlaylistItem() {
         if (getPlaylistPos() != null) {
-            return getPlaylist().getItems().get(getPlaylistPos());
+            if(getPlaylistPos()<getPlaylist().getItems().size()) {
+                return getPlaylist().getItems().get(getPlaylistPos());
+            }
         }
         return null;
     }
