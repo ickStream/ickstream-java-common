@@ -41,17 +41,22 @@ public class HttpJsonRpcClient extends JsonRpcClient {
             HttpResponse httpResponse = httpclient.execute(httpRequest);
             String responseString = EntityUtils.toString(httpResponse.getEntity());
             JsonRpcResponse response = getJsonHelper().stringToObject(responseString, JsonRpcResponse.class);
-            System.out.println("RECEIVING Cloud RESPONSE:\n" + getJsonHelper().objectToString(response) + "\n");
-            if (response.getError() == null) {
-                if (responseClass != null) {
-                    return getJsonHelper().jsonToObject(response.getResult(), responseClass);
+            if(response != null) {
+                System.out.println("RECEIVING Cloud RESPONSE:\n" + getJsonHelper().objectToString(response) + "\n");
+                if (response.getError() == null) {
+                    if (responseClass != null) {
+                        return getJsonHelper().jsonToObject(response.getResult(), responseClass);
+                    } else {
+                        return null;
+                    }
                 } else {
-                    return null;
+                    String code = response.getError().get("code").getTextValue();
+                    String message = response.getError().get("message").getTextValue();
+                    throw new ServerException(code, message);
                 }
-            } else {
-                String code = response.getError().get("code").getTextValue();
-                String message = response.getError().get("message").getTextValue();
-                throw new ServerException(code, message);
+            }else {
+                System.out.println("RECEIVING Cloud RESPONSE: null \n");
+                throw new RuntimeException("Cloud server access error");
             }
         } catch (IOException e) {
             throw new RuntimeException("Cloud server access error", e);

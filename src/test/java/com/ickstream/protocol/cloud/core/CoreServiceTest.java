@@ -154,6 +154,23 @@ public class CoreServiceTest {
     }
 
     @Test
+    public void testFindServicesForType() throws IOException, ServerException {
+        CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindServicesForType.json");
+        FindServicesResponse response = service.findServices(new FindServicesRequest("library"));
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getCount(), new Integer(1));
+        Assert.assertEquals(response.getCountAll(), new Integer(1));
+        Assert.assertNotNull(response.getItems_loop());
+        Assert.assertEquals(response.getItems_loop().size(), 1);
+        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+            Assert.assertNotNull(serviceResponse.getId());
+            Assert.assertNotNull(serviceResponse.getName());
+            Assert.assertEquals(serviceResponse.getType(),"library");
+            Assert.assertNotNull(serviceResponse.getUrl());
+        }
+    }
+
+    @Test
     public void testFindServices() throws IOException, ServerException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindServices.json");
         FindServicesResponse response = service.findServices(null);
@@ -165,6 +182,7 @@ public class CoreServiceTest {
         for (ServiceResponse serviceResponse : response.getItems_loop()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
+            Assert.assertNotNull(serviceResponse.getType());
             Assert.assertNotNull(serviceResponse.getUrl());
         }
     }
@@ -181,6 +199,24 @@ public class CoreServiceTest {
         for (ServiceResponse serviceResponse : response.getItems_loop()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
+            Assert.assertNotNull(serviceResponse.getType());
+            Assert.assertNotNull(serviceResponse.getUrl());
+        }
+    }
+
+    @Test
+    public void testFindAllServicesForType() throws IOException, ServerException {
+        CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindAllServicesForType.json");
+        FindServicesResponse response = service.findAllServices(new FindServicesRequest("content"));
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getCount(), new Integer(2));
+        Assert.assertEquals(response.getCountAll(), new Integer(2));
+        Assert.assertNotNull(response.getItems_loop());
+        Assert.assertEquals(response.getItems_loop().size(), 2);
+        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+            Assert.assertNotNull(serviceResponse.getId());
+            Assert.assertNotNull(serviceResponse.getName());
+            Assert.assertEquals(serviceResponse.getType(),"content");
             Assert.assertNotNull(serviceResponse.getUrl());
         }
     }

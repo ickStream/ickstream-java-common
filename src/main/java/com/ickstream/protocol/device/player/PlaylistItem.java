@@ -6,6 +6,8 @@
 package com.ickstream.protocol.device.player;
 
 import com.ickstream.protocol.StreamingReference;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.codehaus.jackson.JsonNode;
 
 import java.util.ArrayList;
@@ -83,5 +85,18 @@ public class PlaylistItem {
 
     public void setItemAttributes(JsonNode itemAttributes) {
         this.itemAttributes = itemAttributes;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(id).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PlaylistItem)) {
+            return false;
+        }
+        return new EqualsBuilder().append(id, ((PlaylistItem) o).getId()).isEquals();
     }
 }

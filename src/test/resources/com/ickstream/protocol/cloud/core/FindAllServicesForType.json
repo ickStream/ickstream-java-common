@@ -13,10 +13,10 @@
             "url": "http://example.org/service1"
         },
         {
-            "id": "service2",
-            "name": "Service 2",
-            "type": "library",
-            "url": "http://example.org/service2"
+            "id": "service3",
+            "name": "Service 3",
+            "type": "content",
+            "url": "http://example.org/service3"
         }
     ]
   }

@@ -3,15 +3,9 @@
   "id" : "1",
   "result" : {
     "offset" : 0,
-    "count" : 2,
-    "countAll": 2,
+    "count" : 1,
+    "countAll": 1,
     "items_loop": [
-        {
-            "id": "service1",
-            "name": "Service 1",
-            "type": "content",
-            "url": "http://example.org/service1"
-        },
         {
             "id": "service2",
             "name": "Service 2",

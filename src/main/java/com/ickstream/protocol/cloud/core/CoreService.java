@@ -58,11 +58,11 @@ public class CoreService {
         return jsonRpcClient.callMethod("getUser", null, GetUserResponse.class);
     }
 
-    public FindServicesResponse findServices(ChunkedRequest request) throws ServerException {
+    public FindServicesResponse findServices(FindServicesRequest request) throws ServerException {
         return jsonRpcClient.callMethod("findServices", request, FindServicesResponse.class);
     }
 
-    public FindServicesResponse findAllServices(ChunkedRequest request) throws ServerException {
+    public FindServicesResponse findAllServices(FindServicesRequest request) throws ServerException {
         return jsonRpcClient.callMethod("findAllServices", request, FindServicesResponse.class);
     }
 }
