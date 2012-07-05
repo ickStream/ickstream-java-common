@@ -5,13 +5,11 @@
 
 package com.ickstream.protocol.cloud.core;
 
-import com.ickstream.protocol.ChunkedRequest;
-import com.ickstream.protocol.HttpJsonRpcClient;
-import com.ickstream.protocol.JsonRpcClient;
+import com.ickstream.protocol.*;
 import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.client.HttpClient;
 
-public class CoreService {
+public class CoreService implements Service {
     private JsonRpcClient jsonRpcClient;
 
     public CoreService(HttpClient client, String endpoint) {
@@ -20,6 +18,11 @@ public class CoreService {
 
     public void setAccessToken(String accessToken) {
         jsonRpcClient.setAccessToken(accessToken);
+    }
+
+    @Override
+    public ServiceInformation getServiceInformation() throws ServerException {
+        return jsonRpcClient.callMethod("getServiceInformation", null, ServiceInformation.class);
     }
 
     public FindDevicesResponse findDevices(ChunkedRequest request) throws ServerException {

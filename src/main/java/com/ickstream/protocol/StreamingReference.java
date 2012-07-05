@@ -8,6 +8,7 @@ package com.ickstream.protocol;
 public class StreamingReference {
     private String format;
     private String url;
+    private String serviceUrl;
 
     public StreamingReference() {
     }
@@ -31,5 +32,13 @@ public class StreamingReference {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getServiceUrl() {
+        return serviceUrl;
+    }
+
+    public void setServiceUrl(String serviceUrl) {
+        this.serviceUrl = serviceUrl;
     }
 }

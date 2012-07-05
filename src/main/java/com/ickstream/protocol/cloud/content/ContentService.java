@@ -7,12 +7,14 @@ package com.ickstream.protocol.cloud.content;
 
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.JsonRpcClient;
+import com.ickstream.protocol.Service;
+import com.ickstream.protocol.ServiceInformation;
 import com.ickstream.protocol.cloud.ServerException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ContentService {
+public class ContentService implements Service {
     protected JsonRpcClient jsonRpcClient;
     protected String id;
 
@@ -22,7 +24,7 @@ public class ContentService {
     }
 
     public ContentService(String id, JsonRpcClient jsonRpcClient, String accessToken) {
-        this(id,jsonRpcClient);
+        this(id, jsonRpcClient);
         this.jsonRpcClient.setAccessToken(accessToken);
     }
 
@@ -36,6 +38,11 @@ public class ContentService {
 
     public void setAccessToken(String accessToken) {
         jsonRpcClient.setAccessToken(accessToken);
+    }
+
+    @Override
+    public ServiceInformation getServiceInformation() throws ServerException {
+        return jsonRpcClient.callMethod("getServiceInformation", null, ServiceInformation.class);
     }
 
     public ProtocolDescriptionResponse getProtocolDescription() throws ServerException {
