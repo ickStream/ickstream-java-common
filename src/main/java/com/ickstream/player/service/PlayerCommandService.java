@@ -5,13 +5,16 @@
 
 package com.ickstream.player.service;
 
+import com.ickstream.common.jsonrpc.JsonRpcParam;
+import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
+import com.ickstream.common.jsonrpc.JsonRpcResult;
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.player.*;
 
 import java.util.*;
 
-public class PlayerCommandService extends AbstractJsonRpcService {
+public class PlayerCommandService {
     private PlayerStatus playerStatus;
     private PlayerManager player;
     private PlayerNotificationSender notificationSender;
@@ -37,7 +40,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         this.player = player;
     }
 
-    public synchronized PlayerConfigurationResponse setPlayerConfiguration(PlayerConfigurationRequest configuration) {
+    public synchronized PlayerConfigurationResponse setPlayerConfiguration(@JsonRpcParamStructure PlayerConfigurationRequest configuration) {
         if (configuration.getAccessToken() != null) {
             player.setAccessToken(configuration.getAccessToken());
         }
@@ -78,14 +81,14 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public synchronized SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request) {
+    public synchronized SetPlaylistNameResponse setPlaylistName(@JsonRpcParamStructure SetPlaylistNameRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
         sendPlaylistChangedNotification();
         return new SetPlaylistNameResponse(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size());
     }
 
-    public synchronized PlaylistResponse getPlaylist(ChunkedRequest request) {
+    public synchronized PlaylistResponse getPlaylist(@JsonRpcParamStructure ChunkedRequest request) {
         PlaylistResponse response = new PlaylistResponse();
         response.setPlaylistId(playerStatus.getPlaylist().getId());
         response.setPlaylistName(playerStatus.getPlaylist().getName());
@@ -106,7 +109,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public synchronized PlaylistModificationResponse addTracks(PlaylistAddTracksRequest request) {
+    public synchronized PlaylistModificationResponse addTracks(@JsonRpcParamStructure PlaylistAddTracksRequest request) {
         if (request.getPlaylistPos() != null) {
             // Insert tracks in middle
             playerStatus.getPlaylist().getItems().addAll(request.getPlaylistPos(), request.getTracks_loop());
@@ -127,7 +130,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
-    public synchronized PlaylistModificationResponse removeTracks(PlaylistRemoveTracksRequest request) {
+    public synchronized PlaylistModificationResponse removeTracks(@JsonRpcParamStructure PlaylistRemoveTracksRequest request) {
 
         List<PlaylistItem> modifiedPlaylist = new ArrayList<PlaylistItem>(playerStatus.getPlaylist().getItems());
         int modifiedPlaylistPos = playerStatus.getPlaylistPos();
@@ -181,11 +184,11 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
-    public synchronized PlaylistModificationResponse moveTracks(PlaylistMoveTracksRequest request) {
+    public synchronized PlaylistModificationResponse moveTracks(@JsonRpcParamStructure PlaylistMoveTracksRequest request) {
         throw new IllegalArgumentException("moveTracks method Not Implemented");
     }
 
-    public synchronized PlaylistModificationResponse setTracks(PlaylistSetTracksRequest request) {
+    public synchronized PlaylistModificationResponse setTracks(@JsonRpcParamStructure PlaylistSetTracksRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
         playerStatus.getPlaylist().setItems(request.getTracks_loop());
@@ -205,8 +208,8 @@ public class PlayerCommandService extends AbstractJsonRpcService {
     }
 
 
-    @ResultName("playing")
-    public synchronized Boolean play(@ParamName("playing") Boolean play) {
+    @JsonRpcResult("playing")
+    public synchronized Boolean play(@JsonRpcParam(name="playing") Boolean play) {
         if (playerStatus.getPlaylistPos() != null && play != null) {
             if (!playerStatus.getPlaying() && play) {
                 if (player == null || player.play()) {
@@ -231,7 +234,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public synchronized SeekPosition setSeekPosition(SeekPosition request) {
+    public synchronized SeekPosition setSeekPosition(@JsonRpcParamStructure SeekPosition request) {
         if (request.getPlaylistPos() != null && playerStatus.getPlaylist().getItems().size() > request.getPlaylistPos()) {
             playerStatus.setPlaylistPos(request.getPlaylistPos());
             Double seekPosition = request.getSeekPos() != null ? request.getSeekPos() : 0;
@@ -243,7 +246,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         }
     }
 
-    public synchronized TrackResponse getTrack(@ParamName("playlistPos") Integer playlistPos) {
+    public synchronized TrackResponse getTrack(@JsonRpcParam(name = "playlistPos") Integer playlistPos) {
         TrackResponse response = new TrackResponse();
         response.setPlaylistId(playerStatus.getPlaylist().getId());
         response.setPlaylistName(playerStatus.getPlaylist().getName());
@@ -257,8 +260,8 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    @ResultName("playlistPos")
-    public synchronized Integer setTrack(@ParamName("playlistPos") Integer playlistPos) {
+    @JsonRpcResult("playlistPos")
+    public synchronized Integer setTrack(@JsonRpcParam(name="playlistPos") Integer playlistPos) {
         if (playlistPos != null && playlistPos < playerStatus.getPlaylist().getItems().size()) {
             playerStatus.setPlaylistPos(playlistPos);
             playerStatus.setSeekPos(0d);
@@ -274,8 +277,8 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         }
     }
 
-    @ResultName("track")
-    public synchronized PlaylistItem setTrackMetadata(TrackMetadataRequest request) {
+    @JsonRpcResult("track")
+    public synchronized PlaylistItem setTrackMetadata(@JsonRpcParamStructure TrackMetadataRequest request) {
         if (request.getPlaylistPos() != null) {
             if (request.getPlaylistPos() < playerStatus.getPlaylist().getItems().size()) {
                 if (request.getTrack().getId().equals(playerStatus.getPlaylist().getItems().get(request.getPlaylistPos()).getId())) {
@@ -365,7 +368,7 @@ public class PlayerCommandService extends AbstractJsonRpcService {
         return response;
     }
 
-    public synchronized VolumeResponse setVolume(VolumeRequest request) {
+    public synchronized VolumeResponse setVolume(@JsonRpcParamStructure VolumeRequest request) {
         Double volume = playerStatus.getVolumeLevel();
         if (request.getVolumeLevel() != null) {
             volume = request.getVolumeLevel();
