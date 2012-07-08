@@ -5,6 +5,9 @@
 
 package com.ickstream.protocol.cloud.library;
 
+import com.ickstream.common.jsonrpc.HttpMessageSender;
+import com.ickstream.common.jsonrpc.MessageLogger;
+import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
 import com.ickstream.protocol.HttpJsonRpcClient;
 import com.ickstream.protocol.JsonRpcClient;
 import com.ickstream.protocol.Service;
@@ -15,35 +18,39 @@ import org.apache.http.client.HttpClient;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LibraryService implements Service {
-    private JsonRpcClient jsonRpcClient;
+public class LibraryService extends SyncJsonRpcClient implements Service {
 
     public LibraryService(HttpClient client, String endpoint) {
-        jsonRpcClient = new HttpJsonRpcClient(client, endpoint);
+        super(new HttpMessageSender(client, endpoint));
+        ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
+    }
+
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((HttpMessageSender) getMessageSender()).setMessageLogger(messageLogger);
     }
 
     public void setAccessToken(String accessToken) {
-        jsonRpcClient.setAccessToken(accessToken);
+        ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
     }
 
     @Override
     public ServiceInformation getServiceInformation() throws ServerException {
-        return jsonRpcClient.callMethod("getServiceInformation", null, ServiceInformation.class);
+        return sendRequest("getServiceInformation", null, ServiceInformation.class);
     }
 
     public LibraryItem getTrack(String trackId) throws ServerException {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("trackId", trackId);
-        return jsonRpcClient.callMethod("getTrack", parameters, LibraryItem.class);
+        return sendRequest("getTrack", parameters, LibraryItem.class);
     }
 
     public boolean saveTrack(LibraryItem libraryItem) throws ServerException {
-        return jsonRpcClient.callMethod("saveTrack", libraryItem, Boolean.class);
+        return sendRequest("saveTrack", libraryItem, Boolean.class);
     }
 
     public Boolean removeTrack(String trackId) throws ServerException {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("trackId", trackId);
-        return jsonRpcClient.callMethod("removeTrack", parameters, Boolean.class);
+        return sendRequest("removeTrack", parameters, Boolean.class);
     }
 }

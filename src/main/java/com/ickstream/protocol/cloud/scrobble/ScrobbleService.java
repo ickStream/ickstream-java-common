@@ -5,30 +5,35 @@
 
 package com.ickstream.protocol.cloud.scrobble;
 
-import com.ickstream.protocol.HttpJsonRpcClient;
-import com.ickstream.protocol.JsonRpcClient;
+import com.ickstream.common.jsonrpc.HttpMessageSender;
+import com.ickstream.common.jsonrpc.MessageLogger;
+import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
 import com.ickstream.protocol.Service;
 import com.ickstream.protocol.ServiceInformation;
 import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.client.HttpClient;
 
-public class ScrobbleService implements Service {
-    private JsonRpcClient jsonRpcClient;
+public class ScrobbleService extends SyncJsonRpcClient implements Service {
 
     public ScrobbleService(HttpClient client, String endpoint) {
-        jsonRpcClient = new HttpJsonRpcClient(client, endpoint);
+        super(new HttpMessageSender(client, endpoint));
+        ((HttpMessageSender)getMessageSender()).setResponseHandler(this);
+    }
+
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((HttpMessageSender) getMessageSender()).setMessageLogger(messageLogger);
     }
 
     public void setAccessToken(String accessToken) {
-        jsonRpcClient.setAccessToken(accessToken);
+        ((HttpMessageSender)getMessageSender()).setAccessToken(accessToken);
     }
 
     @Override
     public ServiceInformation getServiceInformation() throws ServerException {
-        return jsonRpcClient.callMethod("getServiceInformation", null, ServiceInformation.class);
+        return sendRequest("getServiceInformation", null, ServiceInformation.class);
     }
 
     public Boolean playedTrack(PlayedItem playedItem) throws ServerException {
-        return jsonRpcClient.callMethod("playedTrack", playedItem, Boolean.class);
+        return sendRequest("playedTrack", playedItem, Boolean.class);
     }
 }

@@ -5,20 +5,17 @@
 
 package com.ickstream.protocol.cloud.content;
 
-import com.ickstream.protocol.DeviceJsonRpcClient;
-import com.ickstream.protocol.JsonRpcResponseHandler;
+import com.ickstream.common.jsonrpc.MessageLogger;
+import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.protocol.DeviceMessageSender;
 import com.ickstream.protocol.device.MessageSender;
 
 public class DeviceContentService extends ContentService {
     public DeviceContentService(String id, MessageSender messageSender) {
-        super(id,new DeviceJsonRpcClient(id, messageSender));
+        super(id,new DeviceMessageSender(id, messageSender));
     }
 
-    public DeviceContentService(String id, String accessToken, MessageSender messageSender) {
-        super(id,new DeviceJsonRpcClient(id,messageSender),accessToken);
-    }
-
-    public JsonRpcResponseHandler getJsonRpcResponseHandler() {
-        return ((DeviceJsonRpcClient)getJsonRpcClient());
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((DeviceMessageSender)getMessageSender()).setMessageLogger(messageLogger);
     }
 }

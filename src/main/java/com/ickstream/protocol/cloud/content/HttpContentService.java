@@ -5,17 +5,25 @@
 
 package com.ickstream.protocol.cloud.content;
 
+import com.ickstream.common.jsonrpc.HttpMessageSender;
+import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.protocol.HttpJsonRpcClient;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 public class HttpContentService extends ContentService {
 
-    public HttpContentService(HttpClient client, String id, String endpoint) {
-        super(id,new HttpJsonRpcClient(client, endpoint));
+    public HttpContentService(String id, String endpoint) {
+        super(id,new HttpMessageSender(new DefaultHttpClient(), endpoint));
+        ((HttpMessageSender)getMessageSender()).setResponseHandler(this);
     }
 
-    public HttpContentService(HttpClient client, String id, String endpoint, String accessToken) {
-        super(id,new HttpJsonRpcClient(client, endpoint),accessToken);
+    public HttpContentService(String id, String endpoint, String accessToken) {
+        this(id, endpoint);
+        ((HttpMessageSender)getMessageSender()).setAccessToken(accessToken);
     }
 
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((HttpMessageSender)getMessageSender()).setMessageLogger(messageLogger);
+    }
 }

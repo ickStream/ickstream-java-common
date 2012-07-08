@@ -9,6 +9,7 @@ import com.ickstream.protocol.cloud.ServerException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -27,6 +28,9 @@ public class CoreServiceTest {
             HttpResponse response = Mockito.mock(HttpResponse.class);
             HttpEntity entity = new StringEntity(IOUtils.toString(getClass().getResource(resultFile)));
             Mockito.when(response.getEntity()).thenReturn(entity);
+            StatusLine statusLine = Mockito.mock(StatusLine.class);
+            Mockito.when(statusLine.getStatusCode()).thenReturn(200);
+            Mockito.when(response.getStatusLine()).thenReturn(statusLine);
             Mockito.when(client.execute(Mockito.any(HttpPost.class))).thenReturn(response);
             return client;
         } catch (IOException e) {

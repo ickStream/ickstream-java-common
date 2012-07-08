@@ -5,67 +5,76 @@
 
 package com.ickstream.protocol.cloud.core;
 
-import com.ickstream.protocol.*;
+import com.ickstream.common.jsonrpc.HttpMessageSender;
+import com.ickstream.common.jsonrpc.MessageLogger;
+import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.protocol.ChunkedRequest;
+import com.ickstream.protocol.Service;
+import com.ickstream.protocol.ServiceInformation;
 import com.ickstream.protocol.cloud.ServerException;
 import org.apache.http.client.HttpClient;
 
-public class CoreService implements Service {
-    private JsonRpcClient jsonRpcClient;
+public class CoreService extends SyncJsonRpcClient implements Service {
 
     public CoreService(HttpClient client, String endpoint) {
-        jsonRpcClient = new HttpJsonRpcClient(client, endpoint);
+        super(new HttpMessageSender(client, endpoint));
+        ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
+    }
+
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((HttpMessageSender) getMessageSender()).setMessageLogger(messageLogger);
     }
 
     public void setAccessToken(String accessToken) {
-        jsonRpcClient.setAccessToken(accessToken);
+        ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
     }
 
     @Override
     public ServiceInformation getServiceInformation() throws ServerException {
-        return jsonRpcClient.callMethod("getServiceInformation", null, ServiceInformation.class);
+        return sendRequest("getServiceInformation", null, ServiceInformation.class);
     }
 
     public FindDevicesResponse findDevices(ChunkedRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("findDevices", request, FindDevicesResponse.class);
+        return sendRequest("findDevices", request, FindDevicesResponse.class);
     }
 
     public DeviceResponse getDevice() throws ServerException {
-        return jsonRpcClient.callMethod("getDevice", null, DeviceResponse.class);
+        return sendRequest("getDevice", null, DeviceResponse.class);
     }
 
     public DeviceResponse getDevice(DeviceRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("getDevice", request, DeviceResponse.class);
+        return sendRequest("getDevice", request, DeviceResponse.class);
     }
 
     public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("setDeviceAddress", request, DeviceResponse.class);
+        return sendRequest("setDeviceAddress", request, DeviceResponse.class);
     }
 
     public DeviceResponse setDeviceName(SetDeviceNameRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("setDeviceName", request, DeviceResponse.class);
+        return sendRequest("setDeviceName", request, DeviceResponse.class);
     }
 
     public AddDeviceResponse addDevice(AddDeviceRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("addDevice", request, AddDeviceResponse.class);
+        return sendRequest("addDevice", request, AddDeviceResponse.class);
     }
 
     public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("addDeviceWithHardwareId", request, AddDeviceResponse.class);
+        return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class);
     }
 
     public Boolean removeDevice(DeviceRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("removeDevice", request, Boolean.class);
+        return sendRequest("removeDevice", request, Boolean.class);
     }
 
     public GetUserResponse getUser() throws ServerException {
-        return jsonRpcClient.callMethod("getUser", null, GetUserResponse.class);
+        return sendRequest("getUser", null, GetUserResponse.class);
     }
 
     public FindServicesResponse findServices(FindServicesRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("findServices", request, FindServicesResponse.class);
+        return sendRequest("findServices", request, FindServicesResponse.class);
     }
 
     public FindServicesResponse findAllServices(FindServicesRequest request) throws ServerException {
-        return jsonRpcClient.callMethod("findAllServices", request, FindServicesResponse.class);
+        return sendRequest("findAllServices", request, FindServicesResponse.class);
     }
 }
