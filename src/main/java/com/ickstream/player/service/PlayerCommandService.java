@@ -47,10 +47,7 @@ public class PlayerCommandService {
         if (configuration.getPlayerName() != null) {
             player.setName(configuration.getPlayerName());
         }
-        PlayerConfigurationResponse response = new PlayerConfigurationResponse();
-        response.setPlayerName(player.getName());
-        response.setHardwareId(player.getHardwareId());
-        return response;
+        return getPlayerConfiguration();
     }
 
     public synchronized PlayerConfigurationResponse getPlayerConfiguration() {
@@ -210,7 +207,7 @@ public class PlayerCommandService {
 
 
     @JsonRpcResult("playing")
-    public synchronized Boolean play(@JsonRpcParam(name="playing") Boolean play) {
+    public synchronized Boolean play(@JsonRpcParam(name = "playing") Boolean play) {
         if (playerStatus.getPlaylistPos() != null && play != null) {
             if (!playerStatus.getPlaying() && play) {
                 if (player == null || player.play()) {
@@ -262,7 +259,7 @@ public class PlayerCommandService {
     }
 
     @JsonRpcResult("playlistPos")
-    public synchronized Integer setTrack(@JsonRpcParam(name="playlistPos") Integer playlistPos) {
+    public synchronized Integer setTrack(@JsonRpcParam(name = "playlistPos") Integer playlistPos) {
         if (playlistPos != null && playlistPos < playerStatus.getPlaylist().getItems().size()) {
             playerStatus.setPlaylistPos(playlistPos);
             playerStatus.setSeekPos(0d);
