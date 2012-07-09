@@ -12,6 +12,8 @@ public interface PlayerManager {
 
     String getName();
 
+    String getModel();
+
     String getHardwareId();
 
     Boolean play();

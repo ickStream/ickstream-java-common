@@ -57,6 +57,7 @@ public class PlayerCommandService {
         PlayerConfigurationResponse response = new PlayerConfigurationResponse();
         response.setPlayerName(player.getName());
         response.setHardwareId(player.getHardwareId());
+        response.setPlayerModel(player.getModel());
         return response;
     }
 
