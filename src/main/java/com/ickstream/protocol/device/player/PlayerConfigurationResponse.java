@@ -7,6 +7,7 @@ package com.ickstream.protocol.device.player;
 
 public class PlayerConfigurationResponse {
     String playerName;
+    String playerModel;
     String hardwareId;
 
     public String getPlayerName() {
@@ -15,6 +16,14 @@ public class PlayerConfigurationResponse {
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
+    }
+
+    public String getPlayerModel() {
+        return playerModel;
+    }
+
+    public void setPlayerModel(String playerModel) {
+        this.playerModel = playerModel;
     }
 
     public String getHardwareId() {
