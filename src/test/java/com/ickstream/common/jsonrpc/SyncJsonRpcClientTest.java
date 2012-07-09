@@ -15,8 +15,28 @@ import java.util.*;
 public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
     ObjectMapper mapper = new ObjectMapper();
 
+    private static class MessageErrorSenderImpl extends MessageSenderImpl {
+
+        public MessageErrorSenderImpl(JsonRpcResponse responseData) {
+            super(responseData);
+        }
+
+        @Override
+        public void sendMessage(String message) {
+            this.message = message;
+            try {
+                getResponseData().setId(getParamFromJson(message, "id"));
+                getResponseData().setResult(null);
+                getResponseData().setError(new JsonRpcResponse.Error(-32000, "Some message", "Some data"));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            getResponseHandler().onResponse(getResponseData());
+        }
+    }
+
     private static class MessageSenderImpl implements MessageSender {
-        private String message;
+        String message;
         private JsonRpcResponse responseData;
         private JsonRpcResponseHandler responseHandler;
 
@@ -30,6 +50,10 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
 
         public void setResponseHandler(JsonRpcResponseHandler responseHandler) {
             this.responseHandler = responseHandler;
+        }
+
+        public JsonRpcResponse getResponseData() {
+            return responseData;
         }
 
         @Override
@@ -124,7 +148,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testRequestResponse() throws IOException {
+    public void testRequestResponse() throws IOException, JsonRpcException {
         JsonRpcResponse response = new JsonRpcResponse("2.0", null);
         response.setResult(mapper.valueToTree(new Integer("2")));
 
@@ -138,9 +162,27 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertEquals(Integer.valueOf(2), result);
     }
 
+    @Test
+    public void testRequestError() throws IOException, JsonRpcException {
+        JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+        response.setResult(mapper.valueToTree(new Integer("2")));
+
+        MessageErrorSenderImpl sender = new MessageErrorSenderImpl(response);
+        SyncJsonRpcClient client = new SyncJsonRpcClient(sender);
+        sender.setResponseHandler(client);
+
+        try {
+            client.sendRequest("someMethod", 1, Integer.class);
+            Assert.assertFalse(true);
+        }catch(JsonRpcException e) {
+            Assert.assertEquals(-32000,e.getCode());
+            Assert.assertEquals("-32000: Some message",e.getMessage());
+            Assert.assertEquals("Some data",e.getData());
+        }
+    }
 
     @Test
-    public void testRequestWithDelayedResponse() throws IOException {
+    public void testRequestWithDelayedResponse() throws IOException, JsonRpcException {
         JsonRpcResponse response = new JsonRpcResponse("2.0", null);
         response.setResult(mapper.valueToTree(new Integer("2")));
 
@@ -169,9 +211,13 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
             Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    Integer result = client.sendRequest("someMethod", current, Integer.class);
-                    results.put(current, result);
-                    Assert.assertEquals(Integer.valueOf(current * 2), result);
+                    try {
+                        Integer result = client.sendRequest("someMethod", current, Integer.class);
+                        results.put(current, result);
+                        Assert.assertEquals(Integer.valueOf(current * 2), result);
+                    } catch (JsonRpcException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
             threads.add(t);

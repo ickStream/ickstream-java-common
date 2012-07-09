@@ -141,7 +141,11 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
                         params = mapper.treeToValue(message.getResult(), messageHandler.type);
                     }
                 }
-                messageHandler.handler.onMessage(params);
+                if(message.getError() != null) {
+                    messageHandler.handler.onError(message.getError().getCode(),message.getError().getMessage(),message.getError().getData());
+                }else {
+                    messageHandler.handler.onMessage(params);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -7,4 +7,5 @@ package com.ickstream.common.jsonrpc;
 
 public interface MessageHandler<T> {
     void onMessage(T message);
+    void onError(int code, String message, String data);
 }

@@ -68,7 +68,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandler<TestData>() {
+        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -93,7 +93,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), JsonRpcResponse.class, new MessageHandler<JsonRpcResponse>() {
+        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), JsonRpcResponse.class, new MessageHandlerAdapter<JsonRpcResponse>() {
             @Override
             public void onMessage(JsonRpcResponse message) {
                 Assert.assertNotNull(message.getJsonrpc());
@@ -121,7 +121,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false, false};
-        String id1 = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandler<TestData>() {
+        String id1 = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -135,7 +135,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertEquals(id1, getParamFromJson(sender.message, "id"));
         Assert.assertEquals("2", getParamFromJson(sender.message, "params.attr2"));
 
-        String id2 = client.sendRequest("someMethod", new TestData("value1", 4, true), TestData.class, new MessageHandler<TestData>() {
+        String id2 = client.sendRequest("someMethod", new TestData("value1", 4, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value5", message.getAttr1());
@@ -168,7 +168,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandler<TestData>() {
+        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -198,7 +198,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandler<TestData>() {
+        String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -243,7 +243,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -267,7 +267,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false};
-        client.addNotificationListener("someNotification", JsonRpcRequest.class, new MessageHandler<JsonRpcRequest>() {
+        client.addNotificationListener("someNotification", JsonRpcRequest.class, new MessageHandlerAdapter<JsonRpcRequest>() {
             @Override
             public void onMessage(JsonRpcRequest message) {
                 Assert.assertNull(message.getId());
@@ -293,7 +293,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {true};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -317,7 +317,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false, false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 if (message.attr2 == 1) {
@@ -358,7 +358,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false, false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -367,7 +367,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
                 validated[0] = true;
             }
         });
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -392,7 +392,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false, false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -401,7 +401,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
                 validated[0] = true;
             }
         });
-        client.addNotificationListener("someNotification", JsonNode.class, new MessageHandler<JsonNode>() {
+        client.addNotificationListener("someNotification", JsonNode.class, new MessageHandlerAdapter<JsonNode>() {
             @Override
             public void onMessage(JsonNode message) {
                 Assert.assertEquals("value1", message.get("attr1").getTextValue());
@@ -426,7 +426,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false, false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -435,7 +435,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
                 validated[0] = true;
             }
         });
-        client.addNotificationListener("someOtherNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someOtherNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -468,7 +468,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
 
         final boolean[] validated = {false, false};
-        client.addNotificationListener("someNotification", TestData.class, new MessageHandler<TestData>() {
+        client.addNotificationListener("someNotification", TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value1", message.getAttr1());
@@ -477,7 +477,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
                 validated[0] = true;
             }
         });
-        client.addNotificationListener("someOtherNotification", JsonNode.class, new MessageHandler<JsonNode>() {
+        client.addNotificationListener("someOtherNotification", JsonNode.class, new MessageHandlerAdapter<JsonNode>() {
             @Override
             public void onMessage(JsonNode message) {
                 Assert.assertEquals("value3", message.get("attr1").getTextValue());
