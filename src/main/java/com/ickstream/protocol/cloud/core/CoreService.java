@@ -6,6 +6,7 @@
 package com.ickstream.protocol.cloud.core;
 
 import com.ickstream.common.jsonrpc.HttpMessageSender;
+import com.ickstream.common.jsonrpc.JsonRpcException;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
 import com.ickstream.protocol.ChunkedRequest;
@@ -31,50 +32,98 @@ public class CoreService extends SyncJsonRpcClient implements Service {
 
     @Override
     public ServiceInformation getServiceInformation() throws ServerException {
-        return sendRequest("getServiceInformation", null, ServiceInformation.class);
+        try {
+            return sendRequest("getServiceInformation", null, ServiceInformation.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public FindDevicesResponse findDevices(ChunkedRequest request) throws ServerException {
-        return sendRequest("findDevices", request, FindDevicesResponse.class);
+        try {
+            return sendRequest("findDevices", request, FindDevicesResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public DeviceResponse getDevice() throws ServerException {
-        return sendRequest("getDevice", null, DeviceResponse.class);
+        try {
+            return sendRequest("getDevice", null, DeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public DeviceResponse getDevice(DeviceRequest request) throws ServerException {
-        return sendRequest("getDevice", request, DeviceResponse.class);
+        try {
+            return sendRequest("getDevice", request, DeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request) throws ServerException {
-        return sendRequest("setDeviceAddress", request, DeviceResponse.class);
+        try {
+            return sendRequest("setDeviceAddress", request, DeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public DeviceResponse setDeviceName(SetDeviceNameRequest request) throws ServerException {
-        return sendRequest("setDeviceName", request, DeviceResponse.class);
+        try {
+            return sendRequest("setDeviceName", request, DeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public AddDeviceResponse addDevice(AddDeviceRequest request) throws ServerException {
-        return sendRequest("addDevice", request, AddDeviceResponse.class);
+        try {
+            return sendRequest("addDevice", request, AddDeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServerException {
-        return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class);
+        try {
+            return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public Boolean removeDevice(DeviceRequest request) throws ServerException {
-        return sendRequest("removeDevice", request, Boolean.class);
+        try {
+            return sendRequest("removeDevice", request, Boolean.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public GetUserResponse getUser() throws ServerException {
-        return sendRequest("getUser", null, GetUserResponse.class);
+        try {
+            return sendRequest("getUser", null, GetUserResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public FindServicesResponse findServices(FindServicesRequest request) throws ServerException {
-        return sendRequest("findServices", request, FindServicesResponse.class);
+        try {
+            return sendRequest("findServices", request, FindServicesResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 
     public FindServicesResponse findAllServices(FindServicesRequest request) throws ServerException {
-        return sendRequest("findAllServices", request, FindServicesResponse.class);
+        try {
+            return sendRequest("findAllServices", request, FindServicesResponse.class);
+        } catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        }
     }
 }

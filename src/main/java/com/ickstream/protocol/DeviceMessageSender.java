@@ -1,15 +1,13 @@
+/*
+ * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
+ * All rights reserved.
+ */
+
 package com.ickstream.protocol;
 
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.common.jsonrpc.MessageSender;
 
-/**
- * Created with IntelliJ IDEA.
- * User: erland
- * Date: 7/7/12
- * Time: 1:28 PM
- * To change this template use File | Settings | File Templates.
- */
 public class DeviceMessageSender implements MessageSender {
     private String deviceId;
     private com.ickstream.protocol.device.MessageSender messageSender;

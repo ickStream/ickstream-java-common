@@ -5,6 +5,7 @@
 
 package com.ickstream.protocol.cloud.content;
 
+import com.ickstream.common.jsonrpc.JsonRpcException;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.common.jsonrpc.MessageSender;
 import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
@@ -31,15 +32,27 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
 
     @Override
     public ServiceInformation getServiceInformation() throws ServerException {
-        return sendRequest("getServiceInformation", null, ServiceInformation.class);
+        try {
+            return sendRequest("getServiceInformation", null, ServiceInformation.class);
+        }catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        }
     }
 
     public ProtocolDescriptionResponse getProtocolDescription() throws ServerException {
-        return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class);
+        try {
+            return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class);
+        }catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        }
     }
 
     public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServerException {
-        return sendRequest("findTopLevelItems", request, ContentResponse.class);
+        try {
+            return sendRequest("findTopLevelItems", request, ContentResponse.class);
+        }catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        }
     }
 
     public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServerException {
@@ -56,7 +69,10 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
             parameters.put("contextId", contextId);
         }
         parameters.putAll(params);
-        return sendRequest("findItems", parameters, ContentResponse.class);
-
+        try {
+            return sendRequest("findItems", parameters, ContentResponse.class);
+        }catch (JsonRpcException e) {
+            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        }
     }
 }

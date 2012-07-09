@@ -7,8 +7,6 @@ package com.ickstream.protocol.cloud.content;
 
 import com.ickstream.common.jsonrpc.HttpMessageSender;
 import com.ickstream.common.jsonrpc.MessageLogger;
-import com.ickstream.protocol.HttpJsonRpcClient;
-import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class HttpContentService extends ContentService {
