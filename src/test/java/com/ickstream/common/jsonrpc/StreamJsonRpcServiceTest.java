@@ -77,6 +77,10 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
         String testMethod(@JsonRpcParam(name = "param1") Integer param1);
 
+        String testMethod(@JsonRpcParam(name = "param1") ExtraParameters param1);
+
+        String testMethod(@JsonRpcParam(name = "param1") List<String> param1);
+
         String testMethodOnlyString(@JsonRpcParam(name = "param1") String param1);
 
         String testMethodOnlyBoolean(@JsonRpcParam(name = "param1") Boolean param1);
@@ -194,6 +198,16 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         @Override
         public String testMethod(@JsonRpcParam(name = "param1") Integer param1) {
             return "testMethodParam1Number";
+        }
+
+        @Override
+        public String testMethod(@JsonRpcParam(name = "param1") ExtraParameters param1) {
+            return "testMethodParam1Object";
+        }
+
+        @Override
+        public String testMethod(@JsonRpcParam(name = "param1") List<String> param1) {
+            return "testMethodParam1List";
         }
 
         @Override
@@ -384,7 +398,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithoutMethod() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", null, null)), new WriterOutputStream(outputString));
@@ -395,7 +409,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithoutVersion() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("", "1", "testMethod", null)), new WriterOutputStream(outputString));
@@ -406,7 +420,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithoutParameters() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", null)), new WriterOutputStream(outputString));
@@ -417,7 +431,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithoutParametersUnknownMethod() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodUnknown", null)), new WriterOutputStream(outputString));
@@ -428,7 +442,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithEmptyParameters() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{}")), new WriterOutputStream(outputString));
@@ -439,7 +453,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithSingleParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":\"something\"}")), new WriterOutputStream(outputString));
@@ -450,7 +464,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithSingleParameterWrongParameters() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOther", "{\"param1\":\"something\"}")), new WriterOutputStream(outputString));
@@ -461,7 +475,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithSingleParameterTooFewParameters() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOther", "{}")), new WriterOutputStream(outputString));
@@ -472,7 +486,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithSingleParameterWithoutOptional() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -483,7 +497,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithTwoParametersWithOptional() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":\"something\",\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -492,8 +506,30 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
+    public void testWithObjectParameter() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":{\"param2\":\"something\"}}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1Object", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayParameter() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":[\"something\"]}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1List", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
     public void testWithStringParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":\"1\"}")), new WriterOutputStream(outputString));
@@ -504,7 +540,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStringParameterOnlyMethod() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyString", "{\"param1\":\"1\"}")), new WriterOutputStream(outputString));
@@ -515,7 +551,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStringParameterOnlyMethodNotExisting() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyBoolean", "{\"param1\":\"1\"}")), new WriterOutputStream(outputString));
@@ -526,7 +562,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithNumberParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":1}")), new WriterOutputStream(outputString));
@@ -537,7 +573,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithNumberParameterOnlyMethod() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyInteger", "{\"param1\":1}")), new WriterOutputStream(outputString));
@@ -548,7 +584,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithNumberParameterOnlyMethodNotExisting() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyString", "{\"param1\":1}")), new WriterOutputStream(outputString));
@@ -559,7 +595,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithBooleanParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":true}")), new WriterOutputStream(outputString));
@@ -570,7 +606,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithBooleanParameterOnlyMethod() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyBoolean", "{\"param1\":true}")), new WriterOutputStream(outputString));
@@ -581,7 +617,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithBooleanParameterOnlyMethodNotExisting() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyInteger", "{\"param1\":true}")), new WriterOutputStream(outputString));
@@ -592,7 +628,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterStrict() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodStrict", "{\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -603,7 +639,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterStrictWithNull() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodStrict", null)), new WriterOutputStream(outputString));
@@ -614,7 +650,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterStrictWithParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodStrict", "{\"param1\":\"something\",\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -625,7 +661,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterJson() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodJson", "{\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -636,7 +672,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterJsonWithNull() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodJson", null)), new WriterOutputStream(outputString));
@@ -647,7 +683,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterJsonWithParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodJson", "{\"param1\":\"something\",\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -658,7 +694,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterMap() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodMap", "{\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -669,7 +705,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterMapWithParameter() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodMap", "{\"param1\":\"something\",\"param2\":\"something\"}")), new WriterOutputStream(outputString));
@@ -680,7 +716,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testWithStructureParameterMapWithNull() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterStructureMethodsImpl(), ParameterStructureMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodMap", null)), new WriterOutputStream(outputString));
@@ -691,7 +727,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testMethodWithUnknownException() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":null}")), new WriterOutputStream(outputString));
@@ -702,7 +738,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testMethodWithSomeException() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":\"some\"}")), new WriterOutputStream(outputString));
@@ -713,7 +749,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testMethodWithSomeOtherException() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ExceptionMethodsImpl(), ExceptionMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":\"someOther\"}")), new WriterOutputStream(outputString));
@@ -724,7 +760,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexNullResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "nullMethod", "{}")), new WriterOutputStream(outputString));
@@ -737,7 +773,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexNullResultNotReturningVoid() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "nullMethod", "{}")), new WriterOutputStream(outputString));
@@ -749,7 +785,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexVoidResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, true);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, true);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "voidMethod", "{}")), new WriterOutputStream(outputString));
@@ -762,7 +798,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexVoidResultNotReturningVoid() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class, false);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "voidMethod", "{}")), new WriterOutputStream(outputString));
@@ -772,7 +808,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexEmptyResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "emptyMethod", "{}")), new WriterOutputStream(outputString));
@@ -787,7 +823,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexFilledResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "filledMethod", "{}")), new WriterOutputStream(outputString));
@@ -804,7 +840,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexNamedFilledResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "namedResultFilledMethod", "{}")), new WriterOutputStream(outputString));
@@ -821,7 +857,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexNamedResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "namedResultMethod", "{}")), new WriterOutputStream(outputString));
@@ -833,7 +869,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexStringMapResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "stringMapMethod", "{}")), new WriterOutputStream(outputString));
@@ -846,7 +882,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexJsonMapResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "jsonMapMethod", "{}")), new WriterOutputStream(outputString));
@@ -859,7 +895,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexStringArrayResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "stringArrayMethod", "{}")), new WriterOutputStream(outputString));
@@ -873,7 +909,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
     @Test
     public void testComplexJsonArrayResult() throws IOException {
-        AbstractJsonRpcService service = new AbstractJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
+        StreamJsonRpcService service = new StreamJsonRpcService(new ComplexResultMethodsImpl(), ComplexResultMethods.class);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "jsonArrayMethod", "{}")), new WriterOutputStream(outputString));

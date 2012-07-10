@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class HttpJsonRpcService extends AbstractJsonRpcService {
+public class HttpJsonRpcService extends StreamJsonRpcService {
 
     public <I, T extends I> HttpJsonRpcService(T serviceImplementation, Class<I> serviceInterface) {
         super(serviceImplementation, serviceInterface, true);

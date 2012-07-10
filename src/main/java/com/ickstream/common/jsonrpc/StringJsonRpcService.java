@@ -10,7 +10,7 @@ import org.apache.commons.io.output.WriterOutputStream;
 
 import java.io.StringWriter;
 
-public class StringJsonRpcService extends AbstractJsonRpcService {
+public class StringJsonRpcService extends StreamJsonRpcService {
     public <I, T extends I> StringJsonRpcService(T serviceImplementation, Class<I> serviceInterface) {
         super(serviceImplementation, serviceInterface);
     }

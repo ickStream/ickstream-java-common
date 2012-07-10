@@ -14,17 +14,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.node.ObjectNode;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StreamJsonRpcService {
     private Object serviceImplementation;
@@ -32,12 +27,13 @@ public class StreamJsonRpcService {
     private ObjectMapper mapper;
     private static final Map<String, List<Method>> methodCache = new HashMap<String, List<Method>>();
     private Boolean returnOnVoid;
+    private MessageLogger messageLogger;
 
     public <T> StreamJsonRpcService(T serviceImplementation, Class<T> serviceInterface) {
         this(serviceImplementation, serviceInterface, false);
     }
 
-    public <T> StreamJsonRpcService(T serviceImplementation, Class<T> serviceInterface, Boolean returnOnVoid) {
+    public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid) {
         this.serviceImplementation = serviceImplementation;
         this.serviceInterface = serviceInterface;
         mapper = new ObjectMapper();
@@ -46,18 +42,28 @@ public class StreamJsonRpcService {
         this.returnOnVoid = returnOnVoid;
     }
 
+    public void setMessageLogger(MessageLogger messageLogger) {
+        this.messageLogger = messageLogger;
+    }
+
     protected void handle(InputStream input, OutputStream ops) {
         try {
             JsonRpcRequest request = mapper.readValue(input, JsonRpcRequest.class);
             JsonRpcResponse.Error error = null;
             JsonNode result = null;
 
+            if (messageLogger != null) {
+                messageLogger.onIncomingMessage(null, mapper.valueToTree(request).toString());
+            }
             if (StringUtils.isEmpty(request.getJsonrpc()) || StringUtils.isEmpty(request.getMethod())) {
                 JsonRpcResponse response = new JsonRpcResponse(
                         !StringUtils.isEmpty(request.getJsonrpc()) ? request.getJsonrpc() : "2.0",
                         !StringUtils.isEmpty(request.getId()) ? request.getId() : null
                 );
                 response.setError(new JsonRpcResponse.Error(-32600, "Invalid Request"));
+                if (messageLogger != null) {
+                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                }
                 mapper.writeValue(ops, response);
                 return;
             }
@@ -72,6 +78,9 @@ public class StreamJsonRpcService {
             if (methods.size() == 0) {
                 JsonRpcResponse response = new JsonRpcResponse(version, id);
                 response.setError(new JsonRpcResponse.Error(-32601, "Method not found"));
+                if (messageLogger != null) {
+                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                }
                 mapper.writeValue(ops, response);
                 return;
             }
@@ -103,7 +112,16 @@ public class StreamJsonRpcService {
                                     if (paramsNode.get(name).isBoolean()) {
                                         foundParameter = true;
                                     }
+                                } else if (Collection.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isArray()) {
+                                        foundParameter = true;
+                                    }
+                                } else {
+                                    if (paramsNode.get(name).isObject()) {
+                                        foundParameter = true;
+                                    }
                                 }
+
                             } else {
                                 foundParameter = false;
                                 if (((JsonRpcParam) annotation).optional()) {
@@ -180,7 +198,14 @@ public class StreamJsonRpcService {
                         }
                     }
                     if (error == null) {
-                        error = new JsonRpcResponse.Error(0, e.getMessage(), e.getClass().getName());
+                        if (e.getMessage() == null) {
+                            error = new JsonRpcResponse.Error(0, e.getMessage(), e.getClass().getName());
+                        } else {
+                            StringWriter stringWriter = new StringWriter();
+                            PrintWriter writer = new PrintWriter(stringWriter);
+                            e.printStackTrace(writer);
+                            error = new JsonRpcResponse.Error(0, stringWriter.toString(), e.getClass().getName());
+                        }
                     }
                 }
                 if (id == null) {
@@ -202,6 +227,9 @@ public class StreamJsonRpcService {
             }
 
             if (response != null) {
+                if (messageLogger != null) {
+                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                }
                 // write it
                 mapper.writeValue(ops, response);
             }
@@ -219,6 +247,7 @@ public class StreamJsonRpcService {
 
     private List<JsonNode> getInputAgumentsForMethod(Method method, JsonNode paramsNode) {
         List<JsonNode> params = new ArrayList<JsonNode>();
+        int i = 0;
         for (Annotation[] annotations : method.getParameterAnnotations()) {
             String name = null;
             boolean structure = false;
@@ -229,13 +258,18 @@ public class StreamJsonRpcService {
                     structure = true;
                 }
             }
-            if (name != null && paramsNode.has(name)) {
+            if (name != null && paramsNode != null && paramsNode.has(name)) {
                 params.add(paramsNode.get(name));
             } else if (structure) {
-                params.add(paramsNode);
+                if (paramsNode != null) {
+                    params.add(paramsNode);
+                } else {
+                    params.add(mapper.createObjectNode());
+                }
             } else {
                 params.add(null);
             }
+            i++;
 
         }
         return params;
