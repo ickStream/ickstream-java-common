@@ -5,14 +5,12 @@
 
 package com.ickstream.protocol.cloud.core;
 
-import com.ickstream.common.jsonrpc.HttpMessageSender;
-import com.ickstream.common.jsonrpc.JsonRpcException;
-import com.ickstream.common.jsonrpc.MessageLogger;
-import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.Service;
 import com.ickstream.protocol.ServiceInformation;
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 import org.apache.http.client.HttpClient;
 
 public class CoreService extends SyncJsonRpcClient implements Service {
@@ -31,99 +29,123 @@ public class CoreService extends SyncJsonRpcClient implements Service {
     }
 
     @Override
-    public ServiceInformation getServiceInformation() throws ServerException {
+    public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public FindDevicesResponse findDevices(ChunkedRequest request) throws ServerException {
+    public FindDevicesResponse findDevices(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("findDevices", request, FindDevicesResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public DeviceResponse getDevice() throws ServerException {
+    public DeviceResponse getDevice() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getDevice", null, DeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public DeviceResponse getDevice(DeviceRequest request) throws ServerException {
+    public DeviceResponse getDevice(DeviceRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getDevice", request, DeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request) throws ServerException {
+    public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("setDeviceAddress", request, DeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public DeviceResponse setDeviceName(SetDeviceNameRequest request) throws ServerException {
+    public DeviceResponse setDeviceName(SetDeviceNameRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("setDeviceName", request, DeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public AddDeviceResponse addDevice(AddDeviceRequest request) throws ServerException {
+    public AddDeviceResponse addDevice(AddDeviceRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("addDevice", request, AddDeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServerException {
+    public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public Boolean removeDevice(DeviceRequest request) throws ServerException {
+    public Boolean removeDevice(DeviceRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("removeDevice", request, Boolean.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public GetUserResponse getUser() throws ServerException {
+    public GetUserResponse getUser() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getUser", null, GetUserResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public FindServicesResponse findServices(FindServicesRequest request) throws ServerException {
+    public FindServicesResponse findServices(FindServicesRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("findServices", request, FindServicesResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public FindServicesResponse findAllServices(FindServicesRequest request) throws ServerException {
+    public FindServicesResponse findAllServices(FindServicesRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("findAllServices", request, FindServicesResponse.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 }

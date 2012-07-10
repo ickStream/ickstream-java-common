@@ -5,14 +5,12 @@
 
 package com.ickstream.protocol.cloud.content;
 
-import com.ickstream.common.jsonrpc.JsonRpcException;
-import com.ickstream.common.jsonrpc.MessageLogger;
-import com.ickstream.common.jsonrpc.MessageSender;
-import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.Service;
 import com.ickstream.protocol.ServiceInformation;
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,31 +29,37 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
     public abstract void setMessageLogger(MessageLogger messageLogger);
 
     @Override
-    public ServiceInformation getServiceInformation() throws ServerException {
+    public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class);
         }catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public ProtocolDescriptionResponse getProtocolDescription() throws ServerException {
+    public ProtocolDescriptionResponse getProtocolDescription() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class);
         }catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServerException {
+    public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("findTopLevelItems", request, ContentResponse.class);
         }catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServerException {
+    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {
@@ -72,7 +76,9 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
         try {
             return sendRequest("findItems", parameters, ContentResponse.class);
         }catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 }

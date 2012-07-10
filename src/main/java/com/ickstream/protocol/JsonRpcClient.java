@@ -5,7 +5,7 @@
 
 package com.ickstream.protocol;
 
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
 
 public abstract class JsonRpcClient {
     private Integer id = 1;
@@ -27,5 +27,5 @@ public abstract class JsonRpcClient {
     protected JsonHelper getJsonHelper() {
         return jsonHelper;
     }
-    public abstract <T> T callMethod(String method, Object parameters, Class<T> responseClass) throws ServerException;
+    public abstract <T> T callMethod(String method, Object parameters, Class<T> responseClass) throws ServiceException;
 }

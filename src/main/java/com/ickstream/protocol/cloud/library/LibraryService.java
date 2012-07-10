@@ -5,13 +5,11 @@
 
 package com.ickstream.protocol.cloud.library;
 
-import com.ickstream.common.jsonrpc.HttpMessageSender;
-import com.ickstream.common.jsonrpc.JsonRpcException;
-import com.ickstream.common.jsonrpc.MessageLogger;
-import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.Service;
 import com.ickstream.protocol.ServiceInformation;
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;
@@ -33,40 +31,48 @@ public class LibraryService extends SyncJsonRpcClient implements Service {
     }
 
     @Override
-    public ServiceInformation getServiceInformation() throws ServerException {
+    public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public LibraryItem getTrack(String trackId) throws ServerException {
+    public LibraryItem getTrack(String trackId) throws ServiceException, ServiceTimeoutException {
         try {
             Map<String, String> parameters = new HashMap<String, String>();
             parameters.put("trackId", trackId);
             return sendRequest("getTrack", parameters, LibraryItem.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public boolean saveTrack(LibraryItem libraryItem) throws ServerException {
+    public boolean saveTrack(LibraryItem libraryItem) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("saveTrack", libraryItem, Boolean.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
 
     }
 
-    public Boolean removeTrack(String trackId) throws ServerException {
+    public Boolean removeTrack(String trackId) throws ServiceException, ServiceTimeoutException {
         try {
             Map<String, String> parameters = new HashMap<String, String>();
             parameters.put("trackId", trackId);
             return sendRequest("removeTrack", parameters, Boolean.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 }

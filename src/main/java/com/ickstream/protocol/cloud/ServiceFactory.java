@@ -45,7 +45,9 @@ public class ServiceFactory {
                 scrobbleService.setMessageLogger(messageLogger);
                 return scrobbleService;
             }
-        } catch (ServerException e) {
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        } catch (ServiceTimeoutException e) {
             e.printStackTrace();
         }
         return null;
@@ -64,7 +66,9 @@ public class ServiceFactory {
                 libraryService.setMessageLogger(messageLogger);
                 return libraryService;
             }
-        } catch (ServerException e) {
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        } catch (ServiceTimeoutException e) {
             e.printStackTrace();
         }
         return null;

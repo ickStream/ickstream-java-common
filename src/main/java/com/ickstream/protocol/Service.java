@@ -1,7 +1,8 @@
 package com.ickstream.protocol;
 
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 
 public interface Service {
-    ServiceInformation getServiceInformation() throws ServerException;
+    ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException;
 }

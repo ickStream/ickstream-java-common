@@ -5,8 +5,8 @@
 
 package com.ickstream.protocol.cloud;
 
-public class ServerException extends Exception {
-    public ServerException(int code, String message) {
+public class ServiceException extends Exception {
+    public ServiceException(int code, String message) {
         super("Error: " + code + ", Message: " + message);
     }
 }

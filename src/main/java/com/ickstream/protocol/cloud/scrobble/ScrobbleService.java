@@ -5,13 +5,11 @@
 
 package com.ickstream.protocol.cloud.scrobble;
 
-import com.ickstream.common.jsonrpc.HttpMessageSender;
-import com.ickstream.common.jsonrpc.JsonRpcException;
-import com.ickstream.common.jsonrpc.MessageLogger;
-import com.ickstream.common.jsonrpc.SyncJsonRpcClient;
+import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.Service;
 import com.ickstream.protocol.ServiceInformation;
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 import org.apache.http.client.HttpClient;
 
 public class ScrobbleService extends SyncJsonRpcClient implements Service {
@@ -30,19 +28,23 @@ public class ScrobbleService extends SyncJsonRpcClient implements Service {
     }
 
     @Override
-    public ServiceInformation getServiceInformation() throws ServerException {
+    public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 
-    public Boolean playedTrack(PlayedItem playedItem) throws ServerException {
+    public Boolean playedTrack(PlayedItem playedItem) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("playedTrack", playedItem, Boolean.class);
         } catch (JsonRpcException e) {
-            throw new ServerException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
         }
     }
 }

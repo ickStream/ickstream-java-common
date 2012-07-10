@@ -5,7 +5,8 @@
 
 package com.ickstream.protocol.cloud.core;
 
-import com.ickstream.protocol.cloud.ServerException;
+import com.ickstream.protocol.cloud.ServiceException;
+import com.ickstream.protocol.cloud.ServiceTimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -46,7 +47,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testGetUser() throws IOException, ServerException {
+    public void testGetUser() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/GetUser.json");
         GetUserResponse response = service.getUser();
         Assert.assertNotNull(response);
@@ -55,7 +56,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testRemoveDevice() throws IOException, ServerException {
+    public void testRemoveDevice() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/RemoveDevice.json");
         Boolean success = service.removeDevice(new DeviceRequest("F75C0B6A-06DB-44B4-8558-F8842C0EEB99"));
         Assert.assertNotNull(success);
@@ -63,7 +64,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testSetDeviceName() throws IOException, ServerException {
+    public void testSetDeviceName() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/SetDeviceName.json");
         SetDeviceNameRequest request = new SetDeviceNameRequest();
         request.setDeviceId("F75C0B6A-06DB-44B4-8558-F8842C0EEB99");
@@ -77,7 +78,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testSetDeviceAddress() throws IOException, ServerException {
+    public void testSetDeviceAddress() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/SetDeviceAddress.json");
         SetDeviceAddressRequest request = new SetDeviceAddressRequest();
         request.setDeviceId("F75C0B6A-06DB-44B4-8558-F8842C0EEB99");
@@ -91,7 +92,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testGetDevice() throws IOException, ServerException {
+    public void testGetDevice() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/GetDevice.json");
         DeviceRequest request = new DeviceRequest();
         request.setDeviceId("F75C0B6A-06DB-44B4-8558-F8842C0EEB99");
@@ -104,7 +105,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testAddDevice() throws IOException, ServerException {
+    public void testAddDevice() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/AddDevice.json");
         AddDeviceRequest request = new AddDeviceRequest();
         request.setId("F75C0B6A-06DB-44B4-8558-F8842C0EEB99");
@@ -122,7 +123,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testAddDeviceWithHardwareId() throws IOException, ServerException {
+    public void testAddDeviceWithHardwareId() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/AddDeviceWithHardwareId.json");
         AddDeviceWithHardwareIdRequest request = new AddDeviceWithHardwareIdRequest();
         request.setId("F75C0B6A-06DB-44B4-8558-F8842C0EEB99");
@@ -141,7 +142,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testFindDevices() throws IOException, ServerException {
+    public void testFindDevices() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindDevices.json");
         FindDevicesResponse response = service.findDevices(null);
         Assert.assertNotNull(response);
@@ -158,7 +159,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testFindServicesForType() throws IOException, ServerException {
+    public void testFindServicesForType() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindServicesForType.json");
         FindServicesResponse response = service.findServices(new FindServicesRequest("library"));
         Assert.assertNotNull(response);
@@ -169,13 +170,13 @@ public class CoreServiceTest {
         for (ServiceResponse serviceResponse : response.getItems_loop()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
-            Assert.assertEquals(serviceResponse.getType(),"library");
+            Assert.assertEquals(serviceResponse.getType(), "library");
             Assert.assertNotNull(serviceResponse.getUrl());
         }
     }
 
     @Test
-    public void testFindServices() throws IOException, ServerException {
+    public void testFindServices() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindServices.json");
         FindServicesResponse response = service.findServices(null);
         Assert.assertNotNull(response);
@@ -192,7 +193,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testFindAllServices() throws IOException, ServerException {
+    public void testFindAllServices() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindAllServices.json");
         FindServicesResponse response = service.findAllServices(null);
         Assert.assertNotNull(response);
@@ -209,7 +210,7 @@ public class CoreServiceTest {
     }
 
     @Test
-    public void testFindAllServicesForType() throws IOException, ServerException {
+    public void testFindAllServicesForType() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/cloud/core/FindAllServicesForType.json");
         FindServicesResponse response = service.findAllServices(new FindServicesRequest("content"));
         Assert.assertNotNull(response);
@@ -220,7 +221,7 @@ public class CoreServiceTest {
         for (ServiceResponse serviceResponse : response.getItems_loop()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
-            Assert.assertEquals(serviceResponse.getType(),"content");
+            Assert.assertEquals(serviceResponse.getType(), "content");
             Assert.assertNotNull(serviceResponse.getUrl());
         }
     }
