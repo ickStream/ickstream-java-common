@@ -38,6 +38,10 @@ public class ScrobbleService extends SyncJsonRpcClient implements Service {
         }
     }
 
+    public void getServiceInformation(MessageHandler<ServiceInformation> messageHandler) {
+        sendRequest("getServiceInformation", null, ServiceInformation.class, messageHandler);
+    }
+
     public Boolean playedTrack(PlayedItem playedItem) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("playedTrack", playedItem, Boolean.class);
@@ -46,5 +50,9 @@ public class ScrobbleService extends SyncJsonRpcClient implements Service {
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
+    }
+
+    public void playedTrack(PlayedItem playedItem, MessageHandler<Boolean> messageHandler) {
+        sendRequest("playedTrack", playedItem, Boolean.class, messageHandler);
     }
 }

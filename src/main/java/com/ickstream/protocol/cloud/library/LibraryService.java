@@ -41,6 +41,10 @@ public class LibraryService extends SyncJsonRpcClient implements Service {
         }
     }
 
+    public void getServiceInformation(MessageHandler<ServiceInformation> messageHandler) {
+        sendRequest("getServiceInformation", null, ServiceInformation.class, messageHandler);
+    }
+
     public LibraryItem getTrack(String trackId) throws ServiceException, ServiceTimeoutException {
         try {
             Map<String, String> parameters = new HashMap<String, String>();
@@ -53,7 +57,13 @@ public class LibraryService extends SyncJsonRpcClient implements Service {
         }
     }
 
-    public boolean saveTrack(LibraryItem libraryItem) throws ServiceException, ServiceTimeoutException {
+    public void getTrack(String trackId, MessageHandler<LibraryItem> messageHandler) {
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("trackId", trackId);
+        sendRequest("getTrack", parameters, LibraryItem.class, messageHandler);
+    }
+
+    public Boolean saveTrack(LibraryItem libraryItem) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("saveTrack", libraryItem, Boolean.class);
         } catch (JsonRpcException e) {
@@ -62,6 +72,10 @@ public class LibraryService extends SyncJsonRpcClient implements Service {
             throw new ServiceTimeoutException(e);
         }
 
+    }
+
+    public void saveTrack(LibraryItem libraryItem, MessageHandler<Boolean> messageHandler) {
+        sendRequest("saveTrack", libraryItem, Boolean.class, messageHandler);
     }
 
     public Boolean removeTrack(String trackId) throws ServiceException, ServiceTimeoutException {
@@ -74,5 +88,11 @@ public class LibraryService extends SyncJsonRpcClient implements Service {
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
+    }
+
+    public void removeTrack(String trackId, MessageHandler<Boolean> messageHandler) {
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put("trackId", trackId);
+        sendRequest("removeTrack", parameters, Boolean.class, messageHandler);
     }
 }

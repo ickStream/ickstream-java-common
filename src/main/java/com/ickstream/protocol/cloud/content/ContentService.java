@@ -17,6 +17,7 @@ import java.util.Map;
 
 public abstract class ContentService extends SyncJsonRpcClient implements Service {
     private String id;
+
     public ContentService(String id, MessageSender messageSender) {
         super(messageSender);
         this.id = id;
@@ -32,31 +33,43 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
     public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class);
-        }catch (JsonRpcException e) {
-            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcException e) {
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
+    }
+
+    public void getServiceInformation(MessageHandler<ServiceInformation> messageHandler) {
+        sendRequest("getServiceInformation", null, ServiceInformation.class, messageHandler);
     }
 
     public ProtocolDescriptionResponse getProtocolDescription() throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class);
-        }catch (JsonRpcException e) {
-            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcException e) {
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
     }
 
+    public void getProtocolDescription(MessageHandler<ProtocolDescriptionResponse> messageHandler) {
+        sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, messageHandler);
+    }
+
     public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("findTopLevelItems", request, ContentResponse.class);
-        }catch (JsonRpcException e) {
-            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcException e) {
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
+    }
+
+    public void findTopLevelItems(ChunkedRequest request, MessageHandler<ContentResponse> messageHandler) {
+        sendRequest("findTopLevelItems", request, ContentResponse.class, messageHandler);
     }
 
     public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {
@@ -75,10 +88,27 @@ public abstract class ContentService extends SyncJsonRpcClient implements Servic
         parameters.putAll(params);
         try {
             return sendRequest("findItems", parameters, ContentResponse.class);
-        }catch (JsonRpcException e) {
-            throw new ServiceException(e.getCode(),e.getMessage()+(e.getData()!=null?"\n"+e.getData():""));
+        } catch (JsonRpcException e) {
+            throw new ServiceException(e.getCode(), e.getMessage() + (e.getData() != null ? "\n" + e.getData() : ""));
         } catch (JsonRpcTimeoutException e) {
             throw new ServiceTimeoutException(e);
         }
+    }
+
+    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        if (request != null) {
+            if (request.getCount() != null) {
+                parameters.put("count", request.getCount());
+            }
+            if (request.getOffset() != null) {
+                parameters.put("offset", request.getOffset());
+            }
+        }
+        if (contextId != null) {
+            parameters.put("contextId", contextId);
+        }
+        parameters.putAll(params);
+        sendRequest("findItems", parameters, ContentResponse.class, messageHandler);
     }
 }
