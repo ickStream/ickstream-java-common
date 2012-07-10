@@ -13,6 +13,7 @@ import java.util.List;
 public class ContentItem {
     private String id;
     private String text;
+    private String sortText;
     private String type;
     private String image;
     private List<StreamingReference> streamingRefs;
@@ -32,6 +33,14 @@ public class ContentItem {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getSortText() {
+        return sortText;
+    }
+
+    public void setSortText(String sortText) {
+        this.sortText = sortText;
     }
 
     public String getType() {
