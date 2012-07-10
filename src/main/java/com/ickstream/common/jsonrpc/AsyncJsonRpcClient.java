@@ -81,6 +81,12 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         }
     }
 
+    protected <T> void removeMessageHandler(String id) {
+        synchronized (messageHandlers) {
+            messageHandlers.remove(id);
+        }
+    }
+
     public <T> void removeNotificationListener(String method, MessageHandler<T> messageHandler) {
         synchronized (notificationHandlers) {
             List<MessageHandlerEntry> notificationHandlers = this.notificationHandlers.get(method);

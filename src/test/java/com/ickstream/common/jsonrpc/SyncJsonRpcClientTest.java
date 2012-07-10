@@ -148,7 +148,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testRequestResponse() throws IOException, JsonRpcException {
+    public void testRequestResponse() throws IOException, JsonRpcException, JsonRpcTimeoutException {
         JsonRpcResponse response = new JsonRpcResponse("2.0", null);
         response.setResult(mapper.valueToTree(new Integer("2")));
 
@@ -163,7 +163,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testRequestError() throws IOException, JsonRpcException {
+    public void testRequestError() throws IOException, JsonRpcException, JsonRpcTimeoutException {
         JsonRpcResponse response = new JsonRpcResponse("2.0", null);
         response.setResult(mapper.valueToTree(new Integer("2")));
 
@@ -182,7 +182,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testRequestWithDelayedResponse() throws IOException, JsonRpcException {
+    public void testRequestWithDelayedResponse() throws IOException, JsonRpcException, JsonRpcTimeoutException {
         JsonRpcResponse response = new JsonRpcResponse("2.0", null);
         response.setResult(mapper.valueToTree(new Integer("2")));
 
@@ -191,6 +191,39 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         sender.setResponseHandler(client);
 
         Integer result = client.sendRequest("someMethod", 1, Integer.class);
+
+        Assert.assertEquals("1", getParamFromJson(sender.message, "params"));
+        Assert.assertEquals(Integer.valueOf(2), result);
+    }
+
+    @Test
+    public void testRequestWithDelayedResponseTimeout() throws IOException, JsonRpcException {
+        JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+        response.setResult(mapper.valueToTree(new Integer("2")));
+
+        DelayedMessageSenderImpl sender = new DelayedMessageSenderImpl(response, 2000);
+        SyncJsonRpcClient client = new SyncJsonRpcClient(sender);
+        sender.setResponseHandler(client);
+
+        try {
+            client.sendRequest("someMethod", 1, Integer.class, 500);
+            Assert.assertTrue(false);
+        }catch (JsonRpcTimeoutException e) {
+            //Ok, this is the expected path
+        }
+        Assert.assertEquals("1", getParamFromJson(sender.message, "params"));
+    }
+
+    @Test
+    public void testRequestWithDelayedResponseNoTimeout() throws IOException, JsonRpcException, JsonRpcTimeoutException {
+        JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+        response.setResult(mapper.valueToTree(new Integer("2")));
+
+        DelayedMessageSenderImpl sender = new DelayedMessageSenderImpl(response, 2000);
+        SyncJsonRpcClient client = new SyncJsonRpcClient(sender);
+        sender.setResponseHandler(client);
+
+        Integer result = client.sendRequest("someMethod", 1, Integer.class, 3000);
 
         Assert.assertEquals("1", getParamFromJson(sender.message, "params"));
         Assert.assertEquals(Integer.valueOf(2), result);
@@ -216,6 +249,8 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
                         results.put(current, result);
                         Assert.assertEquals(Integer.valueOf(current * 2), result);
                     } catch (JsonRpcException e) {
+                        throw new RuntimeException(e);
+                    } catch (JsonRpcTimeoutException e) {
                         throw new RuntimeException(e);
                     }
                 }

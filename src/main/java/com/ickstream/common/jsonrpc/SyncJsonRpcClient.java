@@ -8,6 +8,7 @@ package com.ickstream.common.jsonrpc;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class SyncJsonRpcClient extends AsyncJsonRpcClient {
     public SyncJsonRpcClient(MessageSender messageSender) {
@@ -38,27 +39,42 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         }
     }
 
-    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException {
+    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer waitTime) throws JsonRpcException, JsonRpcTimeoutException {
         List<T> results = new ArrayList<T>();
         List<JsonRpcResponse.Error> errors = new ArrayList<JsonRpcResponse.Error>();
         Semaphore semaphore = new Semaphore(0);
         MessageHandler<T> messageHandler = new SynchronizedMessageHandler<T>(semaphore, results, errors);
 
-        super.sendRequest(method, params, messageResponseClass, messageHandler);
+        String id = super.sendRequest(method, params, messageResponseClass, messageHandler);
         try {
-            semaphore.acquire();
-            if(results.size()>0) {
-                return results.get(0);
+            boolean acquired;
+            if(waitTime == null) {
+                semaphore.acquire();
+                acquired = true;
             }else {
-                if(errors.size()>0 && errors.get(0)!= null) {
-                    throw new JsonRpcException(errors.get(0).getCode(),errors.get(0).getMessage(),errors.get(0).getData());
+                acquired = semaphore.tryAcquire(waitTime, TimeUnit.MILLISECONDS);
+            }
+            if(acquired) {
+                if(results.size()>0) {
+                    return results.get(0);
                 }else {
-                    throw new JsonRpcException();
+                    if(errors.size()>0 && errors.get(0)!= null) {
+                        throw new JsonRpcException(errors.get(0).getCode(),errors.get(0).getMessage(),errors.get(0).getData());
+                    }else {
+                        throw new JsonRpcException();
+                    }
                 }
+            }else {
+                removeMessageHandler(id);
+                throw new JsonRpcTimeoutException();
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
-            return null;
+            removeMessageHandler(id);
+            throw new JsonRpcTimeoutException();
         }
+    }
+
+    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException, JsonRpcTimeoutException {
+        return sendRequest(method, params, messageResponseClass, (Integer)null);
     }
 }
