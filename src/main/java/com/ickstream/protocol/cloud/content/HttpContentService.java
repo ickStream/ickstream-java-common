@@ -12,16 +12,20 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class HttpContentService extends ContentService {
 
     public HttpContentService(String id, String endpoint) {
-        super(id,new HttpMessageSender(new DefaultHttpClient(), endpoint));
-        ((HttpMessageSender)getMessageSender()).setResponseHandler(this);
+        super(id, new HttpMessageSender(new DefaultHttpClient(), endpoint));
+        ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
     public HttpContentService(String id, String endpoint, String accessToken) {
         this(id, endpoint);
-        ((HttpMessageSender)getMessageSender()).setAccessToken(accessToken);
+        ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {
-        ((HttpMessageSender)getMessageSender()).setMessageLogger(messageLogger);
+        ((HttpMessageSender) getMessageSender()).setMessageLogger(messageLogger);
+    }
+
+    public void setAccessToken(String accessToken) {
+        ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
     }
 }
