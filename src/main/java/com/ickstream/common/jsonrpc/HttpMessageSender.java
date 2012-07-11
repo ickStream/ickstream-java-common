@@ -9,11 +9,13 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class HttpMessageSender implements MessageSender {
     private String endpoint;
@@ -52,7 +54,14 @@ public class HttpMessageSender implements MessageSender {
         try {
             HttpClient httpclient = httpClient;
             HttpPost httpRequest = new HttpPost(endpoint);
-            httpRequest.setEntity(new StringEntity(message,"application/json","utf-8"));
+            try {
+                Class.forName("org.apache.http.entity.ContentType");
+                StringEntity stringEntity = new StringEntity(message, ContentType.create("application/json", Charset.forName("utf-8")));
+                httpRequest.setEntity(stringEntity);
+            } catch (ClassNotFoundException e) {
+                StringEntity stringEntity = new StringEntity(message, "utf-8");
+                httpRequest.setEntity(stringEntity);
+            }
             httpRequest.setHeader("Authorization", "OAuth " + accessToken);
             if (messageLogger != null) {
                 messageLogger.onOutgoingMessage(endpoint, message);
