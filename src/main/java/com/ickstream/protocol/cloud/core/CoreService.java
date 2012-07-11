@@ -16,7 +16,11 @@ import org.apache.http.client.HttpClient;
 public class CoreService extends AbstractSyncService implements Service {
 
     public CoreService(HttpClient client, String endpoint) {
-        super(new HttpMessageSender(client, endpoint));
+        this(client, endpoint, null);
+    }
+
+    public CoreService(HttpClient client, String endpoint, Integer defaultTimeout) {
+        super(new HttpMessageSender(client, endpoint, true), defaultTimeout);
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
@@ -29,8 +33,12 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public FindDevicesResponse findDevices(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+        return findDevices(request, (Integer) null);
+    }
+
+    public FindDevicesResponse findDevices(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("findDevices", request, FindDevicesResponse.class);
+            return sendRequest("findDevices", request, FindDevicesResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -39,12 +47,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void findDevices(ChunkedRequest request, MessageHandler<FindDevicesResponse> messageHandler) {
-        sendRequest("findDevices", request, FindDevicesResponse.class, messageHandler);
+        findDevices(request, messageHandler, null);
+    }
+
+    public void findDevices(ChunkedRequest request, MessageHandler<FindDevicesResponse> messageHandler, Integer timeout) {
+        sendRequest("findDevices", request, FindDevicesResponse.class, messageHandler, timeout);
     }
 
     public DeviceResponse getDevice() throws ServiceException, ServiceTimeoutException {
+        return getDevice((Integer) null);
+    }
+
+    public DeviceResponse getDevice(Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getDevice", null, DeviceResponse.class);
+            return sendRequest("getDevice", null, DeviceResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -53,12 +69,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void getDevice(MessageHandler<DeviceResponse> messageHandler) {
-        sendRequest("getDevice", null, DeviceResponse.class, messageHandler);
+        getDevice(messageHandler, null);
+    }
+
+    public void getDevice(MessageHandler<DeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("getDevice", null, DeviceResponse.class, messageHandler, timeout);
     }
 
     public DeviceResponse getDevice(DeviceRequest request) throws ServiceException, ServiceTimeoutException {
+        return getDevice(request, (Integer) null);
+    }
+
+    public DeviceResponse getDevice(DeviceRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getDevice", request, DeviceResponse.class);
+            return sendRequest("getDevice", request, DeviceResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -67,12 +91,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void getDevice(DeviceRequest request, MessageHandler<DeviceResponse> messageHandler) {
-        sendRequest("getDevice", request, DeviceResponse.class, messageHandler);
+        getDevice(request, messageHandler, null);
+    }
+
+    public void getDevice(DeviceRequest request, MessageHandler<DeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("getDevice", request, DeviceResponse.class, messageHandler, timeout);
     }
 
     public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request) throws ServiceException, ServiceTimeoutException {
+        return setDeviceAddress(request, (Integer) null);
+    }
+
+    public DeviceResponse setDeviceAddress(SetDeviceAddressRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("setDeviceAddress", request, DeviceResponse.class);
+            return sendRequest("setDeviceAddress", request, DeviceResponse.class, (Integer) null);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -81,12 +113,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void setDeviceAddress(SetDeviceAddressRequest request, MessageHandler<DeviceResponse> messageHandler) {
-        sendRequest("setDeviceAddress", request, DeviceResponse.class, messageHandler);
+        setDeviceAddress(request, messageHandler, null);
+    }
+
+    public void setDeviceAddress(SetDeviceAddressRequest request, MessageHandler<DeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("setDeviceAddress", request, DeviceResponse.class, messageHandler, timeout);
     }
 
     public DeviceResponse setDeviceName(SetDeviceNameRequest request) throws ServiceException, ServiceTimeoutException {
+        return setDeviceName(request, (Integer) null);
+    }
+
+    public DeviceResponse setDeviceName(SetDeviceNameRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("setDeviceName", request, DeviceResponse.class);
+            return sendRequest("setDeviceName", request, DeviceResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -95,12 +135,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void setDeviceName(SetDeviceNameRequest request, MessageHandler<DeviceResponse> messageHandler) {
-        sendRequest("setDeviceName", request, DeviceResponse.class, messageHandler);
+        setDeviceName(request, messageHandler, (Integer) null);
+    }
+
+    public void setDeviceName(SetDeviceNameRequest request, MessageHandler<DeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("setDeviceName", request, DeviceResponse.class, messageHandler, timeout);
     }
 
     public AddDeviceResponse addDevice(AddDeviceRequest request) throws ServiceException, ServiceTimeoutException {
+        return addDevice(request, (Integer) null);
+    }
+
+    public AddDeviceResponse addDevice(AddDeviceRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("addDevice", request, AddDeviceResponse.class);
+            return sendRequest("addDevice", request, AddDeviceResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -109,12 +157,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void addDevice(AddDeviceRequest request, MessageHandler<AddDeviceResponse> messageHandler) {
-        sendRequest("addDevice", request, AddDeviceResponse.class, messageHandler);
+        addDevice(request, messageHandler, (Integer) null);
+    }
+
+    public void addDevice(AddDeviceRequest request, MessageHandler<AddDeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("addDevice", request, AddDeviceResponse.class, messageHandler, timeout);
     }
 
     public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServiceException, ServiceTimeoutException {
+        return addDeviceWithHardwareId(request, (Integer) null);
+    }
+
+    public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class);
+            return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -123,12 +179,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, MessageHandler<AddDeviceResponse> messageHandler) {
-        sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class, messageHandler);
+        addDeviceWithHardwareId(request, messageHandler, (Integer) null);
+    }
+
+    public void addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, MessageHandler<AddDeviceResponse> messageHandler, Integer timeout) {
+        sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class, messageHandler, timeout);
     }
 
     public Boolean removeDevice(DeviceRequest request) throws ServiceException, ServiceTimeoutException {
+        return removeDevice(request, (Integer) null);
+    }
+
+    public Boolean removeDevice(DeviceRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("removeDevice", request, Boolean.class);
+            return sendRequest("removeDevice", request, Boolean.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -137,12 +201,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void removeDevice(DeviceRequest request, MessageHandler<Boolean> messageHandler) {
-        sendRequest("removeDevice", request, Boolean.class, messageHandler);
+        removeDevice(request, messageHandler, (Integer) null);
+    }
+
+    public void removeDevice(DeviceRequest request, MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("removeDevice", request, Boolean.class, messageHandler, timeout);
     }
 
     public GetUserResponse getUser() throws ServiceException, ServiceTimeoutException {
+        return getUser((Integer) null);
+    }
+
+    public GetUserResponse getUser(Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getUser", null, GetUserResponse.class);
+            return sendRequest("getUser", null, GetUserResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -151,12 +223,20 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void getUser(MessageHandler<GetUserResponse> messageHandler) {
-        sendRequest("getUser", null, GetUserResponse.class, messageHandler);
+        getUser(messageHandler, (Integer) null);
+    }
+
+    public void getUser(MessageHandler<GetUserResponse> messageHandler, Integer timeout) {
+        sendRequest("getUser", null, GetUserResponse.class, messageHandler, timeout);
     }
 
     public FindServicesResponse findServices(FindServicesRequest request) throws ServiceException, ServiceTimeoutException {
+        return findServices(request, (Integer) null);
+    }
+
+    public FindServicesResponse findServices(FindServicesRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("findServices", request, FindServicesResponse.class);
+            return sendRequest("findServices", request, FindServicesResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -164,13 +244,21 @@ public class CoreService extends AbstractSyncService implements Service {
         }
     }
 
-    public void findService(FindServicesRequest request, MessageHandler<FindDevicesResponse> messageHandler) {
-        sendRequest("findServices", request, FindServicesResponse.class, messageHandler);
+    public void findServices(FindServicesRequest request, MessageHandler<FindDevicesResponse> messageHandler) {
+        findServices(request, messageHandler, (Integer) null);
+    }
+
+    public void findServices(FindServicesRequest request, MessageHandler<FindDevicesResponse> messageHandler, Integer timeout) {
+        sendRequest("findServices", request, FindServicesResponse.class, messageHandler, timeout);
     }
 
     public FindServicesResponse findAllServices(FindServicesRequest request) throws ServiceException, ServiceTimeoutException {
+        return findAllServices(request, (Integer) null);
+    }
+
+    public FindServicesResponse findAllServices(FindServicesRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("findAllServices", request, FindServicesResponse.class);
+            return sendRequest("findAllServices", request, FindServicesResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -179,6 +267,10 @@ public class CoreService extends AbstractSyncService implements Service {
     }
 
     public void findAllServices(FindServicesRequest request, MessageHandler<FindServicesResponse> messageHandler) {
-        sendRequest("findAllServices", request, FindServicesResponse.class, messageHandler);
+        findAllServices(request, messageHandler, (Integer) null);
+    }
+
+    public void findAllServices(FindServicesRequest request, MessageHandler<FindServicesResponse> messageHandler, Integer timeout) {
+        sendRequest("findAllServices", request, FindServicesResponse.class, messageHandler, timeout);
     }
 }

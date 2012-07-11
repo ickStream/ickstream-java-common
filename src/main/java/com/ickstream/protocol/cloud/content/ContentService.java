@@ -19,7 +19,11 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     private String id;
 
     public ContentService(String id, MessageSender messageSender) {
-        super(messageSender);
+        this(id, messageSender, null);
+    }
+
+    public ContentService(String id, MessageSender messageSender, Integer defaultTimeout) {
+        super(messageSender, defaultTimeout);
         this.id = id;
     }
 
@@ -30,8 +34,12 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     public abstract void setMessageLogger(MessageLogger messageLogger);
 
     public ProtocolDescriptionResponse getProtocolDescription() throws ServiceException, ServiceTimeoutException {
+        return getProtocolDescription((Integer) null);
+    }
+
+    public ProtocolDescriptionResponse getProtocolDescription(Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class);
+            return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -40,12 +48,20 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     }
 
     public void getProtocolDescription(MessageHandler<ProtocolDescriptionResponse> messageHandler) {
-        sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, messageHandler);
+        getProtocolDescription(messageHandler, (Integer) null);
+    }
+
+    public void getProtocolDescription(MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout) {
+        sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, messageHandler, timeout);
     }
 
     public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+        return findTopLevelItems(request, (Integer) null);
+    }
+
+    public ContentResponse findTopLevelItems(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("findTopLevelItems", request, ContentResponse.class);
+            return sendRequest("findTopLevelItems", request, ContentResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -54,10 +70,18 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     }
 
     public void findTopLevelItems(ChunkedRequest request, MessageHandler<ContentResponse> messageHandler) {
-        sendRequest("findTopLevelItems", request, ContentResponse.class, messageHandler);
+        findTopLevelItems(request, messageHandler, (Integer) null);
+    }
+
+    public void findTopLevelItems(ChunkedRequest request, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
+        sendRequest("findTopLevelItems", request, ContentResponse.class, messageHandler, timeout);
     }
 
     public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {
+        return findItems(request, contextId, params, (Integer) null);
+    }
+
+    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params, Integer timeout) throws ServiceException, ServiceTimeoutException {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {
@@ -72,7 +96,7 @@ public abstract class ContentService extends AbstractSyncService implements Serv
         }
         parameters.putAll(params);
         try {
-            return sendRequest("findItems", parameters, ContentResponse.class);
+            return sendRequest("findItems", parameters, ContentResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -81,6 +105,10 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     }
 
     public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
+        findItems(request, contextId, params, messageHandler, (Integer) null);
+    }
+
+    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {
@@ -94,6 +122,6 @@ public abstract class ContentService extends AbstractSyncService implements Serv
             parameters.put("contextId", contextId);
         }
         parameters.putAll(params);
-        sendRequest("findItems", parameters, ContentResponse.class, messageHandler);
+        sendRequest("findItems", parameters, ContentResponse.class, messageHandler, timeout);
     }
 }

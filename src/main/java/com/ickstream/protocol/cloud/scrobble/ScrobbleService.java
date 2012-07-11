@@ -14,7 +14,11 @@ import org.apache.http.client.HttpClient;
 public class ScrobbleService extends AbstractSyncService {
 
     public ScrobbleService(HttpClient client, String endpoint) {
-        super(new HttpMessageSender(client, endpoint));
+        this(client, endpoint, null);
+    }
+
+    public ScrobbleService(HttpClient client, String endpoint, Integer defaultTimeout) {
+        super(new HttpMessageSender(client, endpoint, true), defaultTimeout);
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
@@ -27,8 +31,12 @@ public class ScrobbleService extends AbstractSyncService {
     }
 
     public Boolean playedTrack(PlayedItem playedItem) throws ServiceException, ServiceTimeoutException {
+        return playedTrack(playedItem, (Integer) null);
+    }
+
+    public Boolean playedTrack(PlayedItem playedItem, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("playedTrack", playedItem, Boolean.class);
+            return sendRequest("playedTrack", playedItem, Boolean.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -37,6 +45,10 @@ public class ScrobbleService extends AbstractSyncService {
     }
 
     public void playedTrack(PlayedItem playedItem, MessageHandler<Boolean> messageHandler) {
-        sendRequest("playedTrack", playedItem, Boolean.class, messageHandler);
+        playedTrack(playedItem, messageHandler, (Integer) null);
+    }
+
+    public void playedTrack(PlayedItem playedItem, MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("playedTrack", playedItem, Boolean.class, messageHandler, timeout);
     }
 }

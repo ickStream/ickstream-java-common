@@ -12,7 +12,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 public class HttpContentService extends ContentService {
 
     public HttpContentService(String id, String endpoint) {
-        super(id, new HttpMessageSender(new DefaultHttpClient(), endpoint));
+        super(id, new HttpMessageSender(new DefaultHttpClient(), endpoint, true));
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 

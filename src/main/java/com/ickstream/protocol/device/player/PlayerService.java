@@ -6,9 +6,9 @@
 package com.ickstream.protocol.device.player;
 
 import com.ickstream.common.jsonrpc.*;
+import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.MessageSender;
-import com.ickstream.common.jsonrpc.MessageHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,93 +32,165 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
 
         @Override
         public void sendMessage(String message) {
-            if(messageLogger != null) {
-                messageLogger.onOutgoingMessage(deviceId,message);
+            if (messageLogger != null) {
+                messageLogger.onOutgoingMessage(deviceId, message);
             }
             messageSender.sendMessage(deviceId, message);
         }
     }
 
     public PlayerService(MessageSender messageSender, String deviceId) {
-        super(new DeviceMessageSender(deviceId, messageSender));
+        this(messageSender, deviceId, null);
+    }
+
+    public PlayerService(MessageSender messageSender, String deviceId, Integer defaultTimeout) {
+        super(new DeviceMessageSender(deviceId, messageSender), defaultTimeout);
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {
-        ((DeviceMessageSender)getMessageSender()).setMessageLogger(messageLogger);
+        ((DeviceMessageSender) getMessageSender()).setMessageLogger(messageLogger);
     }
 
-    public String setPlayerConfiguration(PlayerConfigurationRequest request, MessageHandler<PlayerConfigurationResponse> messageHandler) {
-        return sendRequest("setPlayerConfiguration", request, PlayerConfigurationResponse.class, messageHandler);
+    public void setPlayerConfiguration(PlayerConfigurationRequest request, MessageHandler<PlayerConfigurationResponse> messageHandler) {
+        setPlayerConfiguration(request, messageHandler, (Integer) null);
     }
 
-    public String getPlayerConfiguration(MessageHandler<PlayerConfigurationResponse> messageHandler) {
-        return sendRequest("getPlayerConfiguration", null, PlayerConfigurationResponse.class, messageHandler);
+    public void setPlayerConfiguration(PlayerConfigurationRequest request, MessageHandler<PlayerConfigurationResponse> messageHandler, Integer timeout) {
+        sendRequest("setPlayerConfiguration", request, PlayerConfigurationResponse.class, messageHandler, timeout);
     }
 
-    public String getPlayerStatus(MessageHandler<PlayerStatusResponse> messageHandler) {
-        return sendRequest("getPlayerStatus", null, PlayerStatusResponse.class, messageHandler);
+    public void getPlayerConfiguration(MessageHandler<PlayerConfigurationResponse> messageHandler) {
+        getPlayerConfiguration(messageHandler, (Integer) null);
     }
 
-    public String play(Boolean play) {
+    public void getPlayerConfiguration(MessageHandler<PlayerConfigurationResponse> messageHandler, Integer timeout) {
+        sendRequest("getPlayerConfiguration", null, PlayerConfigurationResponse.class, messageHandler, timeout);
+    }
+
+    public void getPlayerStatus(MessageHandler<PlayerStatusResponse> messageHandler) {
+        getPlayerStatus(messageHandler, (Integer) null);
+    }
+
+    public void getPlayerStatus(MessageHandler<PlayerStatusResponse> messageHandler, Integer timeout) {
+        sendRequest("getPlayerStatus", null, PlayerStatusResponse.class, messageHandler, timeout);
+    }
+
+    public void play(Boolean play) {
+        play(play, (Integer) null);
+    }
+
+    public void play(Boolean play, Integer timeout) {
         Map<String, Boolean> parameters = new HashMap<String, Boolean>();
         parameters.put("playing", play);
-        return sendRequest("play", parameters, null, null);
+        sendRequest("play", parameters, null, null, timeout);
     }
 
-    public String getSeekPosition(MessageHandler<SeekPosition> messageHandler) {
-        return sendRequest("getSeekPosition", null, SeekPosition.class, messageHandler);
+    public void getSeekPosition(MessageHandler<SeekPosition> messageHandler) {
+        getSeekPosition(messageHandler, (Integer) null);
     }
 
-    public String setSeekPosition(SeekPosition request, MessageHandler<SeekPosition> messageHandler) {
-        return sendRequest("setSeekPosition", request, SeekPosition.class, messageHandler);
+    public void getSeekPosition(MessageHandler<SeekPosition> messageHandler, Integer timeout) {
+        sendRequest("getSeekPosition", null, SeekPosition.class, messageHandler, timeout);
     }
 
-    public String getTrack(Integer playlistPos, MessageHandler<TrackResponse> messageHandler) {
+    public void setSeekPosition(SeekPosition request, MessageHandler<SeekPosition> messageHandler) {
+        setSeekPosition(request, messageHandler, (Integer) null);
+    }
+
+    public void setSeekPosition(SeekPosition request, MessageHandler<SeekPosition> messageHandler, Integer timeout) {
+        sendRequest("setSeekPosition", request, SeekPosition.class, messageHandler, timeout);
+    }
+
+    public void getTrack(Integer playlistPos, MessageHandler<TrackResponse> messageHandler) {
+        getTrack(playlistPos, messageHandler, (Integer) null);
+    }
+
+    public void getTrack(Integer playlistPos, MessageHandler<TrackResponse> messageHandler, Integer timeout) {
         Map<String, Integer> parameters = new HashMap<String, Integer>();
         parameters.put("playlistPos", playlistPos);
-        return sendRequest("getTrack", parameters, TrackResponse.class, messageHandler);
+        sendRequest("getTrack", parameters, TrackResponse.class, messageHandler, timeout);
     }
 
-    public String setTrack(Integer playlistPos, MessageHandler<SetTrackResponse> messageHandler) {
+    public void setTrack(Integer playlistPos, MessageHandler<SetTrackResponse> messageHandler) {
+        setTrack(playlistPos, messageHandler, (Integer) null);
+    }
+
+    public void setTrack(Integer playlistPos, MessageHandler<SetTrackResponse> messageHandler, Integer timeout) {
         Map<String, Integer> parameters = new HashMap<String, Integer>();
         parameters.put("playlistPos", playlistPos);
-        return sendRequest("setTrack", parameters, SetTrackResponse.class, messageHandler);
+        sendRequest("setTrack", parameters, SetTrackResponse.class, messageHandler, timeout);
     }
 
-    public String setTrackMetadata(TrackMetadataRequest request, MessageHandler<TrackResponse> messageHandler) {
-        return sendRequest("setTrackMetadata", request, TrackResponse.class, messageHandler);
+    public void setTrackMetadata(TrackMetadataRequest request, MessageHandler<TrackResponse> messageHandler) {
+        setTrackMetadata(request, messageHandler, (Integer) null);
     }
 
-    public String getVolume(MessageHandler<VolumeResponse> messageHandler) {
-        return sendRequest("getVolume", null, VolumeResponse.class, messageHandler);
+    public void setTrackMetadata(TrackMetadataRequest request, MessageHandler<TrackResponse> messageHandler, Integer timeout) {
+        sendRequest("setTrackMetadata", request, TrackResponse.class, messageHandler, timeout);
     }
 
-    public String setVolume(VolumeRequest request, MessageHandler<VolumeResponse> messageHandler) {
-        return sendRequest("setVolume", request, VolumeResponse.class, messageHandler);
+    public void getVolume(MessageHandler<VolumeResponse> messageHandler) {
+        getVolume(messageHandler, (Integer) null);
     }
 
-    public String setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messagesHandler) {
-        return sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, messagesHandler);
+    public void getVolume(MessageHandler<VolumeResponse> messageHandler, Integer timeout) {
+        sendRequest("getVolume", null, VolumeResponse.class, messageHandler, timeout);
     }
 
-    public String getPlaylist(ChunkedRequest request, MessageHandler<PlaylistResponse> messageHandler) {
-        return sendRequest("getPlaylist", request, PlaylistResponse.class, messageHandler);
+    public void setVolume(VolumeRequest request, MessageHandler<VolumeResponse> messageHandler) {
+        setVolume(request, messageHandler, (Integer) null);
     }
 
-    public String addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
-        return sendRequest("addTracks", request, PlaylistModificationResponse.class, messageHandler);
+    public void setVolume(VolumeRequest request, MessageHandler<VolumeResponse> messageHandler, Integer timeout) {
+        sendRequest("setVolume", request, VolumeResponse.class, messageHandler, timeout);
     }
 
-    public String removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
-        return sendRequest("removeTracks", request, PlaylistModificationResponse.class, messageHandler);
+    public void setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messagesHandler) {
+        setPlaylistName(request, messagesHandler, (Integer) null);
     }
 
-    public String moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
-        return sendRequest("moveTracks", request, PlaylistModificationResponse.class, messageHandler);
+    public void setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messagesHandler, Integer timeout) {
+        sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, messagesHandler, timeout);
     }
 
-    public String setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
-        return sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler);
+    public void getPlaylist(ChunkedRequest request, MessageHandler<PlaylistResponse> messageHandler) {
+        getPlaylist(request, messageHandler, (Integer) null);
+    }
+
+    public void getPlaylist(ChunkedRequest request, MessageHandler<PlaylistResponse> messageHandler, Integer timeout) {
+        sendRequest("getPlaylist", request, PlaylistResponse.class, messageHandler, timeout);
+    }
+
+    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        addTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("addTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        removeTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("removeTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        moveTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("moveTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        setTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
     }
 
     public void addPlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> messageHandler) {
