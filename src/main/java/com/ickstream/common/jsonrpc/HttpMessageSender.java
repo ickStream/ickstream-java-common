@@ -6,7 +6,6 @@
 package com.ickstream.common.jsonrpc;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
@@ -49,27 +48,50 @@ public class HttpMessageSender implements MessageSender {
         this.messageLogger = messageLogger;
     }
 
+    private void reportInvalidJson(String message) {
+        if (responseHandler != null) {
+            JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+            response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_JSON, "Invalid JSON", message));
+            String errorString = jsonHelper.objectToString(response);
+            if (messageLogger != null) {
+                messageLogger.onIncomingMessage(endpoint, errorString);
+            }
+            responseHandler.onResponse(response);
+        }
+    }
+
     @Override
     public void sendMessage(String message) {
+        JsonRpcRequest request = jsonHelper.stringToObject(message, JsonRpcRequest.class);
+        if (request == null) {
+            reportInvalidJson(message);
+            return;
+        }
+        HttpClient httpclient = httpClient;
+        HttpPost httpRequest = new HttpPost(endpoint);
         try {
-            HttpClient httpclient = httpClient;
-            HttpPost httpRequest = new HttpPost(endpoint);
+            Class.forName("org.apache.http.entity.ContentType");
+            StringEntity stringEntity = new StringEntity(message, ContentType.create("application/json", Charset.forName("utf-8")));
+            httpRequest.setEntity(stringEntity);
+        } catch (ClassNotFoundException e) {
             try {
-                Class.forName("org.apache.http.entity.ContentType");
-                StringEntity stringEntity = new StringEntity(message, ContentType.create("application/json", Charset.forName("utf-8")));
-                httpRequest.setEntity(stringEntity);
-            } catch (ClassNotFoundException e) {
                 StringEntity stringEntity = new StringEntity(message, "utf-8");
                 httpRequest.setEntity(stringEntity);
+            } catch (UnsupportedEncodingException e1) {
+                reportInvalidJson(message);
+                return;
             }
-            httpRequest.setHeader("Authorization", "OAuth " + accessToken);
-            if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(endpoint, message);
-            }
-            HttpResponse httpResponse = httpclient.execute(httpRequest);
+        }
+        httpRequest.setHeader("Authorization", "OAuth " + accessToken);
+        if (messageLogger != null) {
+            messageLogger.onOutgoingMessage(endpoint, message);
+        }
+        HttpResponse httpResponse = null;
+        try {
+            httpResponse = httpclient.execute(httpRequest);
             if (httpResponse.getStatusLine().getStatusCode() < 400) {
                 String responseString = EntityUtils.toString(httpResponse.getEntity());
-                if (responseString != null && responseString.length() > 0) {
+                if (responseString != null && responseString.length() > 0 && responseHandler != null) {
                     if (messageLogger != null) {
                         messageLogger.onIncomingMessage(endpoint, responseString);
                     }
@@ -78,18 +100,37 @@ public class HttpMessageSender implements MessageSender {
                         responseHandler.onResponse(response);
                     }
                 }
+            } else if (httpResponse.getStatusLine().getStatusCode() == 401) {
+                if (responseHandler != null) {
+                    JsonRpcResponse response = new JsonRpcResponse(request.getJsonrpc(), request.getId());
+                    response.setError(new JsonRpcResponse.Error(JsonRpcError.UNAUTHORIZED, "Unauthorized access", null));
+                    String errorString = jsonHelper.objectToString(response);
+                    if (messageLogger != null) {
+                        messageLogger.onIncomingMessage(endpoint, errorString);
+                    }
+                    responseHandler.onResponse(response);
+                }
             } else {
-                throw new RuntimeException(httpResponse.getStatusLine().getReasonPhrase());
+                if (responseHandler != null) {
+                    JsonRpcResponse response = new JsonRpcResponse(request.getJsonrpc(), request.getId());
+                    response.setError(new JsonRpcResponse.Error(JsonRpcError.SERVICE_ERROR, httpResponse.getStatusLine().getReasonPhrase(), null));
+                    String errorString = jsonHelper.objectToString(response);
+                    if (messageLogger != null) {
+                        messageLogger.onIncomingMessage(endpoint, errorString);
+                    }
+                    responseHandler.onResponse(response);
+                }
             }
-        } catch (ClientProtocolException e) {
-            //TODO: Error handling
-            e.printStackTrace();
-        } catch (UnsupportedEncodingException e) {
-            //TODO: Error handling
-            e.printStackTrace();
         } catch (IOException e) {
-            //TODO: Error handling
-            e.printStackTrace();
+            if (responseHandler != null) {
+                JsonRpcResponse response = new JsonRpcResponse(request.getJsonrpc(), request.getId());
+                response.setError(new JsonRpcResponse.Error(JsonRpcError.SERVICE_ERROR, e.getMessage(), null));
+                String errorString = jsonHelper.objectToString(response);
+                if (messageLogger != null) {
+                    messageLogger.onIncomingMessage(endpoint, errorString);
+                }
+                responseHandler.onResponse(response);
+            }
         }
     }
 }

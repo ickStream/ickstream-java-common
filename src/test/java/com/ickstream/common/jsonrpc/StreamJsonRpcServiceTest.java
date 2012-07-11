@@ -397,6 +397,24 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
+    public void testInvalidJson() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        String jsonRequest = "" +
+                "{\n" +
+                "\t\"jsonrpc\":\"2.0\",\n" +
+                "\t\"id\":1,\n" +
+                "\t\"method\":\"testMethod\",\n" +
+                "\t\"params\":\"\n" +
+                "}";
+
+        service.handle(IOUtils.toInputStream(jsonRequest), new WriterOutputStream(outputString));
+
+        Assert.assertEquals("-32700", getParamFromJson(outputString.toString(), "error.code"));
+    }
+
+    @Test
     public void testWithoutMethod() throws IOException {
         StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();
@@ -732,7 +750,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":null}")), new WriterOutputStream(outputString));
 
-        Assert.assertEquals("0", getParamFromJson(outputString.toString(), "error.code"));
+        Assert.assertEquals("-32001", getParamFromJson(outputString.toString(), "error.code"));
         Assert.assertEquals(IllegalArgumentException.class.getName(), getParamFromJson(outputString.toString(), "error.data"));
     }
 

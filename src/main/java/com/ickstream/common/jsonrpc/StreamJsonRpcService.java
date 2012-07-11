@@ -7,9 +7,7 @@ package com.ickstream.common.jsonrpc;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.node.ObjectNode;
@@ -47,201 +45,224 @@ public class StreamJsonRpcService {
     }
 
     protected void handle(InputStream input, OutputStream ops) {
+        String id = null;
+        String version = null;
+
+        JsonRpcRequest request = null;
         try {
-            JsonRpcRequest request = mapper.readValue(input, JsonRpcRequest.class);
-            JsonRpcResponse.Error error = null;
-            JsonNode result = null;
-
+            request = mapper.readValue(input, JsonRpcRequest.class);
+        } catch (IOException e) {
+            JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+            response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_JSON, "Invalid JSON"));
             if (messageLogger != null) {
-                messageLogger.onIncomingMessage(null, mapper.valueToTree(request).toString());
+                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
             }
-            if (StringUtils.isEmpty(request.getJsonrpc()) || StringUtils.isEmpty(request.getMethod())) {
-                JsonRpcResponse response = new JsonRpcResponse(
-                        !StringUtils.isEmpty(request.getJsonrpc()) ? request.getJsonrpc() : "2.0",
-                        !StringUtils.isEmpty(request.getId()) ? request.getId() : null
-                );
-                response.setError(new JsonRpcResponse.Error(-32600, "Invalid Request"));
-                if (messageLogger != null) {
-                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
-                }
+            try {
                 mapper.writeValue(ops, response);
-                return;
+            } catch (IOException e2) {
+                e2.printStackTrace();
+                throw new RuntimeException(e2);
             }
+            return;
+        }
+        JsonRpcResponse.Error error = null;
+        JsonNode result = null;
 
-            String version = request.getJsonrpc();
-            String methodName = request.getMethod();
-            String id = request.getId();
-            JsonNode paramsNode = request.getParams();
-
-            List<Method> methods = getMethods(methodName);
-
-            if (methods.size() == 0) {
-                JsonRpcResponse response = new JsonRpcResponse(version, id);
-                response.setError(new JsonRpcResponse.Error(-32601, "Method not found"));
-                if (messageLogger != null) {
-                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
-                }
+        if (messageLogger != null) {
+            messageLogger.onIncomingMessage(null, mapper.valueToTree(request).toString());
+        }
+        if (StringUtils.isEmpty(request.getJsonrpc()) || StringUtils.isEmpty(request.getMethod())) {
+            JsonRpcResponse response = new JsonRpcResponse(
+                    !StringUtils.isEmpty(request.getJsonrpc()) ? request.getJsonrpc() : "2.0",
+                    !StringUtils.isEmpty(request.getId()) ? request.getId() : null
+            );
+            response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_REQUEST, "Invalid Request"));
+            if (messageLogger != null) {
+                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+            }
+            try {
                 mapper.writeValue(ops, response);
-                return;
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
             }
+            return;
+        }
 
-            Method matchedMethod = null;
-            Method matchingMethodWithOptionalParameters = null;
+        version = request.getJsonrpc();
+        String methodName = request.getMethod();
+        id = request.getId();
+        JsonNode paramsNode = request.getParams();
 
-            for (Method method : methods) {
-                boolean match = true;
-                boolean exactMatch = true;
-                int i = 0;
-                for (Annotation[] annotations : method.getParameterAnnotations()) {
-                    boolean foundParameter = false;
-                    boolean optionalParameter = false;
-                    for (Annotation annotation : annotations) {
-                        if (annotation instanceof JsonRpcParam) {
-                            String name = ((JsonRpcParam) annotation).name();
-                            if (paramsNode != null && paramsNode.has(name) && !paramsNode.get(name).isNull()) {
-                                Class cls = method.getParameterTypes()[i];
-                                if (Number.class.isAssignableFrom(cls)) {
-                                    if (paramsNode.get(name).isNumber()) {
-                                        foundParameter = true;
-                                    }
-                                } else if (String.class.isAssignableFrom(cls)) {
-                                    if (paramsNode.get(name).isTextual()) {
-                                        foundParameter = true;
-                                    }
-                                } else if (Boolean.class.isAssignableFrom(cls)) {
-                                    if (paramsNode.get(name).isBoolean()) {
-                                        foundParameter = true;
-                                    }
-                                } else if (Collection.class.isAssignableFrom(cls)) {
-                                    if (paramsNode.get(name).isArray()) {
-                                        foundParameter = true;
-                                    }
-                                } else {
-                                    if (paramsNode.get(name).isObject()) {
-                                        foundParameter = true;
-                                    }
+        List<Method> methods = getMethods(methodName);
+
+        if (methods.size() == 0) {
+            JsonRpcResponse response = new JsonRpcResponse(version, id);
+            response.setError(new JsonRpcResponse.Error(JsonRpcError.METHOD_NOT_FOUND, "Method not found"));
+            if (messageLogger != null) {
+                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+            }
+            try {
+                mapper.writeValue(ops, response);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
+        Method matchedMethod = null;
+        Method matchingMethodWithOptionalParameters = null;
+
+        for (Method method : methods) {
+            boolean match = true;
+            boolean exactMatch = true;
+            int i = 0;
+            for (Annotation[] annotations : method.getParameterAnnotations()) {
+                boolean foundParameter = false;
+                boolean optionalParameter = false;
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof JsonRpcParam) {
+                        String name = ((JsonRpcParam) annotation).name();
+                        if (paramsNode != null && paramsNode.has(name) && !paramsNode.get(name).isNull()) {
+                            Class cls = method.getParameterTypes()[i];
+                            if (Number.class.isAssignableFrom(cls)) {
+                                if (paramsNode.get(name).isNumber()) {
+                                    foundParameter = true;
                                 }
-
+                            } else if (String.class.isAssignableFrom(cls)) {
+                                if (paramsNode.get(name).isTextual()) {
+                                    foundParameter = true;
+                                }
+                            } else if (Boolean.class.isAssignableFrom(cls)) {
+                                if (paramsNode.get(name).isBoolean()) {
+                                    foundParameter = true;
+                                }
+                            } else if (Collection.class.isAssignableFrom(cls)) {
+                                if (paramsNode.get(name).isArray()) {
+                                    foundParameter = true;
+                                }
                             } else {
-                                foundParameter = false;
-                                if (((JsonRpcParam) annotation).optional()) {
-                                    optionalParameter = true;
+                                if (paramsNode.get(name).isObject()) {
+                                    foundParameter = true;
                                 }
                             }
-                            break;
-                        } else if (annotation instanceof JsonRpcParamStructure) {
+
+                        } else {
                             foundParameter = false;
-                            optionalParameter = true;
+                            if (((JsonRpcParam) annotation).optional()) {
+                                optionalParameter = true;
+                            }
                         }
+                        break;
+                    } else if (annotation instanceof JsonRpcParamStructure) {
+                        foundParameter = false;
+                        optionalParameter = true;
                     }
-                    if (!foundParameter) {
-                        if (!optionalParameter) {
-                            match = false;
-                            break;
-                        }
+                }
+                if (!foundParameter) {
+                    if (!optionalParameter) {
+                        match = false;
+                        break;
+                    }
+                    exactMatch = false;
+                }
+                i++;
+            }
+            if (exactMatch && match) {
+                if ((matchedMethod == null || method.getParameterTypes().length > matchedMethod.getParameterTypes().length)) {
+                    if ((paramsNode == null && method.getParameterTypes().length == 0) || (method.getParameterTypes().length == paramsNode.size())) {
+                        matchedMethod = method;
+                    } else {
                         exactMatch = false;
                     }
-                    i++;
-                }
-                if (exactMatch && match) {
-                    if ((matchedMethod == null || method.getParameterTypes().length > matchedMethod.getParameterTypes().length)) {
-                        if ((paramsNode == null && method.getParameterTypes().length == 0) || (method.getParameterTypes().length == paramsNode.size())) {
-                            matchedMethod = method;
-                        } else {
-                            exactMatch = false;
-                        }
-                    }
-                }
-                if (!exactMatch && match) {
-                    if (matchingMethodWithOptionalParameters == null || method.getParameterTypes().length > matchingMethodWithOptionalParameters.getParameterTypes().length) {
-                        matchingMethodWithOptionalParameters = method;
-                    }
                 }
             }
-            if (matchedMethod == null && matchingMethodWithOptionalParameters != null) {
-                matchedMethod = matchingMethodWithOptionalParameters;
-            }
-            Class returnType = null;
-            if (matchedMethod != null) {
-                returnType = matchedMethod.getReturnType();
-                List<JsonNode> parameters = getInputAgumentsForMethod(matchedMethod, paramsNode);
-                try {
-                    result = invokeMethod(matchedMethod, parameters);
-                    if (id == null) {
-                        // This is a notification, let's ignore the result
-                        return;
-                    }
-                    JsonRpcResult resultName = matchedMethod.getAnnotation(JsonRpcResult.class);
-                    if (resultName != null && resultName.value() != null && resultName.value().length() > 0) {
-                        ObjectNode node = mapper.createObjectNode();
-                        node.put(resultName.value(), result);
-                        result = node;
-                    }
-
-                } catch (Throwable e) {
-                    if (InvocationTargetException.class.isInstance(e)) {
-                        e = InvocationTargetException.class.cast(e).getTargetException();
-                    }
-                    if (matchedMethod.isAnnotationPresent(JsonRpcErrors.class)) {
-                        JsonRpcErrors errorMappings = matchedMethod.getAnnotation(JsonRpcErrors.class);
-                        for (JsonRpcError jsonRpcError : errorMappings.value()) {
-                            if (jsonRpcError.exception().isInstance(e)) {
-                                if (!jsonRpcError.data().equals("")) {
-                                    error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message(), jsonRpcError.data());
-                                } else if (e.getMessage() != null && e.getMessage().length() > 0) {
-                                    error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message(), e.getMessage());
-                                } else {
-                                    error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message());
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    if (error == null) {
-                        if (e.getMessage() == null) {
-                            error = new JsonRpcResponse.Error(0, e.getMessage(), e.getClass().getName());
-                        } else {
-                            StringWriter stringWriter = new StringWriter();
-                            PrintWriter writer = new PrintWriter(stringWriter);
-                            e.printStackTrace(writer);
-                            error = new JsonRpcResponse.Error(0, stringWriter.toString(), e.getClass().getName());
-                        }
-                    }
+            if (!exactMatch && match) {
+                if (matchingMethodWithOptionalParameters == null || method.getParameterTypes().length > matchingMethodWithOptionalParameters.getParameterTypes().length) {
+                    matchingMethodWithOptionalParameters = method;
                 }
+            }
+        }
+        if (matchedMethod == null && matchingMethodWithOptionalParameters != null) {
+            matchedMethod = matchingMethodWithOptionalParameters;
+        }
+        Class returnType = null;
+        if (matchedMethod != null) {
+            returnType = matchedMethod.getReturnType();
+            List<JsonNode> parameters = getInputAgumentsForMethod(matchedMethod, paramsNode);
+            try {
+                result = invokeMethod(matchedMethod, parameters);
                 if (id == null) {
-                    //This is a notification, let's ignore the result
+                    // This is a notification, let's ignore the result
                     return;
                 }
-            } else {
-                error = new JsonRpcResponse.Error(-32602, "Invalid parameter list ofr method", null);
-            }
-            JsonRpcResponse response = new JsonRpcResponse(version, id);
-            if (error == null) {
-                if (result != null || !returnType.getName().equals("void") || returnOnVoid) {
-                    response.setResult(result);
-                } else {
-                    response = null;
+                JsonRpcResult resultName = matchedMethod.getAnnotation(JsonRpcResult.class);
+                if (resultName != null && resultName.value() != null && resultName.value().length() > 0) {
+                    ObjectNode node = mapper.createObjectNode();
+                    node.put(resultName.value(), result);
+                    result = node;
                 }
-            } else if (error != null) {
-                response.setError(error);
-            }
 
-            if (response != null) {
-                if (messageLogger != null) {
-                    messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+            } catch (Throwable e) {
+                if (InvocationTargetException.class.isInstance(e)) {
+                    e = InvocationTargetException.class.cast(e).getTargetException();
                 }
-                // write it
-                mapper.writeValue(ops, response);
+                if (matchedMethod.isAnnotationPresent(JsonRpcErrors.class)) {
+                    JsonRpcErrors errorMappings = matchedMethod.getAnnotation(JsonRpcErrors.class);
+                    for (JsonRpcError jsonRpcError : errorMappings.value()) {
+                        if (jsonRpcError.exception().isInstance(e)) {
+                            if (!jsonRpcError.data().equals("")) {
+                                error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message(), jsonRpcError.data());
+                            } else if (e.getMessage() != null && e.getMessage().length() > 0) {
+                                error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message(), e.getMessage());
+                            } else {
+                                error = new JsonRpcResponse.Error(jsonRpcError.code(), jsonRpcError.message());
+                            }
+                            break;
+                        }
+                    }
+                }
+                if (error == null) {
+                    if (e.getMessage() == null) {
+                        error = new JsonRpcResponse.Error(JsonRpcError.SERVICE_ERROR, e.getMessage(), e.getClass().getName());
+                    } else {
+                        StringWriter stringWriter = new StringWriter();
+                        PrintWriter writer = new PrintWriter(stringWriter);
+                        e.printStackTrace(writer);
+                        error = new JsonRpcResponse.Error(JsonRpcError.SERVICE_ERROR, stringWriter.toString(), e.getClass().getName());
+                    }
+                }
             }
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-            //TODO: Error handling
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-            //TODO: Error handling
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO: Error handling
+            if (id == null) {
+                //This is a notification, let's ignore the result
+                return;
+            }
+        } else {
+            error = new JsonRpcResponse.Error(JsonRpcError.INVALID_PARAMS, "Invalid parameter list for method " + methodName, paramsNode.toString());
+        }
+        JsonRpcResponse response = new JsonRpcResponse(version, id);
+        if (error == null) {
+            if (result != null || !returnType.getName().equals("void") || returnOnVoid) {
+                response.setResult(result);
+            } else {
+                response = null;
+            }
+        } else if (error != null) {
+            response.setError(error);
+        }
+
+        if (response != null) {
+            if (messageLogger != null) {
+                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+            }
+            // write it
+            try {
+                mapper.writeValue(ops, response);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
         }
     }
 
