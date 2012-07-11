@@ -18,7 +18,8 @@ public class HttpJsonRpcService extends StreamJsonRpcService {
     }
 
     public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("application/json-rpc");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
 
         InputStream input = null;
         OutputStream output = response.getOutputStream();

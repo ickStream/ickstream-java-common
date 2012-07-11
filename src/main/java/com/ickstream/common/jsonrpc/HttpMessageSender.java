@@ -52,7 +52,7 @@ public class HttpMessageSender implements MessageSender {
         try {
             HttpClient httpclient = httpClient;
             HttpPost httpRequest = new HttpPost(endpoint);
-            httpRequest.setEntity(new StringEntity(message));
+            httpRequest.setEntity(new StringEntity(message,"application/json","utf-8"));
             httpRequest.setHeader("Authorization", "OAuth " + accessToken);
             if (messageLogger != null) {
                 messageLogger.onOutgoingMessage(endpoint, message);
