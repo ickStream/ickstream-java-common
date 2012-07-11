@@ -23,17 +23,28 @@ public class HttpMessageSender implements MessageSender {
     private JsonHelper jsonHelper = new JsonHelper();
     private HttpClient httpClient;
     private MessageLogger messageLogger;
+    private Boolean asynchronous = false;
 
     public HttpMessageSender(HttpClient httpClient, String endpoint) {
-        this.httpClient = httpClient;
-        this.endpoint = endpoint;
+        this(httpClient, endpoint, false);
     }
 
     public HttpMessageSender(HttpClient httpClient, String endpoint, String accessToken, JsonRpcResponseHandler responseHandler) {
+        this(httpClient, endpoint, false, accessToken, responseHandler);
+    }
+
+    public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous) {
+        this.httpClient = httpClient;
+        this.endpoint = endpoint;
+        this.asynchronous = asynchronous;
+    }
+
+    public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous, String accessToken, JsonRpcResponseHandler responseHandler) {
         this.httpClient = httpClient;
         this.endpoint = endpoint;
         this.accessToken = accessToken;
         this.responseHandler = responseHandler;
+        this.asynchronous = asynchronous;
     }
 
     public void setAccessToken(String accessToken) {
@@ -62,13 +73,13 @@ public class HttpMessageSender implements MessageSender {
 
     @Override
     public void sendMessage(String message) {
-        JsonRpcRequest request = jsonHelper.stringToObject(message, JsonRpcRequest.class);
+        final JsonRpcRequest request = jsonHelper.stringToObject(message, JsonRpcRequest.class);
         if (request == null) {
             reportInvalidJson(message);
             return;
         }
-        HttpClient httpclient = httpClient;
-        HttpPost httpRequest = new HttpPost(endpoint);
+        final HttpClient httpClient = this.httpClient;
+        final HttpPost httpRequest = new HttpPost(endpoint);
         try {
             Class.forName("org.apache.http.entity.ContentType");
             StringEntity stringEntity = new StringEntity(message, ContentType.create("application/json", Charset.forName("utf-8")));
@@ -86,9 +97,22 @@ public class HttpMessageSender implements MessageSender {
         if (messageLogger != null) {
             messageLogger.onOutgoingMessage(endpoint, message);
         }
-        HttpResponse httpResponse = null;
+
+        if (asynchronous) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    processMessage(httpClient, httpRequest, request);
+                }
+            }).start();
+        } else {
+            processMessage(httpClient, httpRequest, request);
+        }
+    }
+
+    private void processMessage(final HttpClient httpClient, final HttpPost httpRequest, final JsonRpcRequest request) {
         try {
-            httpResponse = httpclient.execute(httpRequest);
+            final HttpResponse httpResponse = httpClient.execute(httpRequest);
             if (httpResponse.getStatusLine().getStatusCode() < 400) {
                 String responseString = EntityUtils.toString(httpResponse.getEntity());
                 if (responseString != null && responseString.length() > 0 && responseHandler != null) {

@@ -102,6 +102,39 @@ public class HttpMessageSenderTest {
     }
 
     @Test
+    public void testSuccessAsynchronous() throws InterruptedException {
+        String jsonRequest = "" +
+                "{\n" +
+                "\t\"jsonrpc\":\"2.0\",\n" +
+                "\t\"id\":1,\n" +
+                "\t\"method\":\"someMethod\",\n" +
+                "\t\"params\":{}\n" +
+                "}";
+        String jsonResponse = "" +
+                "{\n" +
+                "\t\"jsonrpc\":\"2.0\",\n" +
+                "\t\"id\":1,\n" +
+                "\t\"result\":\"42\"\n" +
+                "}";
+        final boolean[] executed = {false};
+        new HttpMessageSender(createClient(ENDPOINT, jsonResponse, 200, jsonResponse), ENDPOINT, true, null, new JsonRpcResponseHandler() {
+            @Override
+            public void onResponse(JsonRpcResponse response) {
+                Assert.assertNull(response.getError());
+                Assert.assertNotNull(response.getResult());
+                Assert.assertEquals("42", response.getResult().getTextValue());
+                executed[0] = true;
+            }
+        }).sendMessage(jsonRequest);
+        int i = 0;
+        while (!executed[0] && i < 10) {
+            Thread.sleep(100);
+            i++;
+        }
+        Assert.assertTrue(executed[0]);
+    }
+
+    @Test
     public void testAuthorization() {
         String jsonRequest = "" +
                 "{\n" +
@@ -120,6 +153,33 @@ public class HttpMessageSenderTest {
                 executed[0] = true;
             }
         }).sendMessage(jsonRequest);
+        Assert.assertTrue(executed[0]);
+    }
+
+    @Test
+    public void testAuthorizationAsynchronous() throws InterruptedException {
+        String jsonRequest = "" +
+                "{\n" +
+                "\t\"jsonrpc\":\"2.0\",\n" +
+                "\t\"id\":1,\n" +
+                "\t\"method\":\"someMethod\",\n" +
+                "\t\"params\":{}\n" +
+                "}";
+        final boolean[] executed = {false};
+        new HttpMessageSender(createClient(ENDPOINT, null, 401, "Unauthorized"), ENDPOINT, true, null, new JsonRpcResponseHandler() {
+            @Override
+            public void onResponse(JsonRpcResponse response) {
+                Assert.assertNull(response.getResult());
+                Assert.assertNotNull(response.getError());
+                Assert.assertEquals(response.getError().getCode(), JsonRpcError.UNAUTHORIZED);
+                executed[0] = true;
+            }
+        }).sendMessage(jsonRequest);
+        int i = 0;
+        while (!executed[0] && i < 10) {
+            Thread.sleep(100);
+            i++;
+        }
         Assert.assertTrue(executed[0]);
     }
 

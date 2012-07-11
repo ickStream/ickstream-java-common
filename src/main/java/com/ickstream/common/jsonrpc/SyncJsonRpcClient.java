@@ -11,8 +11,15 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class SyncJsonRpcClient extends AsyncJsonRpcClient {
+    private Integer defaultTimeout = null;
+
     public SyncJsonRpcClient(MessageSender messageSender) {
         super(messageSender);
+    }
+
+    public SyncJsonRpcClient(MessageSender messageSender, Integer defaultTimeout) {
+        super(messageSender, defaultTimeout);
+        this.defaultTimeout = null;
     }
 
     private static class SynchronizedMessageHandler<T> implements MessageHandler<T> {
@@ -37,9 +44,13 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
             errors.add(new JsonRpcResponse.Error(code, message, data));
             semaphore.release();
         }
+
+        @Override
+        public void onTimeout() {
+        }
     }
 
-    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer waitTime) throws JsonRpcException, JsonRpcTimeoutException {
+    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer timeout) throws JsonRpcException, JsonRpcTimeoutException {
         List<T> results = new ArrayList<T>();
         List<JsonRpcResponse.Error> errors = new ArrayList<JsonRpcResponse.Error>();
         Semaphore semaphore = new Semaphore(0);
@@ -48,23 +59,23 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         String id = super.sendRequest(method, params, messageResponseClass, messageHandler);
         try {
             boolean acquired;
-            if(waitTime == null) {
+            if ((timeout == null && defaultTimeout == null) || (timeout != null && timeout < 0)) {
                 semaphore.acquire();
                 acquired = true;
-            }else {
-                acquired = semaphore.tryAcquire(waitTime, TimeUnit.MILLISECONDS);
+            } else {
+                acquired = semaphore.tryAcquire(timeout != null ? timeout : defaultTimeout, TimeUnit.MILLISECONDS);
             }
-            if(acquired) {
-                if(results.size()>0) {
+            if (acquired) {
+                if (results.size() > 0) {
                     return results.get(0);
-                }else {
-                    if(errors.size()>0 && errors.get(0)!= null) {
-                        throw new JsonRpcException(errors.get(0).getCode(),errors.get(0).getMessage(),errors.get(0).getData());
-                    }else {
+                } else {
+                    if (errors.size() > 0 && errors.get(0) != null) {
+                        throw new JsonRpcException(errors.get(0).getCode(), errors.get(0).getMessage(), errors.get(0).getData());
+                    } else {
                         throw new JsonRpcException();
                     }
                 }
-            }else {
+            } else {
                 removeMessageHandler(id);
                 throw new JsonRpcTimeoutException();
             }
@@ -75,6 +86,6 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
     }
 
     protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException, JsonRpcTimeoutException {
-        return sendRequest(method, params, messageResponseClass, (Integer)null);
+        return sendRequest(method, params, messageResponseClass, (Integer) null);
     }
 }

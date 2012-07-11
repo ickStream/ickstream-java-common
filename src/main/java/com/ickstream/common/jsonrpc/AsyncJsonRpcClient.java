@@ -10,10 +10,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcResponseHandler {
     private int id = 1;
@@ -21,23 +18,35 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     private ObjectMapper mapper;
     private final Map<String, MessageHandlerEntry> messageHandlers = new HashMap<String, MessageHandlerEntry>();
     private final Map<String, List<MessageHandlerEntry>> notificationHandlers = new HashMap<String, List<MessageHandlerEntry>>();
+    private Integer defaultTimeout;
 
     private static class MessageHandlerEntry {
         private Class type;
         private MessageHandler handler;
+        private Timer timer;
 
         private MessageHandlerEntry(Class type, MessageHandler handler) {
             this.type = type;
             this.handler = handler;
         }
+
+        private MessageHandlerEntry(Class type, MessageHandler handler, Timer timer) {
+            this.type = type;
+            this.handler = handler;
+            this.timer = timer;
+        }
     }
 
     public AsyncJsonRpcClient(MessageSender messageSender) {
+        this(messageSender, null);
+    }
+
+    public AsyncJsonRpcClient(MessageSender messageSender, Integer defaultTimeout) {
         this.messageSender = messageSender;
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
         mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        this.defaultTimeout = defaultTimeout;
     }
 
     protected MessageSender getMessageSender() {
@@ -49,12 +58,33 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     }
 
     protected String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
+        return sendRequest(method, params, messageResponseClass, messageHandler, null);
+    }
+
+    protected String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
         Integer id;
         synchronized (messageHandlers) {
             id = this.id;
             this.id++;
             if (messageResponseClass != null && messageHandler != null) {
-                messageHandlers.put("" + id, new MessageHandlerEntry(messageResponseClass, messageHandler));
+                if ((timeout == null && defaultTimeout == null) || (timeout != null && timeout < 0)) {
+                    messageHandlers.put("" + id, new MessageHandlerEntry(messageResponseClass, messageHandler));
+                } else {
+                    final String currentId = "" + id;
+                    messageHandlers.put(currentId, new MessageHandlerEntry(messageResponseClass, messageHandler, new Timer()));
+                    messageHandlers.get(currentId).timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            MessageHandlerEntry entry;
+                            synchronized (messageHandlers) {
+                                entry = messageHandlers.remove(currentId);
+                            }
+                            if (entry != null) {
+                                entry.handler.onTimeout();
+                            }
+                        }
+                    }, timeout != null ? timeout : defaultTimeout);
+                }
             }
         }
         JsonRpcRequest jsonRpcRequest = new JsonRpcRequest();
@@ -81,7 +111,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         }
     }
 
-    protected <T> void removeMessageHandler(String id) {
+    protected void removeMessageHandler(String id) {
         synchronized (messageHandlers) {
             messageHandlers.remove(id);
         }
@@ -138,6 +168,9 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
             messageHandler = messageHandlers.remove(message.getId());
         }
         if (messageHandler != null) {
+            if (messageHandler.timer != null) {
+                messageHandler.timer.cancel();
+            }
             try {
                 Object params = null;
                 if (messageHandler.type != null) {
@@ -147,9 +180,9 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
                         params = mapper.treeToValue(message.getResult(), messageHandler.type);
                     }
                 }
-                if(message.getError() != null) {
-                    messageHandler.handler.onError(message.getError().getCode(),message.getError().getMessage(),message.getError().getData());
-                }else {
+                if (message.getError() != null) {
+                    messageHandler.handler.onError(message.getError().getCode(), message.getError().getMessage(), message.getError().getData());
+                } else {
                     messageHandler.handler.onMessage(params);
                 }
             } catch (IOException e) {

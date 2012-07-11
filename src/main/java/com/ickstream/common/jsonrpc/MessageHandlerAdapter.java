@@ -13,6 +13,11 @@ public class MessageHandlerAdapter<T> implements MessageHandler<T> {
 
     @Override
     public void onError(int code, String message, String data) {
-        throw new RuntimeException(new JsonRpcException(code, message, data));
+        System.err.println("An error was returned: " + code + (message != null ? ":" + message : "") + (data != null ? "\n" + data : ""));
+    }
+
+    @Override
+    public void onTimeout() {
+        System.err.println("An operation was timed out");
     }
 }
