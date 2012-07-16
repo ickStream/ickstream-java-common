@@ -6,5 +6,5 @@
 package com.ickstream.common.jsonrpc;
 
 public interface JsonRpcResponseHandler {
-    void onResponse(JsonRpcResponse response);
+    boolean onResponse(JsonRpcResponse response);
 }

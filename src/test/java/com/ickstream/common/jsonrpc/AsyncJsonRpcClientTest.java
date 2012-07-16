@@ -67,7 +67,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
     public void testRequestResponse() throws IOException {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
-        final boolean[] validated = {false};
+        final boolean[] validated = {false, false};
         String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
@@ -75,7 +75,11 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
                 Assert.assertEquals(Integer.valueOf(4), message.getAttr2());
                 Assert.assertEquals(Boolean.FALSE, message.getAttr3());
                 validated[0] = true;
+            }
 
+            @Override
+            public void onFinished() {
+                validated[1] = true;
             }
         });
 
@@ -86,13 +90,14 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         response.setResult(mapper.valueToTree(new TestData("value3", 4, false)));
         client.onResponse(response);
         Assert.assertTrue(validated[0]);
+        Assert.assertTrue(validated[1]);
     }
 
     @Test
     public void testRequestResponseWithoutTimeoutTriggered() throws IOException, InterruptedException {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
-        final boolean[] validated = {false, false};
+        final boolean[] validated = {false, false, false};
         String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
@@ -106,6 +111,11 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             @Override
             public void onTimeout() {
                 validated[1] = true;
+            }
+
+            @Override
+            public void onFinished() {
+                validated[2] = true;
             }
         }, 5000);
 
@@ -119,13 +129,14 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         client.onResponse(response);
         Assert.assertTrue(validated[0]);
         Assert.assertFalse(validated[1]);
+        Assert.assertTrue(validated[2]);
     }
 
     @Test
     public void testRequestResponseWithTimeoutTriggered() throws IOException, InterruptedException {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
-        final boolean[] validated = {false, false};
+        final boolean[] validated = {false, false, false};
         String id = client.sendRequest("someMethod", new TestData("value1", 2, true), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
@@ -140,6 +151,11 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             public void onTimeout() {
                 validated[1] = true;
             }
+
+            @Override
+            public void onFinished() {
+                validated[2] = true;
+            }
         }, 100);
 
         Assert.assertEquals(id, getParamFromJson(sender.message, "id"));
@@ -152,6 +168,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         client.onResponse(response);
         Assert.assertFalse(validated[0]);
         Assert.assertTrue(validated[1]);
+        Assert.assertTrue(validated[2]);
     }
 
     @Test

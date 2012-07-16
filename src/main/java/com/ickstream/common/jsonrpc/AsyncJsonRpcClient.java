@@ -5,20 +5,15 @@
 
 package com.ickstream.common.jsonrpc;
 
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-
-import java.io.IOException;
 import java.util.*;
 
 public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcResponseHandler {
-    private int id = 1;
     private MessageSender messageSender;
-    private ObjectMapper mapper;
-    private final Map<String, MessageHandlerEntry> messageHandlers = new HashMap<String, MessageHandlerEntry>();
+    private JsonHelper jsonHelper = new JsonHelper();
+    private final Map<Object, MessageHandlerEntry> messageHandlers = new HashMap<Object, MessageHandlerEntry>();
     private final Map<String, List<MessageHandlerEntry>> notificationHandlers = new HashMap<String, List<MessageHandlerEntry>>();
     private Integer defaultTimeout;
+    private IdProvider idProvider;
 
     private static class MessageHandlerEntry {
         private Class type;
@@ -38,15 +33,25 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     }
 
     public AsyncJsonRpcClient(MessageSender messageSender) {
-        this(messageSender, null);
+        this(messageSender, null, null);
+    }
+
+    public AsyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider) {
+        this(messageSender, idProvider, null);
     }
 
     public AsyncJsonRpcClient(MessageSender messageSender, Integer defaultTimeout) {
+        this(messageSender, null, defaultTimeout);
+    }
+
+    public AsyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
         this.messageSender = messageSender;
-        mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.defaultTimeout = defaultTimeout;
+        if (idProvider == null) {
+            this.idProvider = new DefaultIdProvider();
+        } else {
+            this.idProvider = idProvider;
+        }
     }
 
     protected MessageSender getMessageSender() {
@@ -62,10 +67,9 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     }
 
     protected String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
-        Integer id;
+        Object id;
         synchronized (messageHandlers) {
-            id = this.id;
-            this.id++;
+            id = idProvider.getNextId().toString();
             if (messageResponseClass != null && messageHandler != null) {
                 if ((timeout == null && defaultTimeout == null) || (timeout != null && timeout < 0)) {
                     messageHandlers.put("" + id, new MessageHandlerEntry(messageResponseClass, messageHandler));
@@ -81,6 +85,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
                             }
                             if (entry != null) {
                                 entry.handler.onTimeout();
+                                entry.handler.onFinished();
                             }
                         }
                     }, timeout != null ? timeout : defaultTimeout);
@@ -91,14 +96,14 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         jsonRpcRequest.setId("" + id);
         jsonRpcRequest.setMethod(method);
         if (params != null) {
-            jsonRpcRequest.setParams(mapper.valueToTree(params));
+            jsonRpcRequest.setParams(jsonHelper.objectToJson(params));
         }
-        try {
-            String requestString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.valueToTree(jsonRpcRequest));
+        String requestString = jsonHelper.objectToString(jsonRpcRequest);
+        if (requestString != null) {
             messageSender.sendMessage(requestString);
             return jsonRpcRequest.getId();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            throw new RuntimeException("Unable to convert message to JSON");
         }
     }
 
@@ -136,7 +141,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     }
 
     @Override
-    public void onRequest(JsonRpcRequest message) {
+    public boolean onRequest(JsonRpcRequest message) {
         List<MessageHandlerEntry> notificationHandlers;
         synchronized (this.notificationHandlers) {
             notificationHandlers = this.notificationHandlers.get(message.getMethod());
@@ -145,24 +150,24 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         if (notificationHandlers != null) {
             Object params = null;
             for (MessageHandlerEntry notificationHandler : notificationHandlers) {
-                try {
-                    if (params == null || !params.getClass().equals(notificationHandler.getClass())) {
-                        if (notificationHandler.type.isInstance(message)) {
-                            params = message;
-                        } else {
-                            params = mapper.treeToValue(message.getParams(), notificationHandler.type);
-                        }
+                if (params == null || !params.getClass().equals(notificationHandler.getClass())) {
+                    if (notificationHandler.type.isInstance(message)) {
+                        params = message;
+                    } else {
+                        params = jsonHelper.jsonToObject(message.getParams(), notificationHandler.type);
                     }
-                    notificationHandler.handler.onMessage(params);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+                notificationHandler.handler.onMessage(params);
+                notificationHandler.handler.onFinished();
             }
+            return true;
+        } else {
+            return false;
         }
     }
 
     @Override
-    public void onResponse(JsonRpcResponse message) {
+    public boolean onResponse(JsonRpcResponse message) {
         MessageHandlerEntry messageHandler;
         synchronized (messageHandlers) {
             messageHandler = messageHandlers.remove(message.getId());
@@ -171,23 +176,23 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
             if (messageHandler.timer != null) {
                 messageHandler.timer.cancel();
             }
-            try {
-                Object params = null;
-                if (messageHandler.type != null) {
-                    if (messageHandler.type.isInstance(message)) {
-                        params = message;
-                    } else if (message.getResult() != null) {
-                        params = mapper.treeToValue(message.getResult(), messageHandler.type);
-                    }
+            Object params = null;
+            if (messageHandler.type != null) {
+                if (messageHandler.type.isInstance(message)) {
+                    params = message;
+                } else if (message.getResult() != null) {
+                    params = jsonHelper.jsonToObject(message.getResult(), messageHandler.type);
                 }
-                if (message.getError() != null) {
-                    messageHandler.handler.onError(message.getError().getCode(), message.getError().getMessage(), message.getError().getData());
-                } else {
-                    messageHandler.handler.onMessage(params);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+            if (message.getError() != null) {
+                messageHandler.handler.onError(message.getError().getCode(), message.getError().getMessage(), message.getError().getData());
+            } else {
+                messageHandler.handler.onMessage(params);
+            }
+            messageHandler.handler.onFinished();
+            return true;
+        } else {
+            return false;
         }
     }
 

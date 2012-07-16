@@ -63,11 +63,12 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, null, 200, null), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.INVALID_JSON);
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);
@@ -91,11 +92,12 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, jsonResponse, 200, jsonResponse), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getError());
                 Assert.assertNotNull(response.getResult());
                 Assert.assertEquals("42", response.getResult().getTextValue());
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);
@@ -119,11 +121,12 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, jsonResponse, 200, jsonResponse), ENDPOINT, true, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getError());
                 Assert.assertNotNull(response.getResult());
                 Assert.assertEquals("42", response.getResult().getTextValue());
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         int i = 0;
@@ -146,11 +149,12 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, null, 401, "Unauthorized"), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.UNAUTHORIZED);
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);
@@ -168,11 +172,12 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, null, 401, "Unauthorized"), ENDPOINT, true, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.UNAUTHORIZED);
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         int i = 0;
@@ -195,12 +200,13 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, null, 404, "Not found"), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.SERVICE_ERROR);
                 Assert.assertEquals(response.getError().getMessage(), "Not found");
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);
@@ -218,12 +224,13 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClient(ENDPOINT, null, 500, "Internal server error"), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.SERVICE_ERROR);
                 Assert.assertEquals(response.getError().getMessage(), "Internal server error");
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);
@@ -241,12 +248,13 @@ public class HttpMessageSenderTest {
         final boolean[] executed = {false};
         new HttpMessageSender(createClientFails(ENDPOINT, new ClientProtocolException("Some error")), ENDPOINT, null, new JsonRpcResponseHandler() {
             @Override
-            public void onResponse(JsonRpcResponse response) {
+            public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getResult());
                 Assert.assertNotNull(response.getError());
                 Assert.assertEquals(response.getError().getCode(), JsonRpcError.SERVICE_ERROR);
                 Assert.assertEquals(response.getError().getMessage(), "Some error");
                 executed[0] = true;
+                return true;
             }
         }).sendMessage(jsonRequest);
         Assert.assertTrue(executed[0]);

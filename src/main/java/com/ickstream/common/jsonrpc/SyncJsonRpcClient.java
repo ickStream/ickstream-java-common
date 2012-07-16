@@ -48,6 +48,11 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         @Override
         public void onTimeout() {
         }
+
+        @Override
+        public void onFinished() {
+            // Do nothing
+        }
     }
 
     protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer timeout) throws JsonRpcException, JsonRpcTimeoutException {

@@ -5,6 +5,6 @@
 
 package com.ickstream.common.jsonrpc;
 
-public interface JsonRpcRequestHandler {
-    boolean onRequest(JsonRpcRequest request);
+public interface IdProvider {
+    Object getNextId();
 }
