@@ -5,6 +5,7 @@
 
 package com.ickstream.protocol.cloud.core;
 
+import com.ickstream.common.jsonrpc.InstanceIdProvider;
 import com.ickstream.protocol.cloud.ServiceException;
 import com.ickstream.protocol.cloud.ServiceTimeoutException;
 import org.apache.commons.io.IOUtils;
@@ -41,7 +42,7 @@ public class CoreServiceTest {
 
 
     private CoreService getCoreService(String responseData) {
-        CoreService service = new CoreService(createClient(ENDPOINT, responseData), ENDPOINT);
+        CoreService service = new CoreService(createClient(ENDPOINT, responseData), ENDPOINT, new InstanceIdProvider());
         service.setAccessToken("2E560913-F9BB-41A2-BAC4-A6EB272500EC");
         return service;
     }

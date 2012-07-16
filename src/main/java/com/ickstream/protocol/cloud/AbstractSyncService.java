@@ -11,11 +11,19 @@ import com.ickstream.protocol.ServiceInformation;
 
 public class AbstractSyncService extends SyncJsonRpcClient implements Service {
     public AbstractSyncService(MessageSender messageSender) {
-        this(messageSender, null);
+        this(messageSender, (Integer) null);
+    }
+
+    public AbstractSyncService(MessageSender messageSender, IdProvider idProvider) {
+        this(messageSender, idProvider, null);
     }
 
     public AbstractSyncService(MessageSender messageSender, Integer defaultTimeout) {
-        super(messageSender, defaultTimeout);
+        this(messageSender, null, defaultTimeout);
+    }
+
+    public AbstractSyncService(MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
+        super(messageSender, idProvider, defaultTimeout);
     }
 
     protected ServiceException getServiceException(JsonRpcException e) throws ServiceException {

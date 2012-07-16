@@ -40,11 +40,19 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
     }
 
     public PlayerService(MessageSender messageSender, String deviceId) {
-        this(messageSender, deviceId, null);
+        this(messageSender, deviceId, (Integer) null);
+    }
+
+    public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider) {
+        this(messageSender, deviceId, idProvider, null);
     }
 
     public PlayerService(MessageSender messageSender, String deviceId, Integer defaultTimeout) {
-        super(new DeviceMessageSender(deviceId, messageSender), defaultTimeout);
+        this(messageSender, deviceId, null, defaultTimeout);
+    }
+
+    public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
+        super(new DeviceMessageSender(deviceId, messageSender), idProvider, defaultTimeout);
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {

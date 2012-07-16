@@ -19,11 +19,19 @@ public abstract class ContentService extends AbstractSyncService implements Serv
     private String id;
 
     public ContentService(String id, MessageSender messageSender) {
-        this(id, messageSender, null);
+        this(id, messageSender, (Integer) null);
+    }
+
+    public ContentService(String id, MessageSender messageSender, IdProvider idProvider) {
+        this(id, messageSender, idProvider, null);
     }
 
     public ContentService(String id, MessageSender messageSender, Integer defaultTimeout) {
-        super(messageSender, defaultTimeout);
+        this(id, messageSender, null, defaultTimeout);
+    }
+
+    public ContentService(String id, MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
+        super(messageSender, idProvider, defaultTimeout);
         this.id = id;
     }
 

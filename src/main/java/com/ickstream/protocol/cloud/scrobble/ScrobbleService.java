@@ -14,11 +14,19 @@ import org.apache.http.client.HttpClient;
 public class ScrobbleService extends AbstractSyncService {
 
     public ScrobbleService(HttpClient client, String endpoint) {
-        this(client, endpoint, null);
+        this(client, endpoint, (Integer) null);
+    }
+
+    public ScrobbleService(HttpClient client, String endpoint, IdProvider idProvider) {
+        this(client, endpoint, idProvider, null);
     }
 
     public ScrobbleService(HttpClient client, String endpoint, Integer defaultTimeout) {
-        super(new HttpMessageSender(client, endpoint, true), defaultTimeout);
+        this(client, endpoint, null, defaultTimeout);
+    }
+
+    public ScrobbleService(HttpClient client, String endpoint, IdProvider idProvider, Integer defaultTimeout) {
+        super(new HttpMessageSender(client, endpoint, true), idProvider, defaultTimeout);
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 

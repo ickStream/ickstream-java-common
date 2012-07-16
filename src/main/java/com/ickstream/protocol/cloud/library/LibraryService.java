@@ -18,11 +18,19 @@ import java.util.Map;
 public class LibraryService extends AbstractSyncService implements Service {
 
     public LibraryService(HttpClient client, String endpoint) {
-        this(client, endpoint, null);
+        this(client, endpoint, (Integer) null);
+    }
+
+    public LibraryService(HttpClient client, String endpoint, IdProvider idProvider) {
+        this(client, endpoint, idProvider, null);
     }
 
     public LibraryService(HttpClient client, String endpoint, Integer defaultTimeout) {
-        super(new HttpMessageSender(client, endpoint, true), defaultTimeout);
+        this(client, endpoint, null, defaultTimeout);
+    }
+
+    public LibraryService(HttpClient client, String endpoint, IdProvider idProvider, Integer defaultTimeout) {
+        super(new HttpMessageSender(client, endpoint, true), idProvider, defaultTimeout);
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
