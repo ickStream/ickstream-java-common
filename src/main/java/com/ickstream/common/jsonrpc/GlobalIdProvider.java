@@ -5,7 +5,7 @@
 
 package com.ickstream.common.jsonrpc;
 
-public class DefaultIdProvider implements IdProvider {
+public class GlobalIdProvider implements IdProvider {
     private static int id = 0;
     private final static Object syncObject = new Object();
 

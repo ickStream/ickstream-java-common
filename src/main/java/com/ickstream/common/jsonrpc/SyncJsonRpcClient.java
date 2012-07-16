@@ -17,8 +17,16 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         super(messageSender);
     }
 
+    public SyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider) {
+        super(messageSender, idProvider);
+    }
+
     public SyncJsonRpcClient(MessageSender messageSender, Integer defaultTimeout) {
-        super(messageSender, defaultTimeout);
+        this(messageSender, null, defaultTimeout);
+    }
+
+    public SyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
+        super(messageSender, idProvider, defaultTimeout);
         this.defaultTimeout = null;
     }
 

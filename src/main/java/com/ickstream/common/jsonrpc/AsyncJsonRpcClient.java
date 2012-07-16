@@ -48,7 +48,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         this.messageSender = messageSender;
         this.defaultTimeout = defaultTimeout;
         if (idProvider == null) {
-            this.idProvider = new DefaultIdProvider();
+            this.idProvider = new GlobalIdProvider();
         } else {
             this.idProvider = idProvider;
         }
