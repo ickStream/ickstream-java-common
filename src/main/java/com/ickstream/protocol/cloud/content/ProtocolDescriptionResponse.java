@@ -5,34 +5,18 @@
 
 package com.ickstream.protocol.cloud.content;
 
+import com.ickstream.protocol.ChunkedResponse;
+
 import java.util.List;
 
-public class ProtocolDescriptionResponse {
-    private String contextId;
-    private String name;
-    private List<RequestDescription> supportedRequests;
+public class ProtocolDescriptionResponse extends ChunkedResponse {
+    private List<ProtocolDescriptionResponseContext> items_loop;
 
-    public String getContextId() {
-        return contextId;
+    public List<ProtocolDescriptionResponseContext> getItems_loop() {
+        return items_loop;
     }
 
-    public void setContextId(String contextId) {
-        this.contextId = contextId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<RequestDescription> getSupportedRequests() {
-        return supportedRequests;
-    }
-
-    public void setSupportedRequests(List<RequestDescription> supportedRequests) {
-        this.supportedRequests = supportedRequests;
+    public void setItems_loop(List<ProtocolDescriptionResponseContext> items_loop) {
+        this.items_loop = items_loop;
     }
 }

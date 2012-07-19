@@ -41,13 +41,13 @@ public abstract class ContentService extends AbstractSyncService implements Serv
 
     public abstract void setMessageLogger(MessageLogger messageLogger);
 
-    public ProtocolDescriptionResponse getProtocolDescription() throws ServiceException, ServiceTimeoutException {
-        return getProtocolDescription((Integer) null);
+    public ProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+        return getProtocolDescription(request, (Integer) null);
     }
 
-    public ProtocolDescriptionResponse getProtocolDescription(Integer timeout) throws ServiceException, ServiceTimeoutException {
+    public ProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, timeout);
+            return sendRequest("getProtocolDescription", request, ProtocolDescriptionResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -55,12 +55,12 @@ public abstract class ContentService extends AbstractSyncService implements Serv
         }
     }
 
-    public void getProtocolDescription(MessageHandler<ProtocolDescriptionResponse> messageHandler) {
-        getProtocolDescription(messageHandler, (Integer) null);
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler) {
+        getProtocolDescription(request, messageHandler, (Integer) null);
     }
 
-    public void getProtocolDescription(MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout) {
-        sendRequest("getProtocolDescription", null, ProtocolDescriptionResponse.class, messageHandler, timeout);
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout) {
+        sendRequest("getProtocolDescription", request, ProtocolDescriptionResponse.class, messageHandler, timeout);
     }
 
     public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
