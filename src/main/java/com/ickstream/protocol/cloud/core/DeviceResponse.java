@@ -10,6 +10,7 @@ public class DeviceResponse {
     private String name;
     private String model;
     private String address;
+    private String publicAddress;
 
     public String getId() {
         return id;
@@ -41,5 +42,13 @@ public class DeviceResponse {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public String getPublicAddress() {
+        return publicAddress;
+    }
+
+    public void setPublicAddress(String publicAddress) {
+        this.publicAddress = publicAddress;
     }
 }
