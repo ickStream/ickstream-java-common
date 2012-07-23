@@ -11,7 +11,10 @@ import com.ickstream.protocol.cloud.core.FindServicesRequest;
 import com.ickstream.protocol.cloud.core.FindServicesResponse;
 import com.ickstream.protocol.cloud.library.LibraryService;
 import com.ickstream.protocol.cloud.scrobble.ScrobbleService;
+import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 public class ServiceFactory {
     private static final String CORESERVICE_ENDPOINT = "http://ickstream.isaksson.info/ickstream-cloud-core/jsonrpc";
@@ -26,10 +29,19 @@ public class ServiceFactory {
     }
 
     public static CoreService getCoreService(String accessToken, MessageLogger messageLogger) {
-        CoreService coreService = new CoreService(new DefaultHttpClient(), getEndpoint());
+        CoreService coreService = new CoreService(createHttpClient(), getEndpoint());
         coreService.setAccessToken(accessToken);
         coreService.setMessageLogger(messageLogger);
         return coreService;
+    }
+
+    private static HttpClient createHttpClient() {
+        try {
+            Class.forName("org.apache.http.impl.conn.PoolingClientConnectionManager");
+            return new DefaultHttpClient(new PoolingClientConnectionManager());
+        } catch (ClassNotFoundException e) {
+            return new DefaultHttpClient(new ThreadSafeClientConnManager());
+        }
     }
 
     public static CoreService getCoreService(String accessToken) {
