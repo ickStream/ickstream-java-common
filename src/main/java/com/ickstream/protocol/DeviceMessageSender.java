@@ -10,10 +10,10 @@ import com.ickstream.common.jsonrpc.MessageSender;
 
 public class DeviceMessageSender implements MessageSender {
     private String deviceId;
-    private com.ickstream.protocol.device.MessageSender messageSender;
+    private com.ickstream.common.ickdiscovery.MessageSender messageSender;
     private MessageLogger messageLogger;
 
-    public DeviceMessageSender(String deviceId, com.ickstream.protocol.device.MessageSender messageSender) {
+    public DeviceMessageSender(String deviceId, com.ickstream.common.ickdiscovery.MessageSender messageSender) {
         this.deviceId = deviceId;
         this.messageSender = messageSender;
     }

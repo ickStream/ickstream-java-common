@@ -7,36 +7,14 @@ package com.ickstream.protocol.device.player;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.ChunkedRequest;
-import com.ickstream.protocol.device.MessageSender;
+import com.ickstream.common.ickdiscovery.MessageSender;
+import com.ickstream.protocol.DeviceMessageSender;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponseHandler, JsonRpcRequestHandler {
     private String deviceId;
-
-    private static class DeviceMessageSender implements com.ickstream.common.jsonrpc.MessageSender {
-        private String deviceId;
-        private MessageSender messageSender;
-        private MessageLogger messageLogger;
-
-        private DeviceMessageSender(String deviceId, MessageSender messageSender) {
-            this.deviceId = deviceId;
-            this.messageSender = messageSender;
-        }
-
-        public void setMessageLogger(MessageLogger messageLogger) {
-            this.messageLogger = messageLogger;
-        }
-
-        @Override
-        public void sendMessage(String message) {
-            if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(deviceId, message);
-            }
-            messageSender.sendMessage(deviceId, message);
-        }
-    }
 
     public PlayerService(MessageSender messageSender, String deviceId) {
         this(messageSender, deviceId, (Integer) null);
