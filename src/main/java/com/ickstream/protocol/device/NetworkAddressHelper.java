@@ -14,25 +14,34 @@ import java.util.Enumeration;
 
 public class NetworkAddressHelper {
     public static String getNetworkAddress() {
-        String currentAddress = null;
+        InetAddress currentInetAddress = getInetAddress();
+        if (currentInetAddress != null) {
+            return currentInetAddress.getHostAddress();
+        } else {
+            return "127.0.0.1";
+        }
+    }
+
+    private static InetAddress getInetAddress() {
+        InetAddress currentAddress = null;
         try {
             InetAddress addrs[] = InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
 
 
             for (InetAddress addr : addrs) {
                 if (!addr.isLoopbackAddress() && addr.isSiteLocalAddress()) {
-                    currentAddress = addr.getHostAddress();
+                    currentAddress = addr;
                     break;
                 }
             }
-            if (currentAddress == null || currentAddress.length() == 0) {
+            if (currentAddress == null || currentAddress.getHostAddress() == null || currentAddress.getHostAddress().length() == 0) {
                 try {
                     Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
                     for (NetworkInterface iface : Collections.list(ifaces)) {
                         Enumeration<InetAddress> raddrs = iface.getInetAddresses();
                         for (InetAddress raddr : Collections.list(raddrs)) {
                             if (!raddr.isLoopbackAddress() && raddr.isSiteLocalAddress()) {
-                                currentAddress = raddr.getHostAddress();
+                                currentAddress = raddr;
                                 break;
                             }
                         }
@@ -43,9 +52,28 @@ public class NetworkAddressHelper {
             }
         } catch (UnknownHostException e) {
         }
-        if (currentAddress == null || currentAddress.trim().length() == 0) {
-            currentAddress = "127.0.0.1";
+        if (currentAddress != null && currentAddress.getHostAddress() != null && currentAddress.getHostAddress().length() > 0) {
+            return currentAddress;
         }
-        return currentAddress;
+        return null;
+    }
+
+    public static String getNetworkHardwareAddress() {
+        InetAddress currentInetAddress = getInetAddress();
+        if (currentInetAddress != null) {
+            try {
+                byte[] hardwareAddress = NetworkInterface.getByInetAddress(currentInetAddress).getHardwareAddress();
+                if (hardwareAddress != null) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < hardwareAddress.length; i++) {
+                        sb.append(String.format("%02X%s", hardwareAddress[i], (i < hardwareAddress.length - 1) ? "-" : ""));
+                    }
+                    return sb.toString();
+                }
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
     }
 }
