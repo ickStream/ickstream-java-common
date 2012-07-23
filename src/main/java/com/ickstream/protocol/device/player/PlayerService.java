@@ -6,7 +6,6 @@
 package com.ickstream.protocol.device.player;
 
 import com.ickstream.common.jsonrpc.*;
-import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.ChunkedRequest;
 import com.ickstream.protocol.device.MessageSender;
 
@@ -14,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponseHandler, JsonRpcRequestHandler {
-    private Integer id = 1;
+    private String deviceId;
 
     private static class DeviceMessageSender implements com.ickstream.common.jsonrpc.MessageSender {
         private String deviceId;
@@ -53,6 +52,7 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
 
     public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
         super(new DeviceMessageSender(deviceId, messageSender), idProvider, defaultTimeout);
+        this.deviceId = deviceId;
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {
@@ -201,19 +201,19 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
         sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
     }
 
-    public void addPlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> messageHandler) {
-        addNotificationListener("playerStatusChanged", PlayerStatusResponse.class, messageHandler);
+    public void addPlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> listener) {
+        addNotificationListener("playerStatusChanged", PlayerStatusResponse.class, listener);
     }
 
-    public void removePlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> messageHandler) {
-        removeNotificationListener("playerStatusChanged", messageHandler);
+    public void removePlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> listener) {
+        removeNotificationListener("playerStatusChanged", listener);
     }
 
-    public void addPlaylistChangedListener(MessageHandler<PlaylistChangedNotification> messageHandler) {
-        addNotificationListener("playlistChanged", PlaylistChangedNotification.class, messageHandler);
+    public void addPlaylistChangedListener(MessageHandler<PlaylistChangedNotification> listener) {
+        addNotificationListener("playlistChanged", PlaylistChangedNotification.class, listener);
     }
 
-    public void removePlaylistChangedListener(MessageHandler<PlaylistChangedNotification> messageHandler) {
-        removeNotificationListener("playlistChanged", messageHandler);
+    public void removePlaylistChangedListener(MessageHandler<PlaylistChangedNotification> listener) {
+        removeNotificationListener("playlistChanged", listener);
     }
 }
