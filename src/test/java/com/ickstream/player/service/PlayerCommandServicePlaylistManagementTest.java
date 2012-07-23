@@ -7,8 +7,8 @@ package com.ickstream.player.service;
 
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.player.model.Playlist;
-import com.ickstream.protocol.ChunkedRequest;
-import com.ickstream.protocol.device.player.*;
+import com.ickstream.protocol.common.ChunkedRequest;
+import com.ickstream.protocol.service.player.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 

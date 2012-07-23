@@ -9,8 +9,8 @@ import com.ickstream.common.jsonrpc.JsonRpcParam;
 import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
 import com.ickstream.common.jsonrpc.JsonRpcResult;
 import com.ickstream.player.model.PlayerStatus;
-import com.ickstream.protocol.ChunkedRequest;
-import com.ickstream.protocol.device.player.*;
+import com.ickstream.protocol.common.ChunkedRequest;
+import com.ickstream.protocol.service.player.*;
 
 import java.util.*;
 

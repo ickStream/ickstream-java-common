@@ -5,7 +5,7 @@
 
 package com.ickstream.player.model;
 
-import com.ickstream.protocol.device.player.PlaylistItem;
+import com.ickstream.protocol.service.player.PlaylistItem;
 
 public class PlayerStatus {
     private Long changedTimestamp = System.currentTimeMillis();

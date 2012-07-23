@@ -8,8 +8,8 @@ package com.ickstream.player.service;
 import com.ickstream.common.jsonrpc.JsonHelper;
 import com.ickstream.common.jsonrpc.JsonRpcRequest;
 import com.ickstream.common.jsonrpc.MessageSender;
-import com.ickstream.protocol.device.player.PlayerStatusResponse;
-import com.ickstream.protocol.device.player.PlaylistChangedNotification;
+import com.ickstream.protocol.service.player.PlayerStatusResponse;
+import com.ickstream.protocol.service.player.PlaylistChangedNotification;
 
 public class PlayerNotificationSender {
     private MessageSender messageSender;
