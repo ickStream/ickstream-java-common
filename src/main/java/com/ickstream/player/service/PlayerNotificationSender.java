@@ -7,7 +7,7 @@ package com.ickstream.player.service;
 
 import com.ickstream.common.jsonrpc.JsonHelper;
 import com.ickstream.common.jsonrpc.JsonRpcRequest;
-import com.ickstream.protocol.device.MessageSender;
+import com.ickstream.common.jsonrpc.MessageSender;
 import com.ickstream.protocol.device.player.PlayerStatusResponse;
 import com.ickstream.protocol.device.player.PlaylistChangedNotification;
 
