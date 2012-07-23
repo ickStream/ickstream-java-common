@@ -34,9 +34,7 @@ public class HttpMessageSender implements MessageSender {
     }
 
     public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous) {
-        this.httpClient = httpClient;
-        this.endpoint = endpoint;
-        this.asynchronous = asynchronous;
+        this(httpClient, endpoint, asynchronous, null, null);
     }
 
     public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous, String accessToken, JsonRpcResponseHandler responseHandler) {
