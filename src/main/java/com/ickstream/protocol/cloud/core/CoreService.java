@@ -252,11 +252,11 @@ public class CoreService extends AbstractSyncService implements Service {
         }
     }
 
-    public void findServices(FindServicesRequest request, MessageHandler<FindDevicesResponse> messageHandler) {
+    public void findServices(FindServicesRequest request, MessageHandler<FindServicesResponse> messageHandler) {
         findServices(request, messageHandler, (Integer) null);
     }
 
-    public void findServices(FindServicesRequest request, MessageHandler<FindDevicesResponse> messageHandler, Integer timeout) {
+    public void findServices(FindServicesRequest request, MessageHandler<FindServicesResponse> messageHandler, Integer timeout) {
         sendRequest("findServices", request, FindServicesResponse.class, messageHandler, timeout);
     }
 
