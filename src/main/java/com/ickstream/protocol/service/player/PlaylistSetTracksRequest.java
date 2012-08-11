@@ -12,7 +12,7 @@ public class PlaylistSetTracksRequest {
     private String playlistId;
     private String playlistName;
     private Integer playlistPos;
-    private List<PlaylistItem> tracks_loop = new ArrayList<PlaylistItem>();
+    private List<PlaylistItem> items = new ArrayList<PlaylistItem>();
 
     public PlaylistSetTracksRequest() {
     }
@@ -22,11 +22,11 @@ public class PlaylistSetTracksRequest {
         this.playlistName = playlistName;
     }
 
-    public PlaylistSetTracksRequest(String playlistId, String playlistName, Integer playlistPos, List<PlaylistItem> tracks_loop) {
+    public PlaylistSetTracksRequest(String playlistId, String playlistName, Integer playlistPos, List<PlaylistItem> items) {
         this.playlistId = playlistId;
         this.playlistName = playlistName;
         this.playlistPos = playlistPos;
-        this.tracks_loop = tracks_loop;
+        this.items = items;
     }
 
     public String getPlaylistId() {
@@ -53,11 +53,11 @@ public class PlaylistSetTracksRequest {
         this.playlistPos = playlistPos;
     }
 
-    public List<PlaylistItem> getTracks_loop() {
-        return tracks_loop;
+    public List<PlaylistItem> getItems() {
+        return items;
     }
 
-    public void setTracks_loop(List<PlaylistItem> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public void setItems(List<PlaylistItem> items) {
+        this.items = items;
     }
 }

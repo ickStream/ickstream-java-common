@@ -12,14 +12,14 @@ import java.util.List;
 
 public class ContentResponse extends ChunkedResponse {
     private Long expirationTimestamp;
-    private List<ContentItem> items_loop;
+    private List<ContentItem> items;
 
-    public List<ContentItem> getItems_loop() {
-        return items_loop;
+    public List<ContentItem> getItems() {
+        return items;
     }
 
-    public void setItems_loop(List<ContentItem> items_loop) {
-        this.items_loop = items_loop;
+    public void setItems(List<ContentItem> items) {
+        this.items = items;
     }
 
     public Long getExpirationTimestamp() {

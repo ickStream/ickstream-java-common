@@ -5,7 +5,7 @@
     "offset" : 0,
     "count" : 2,
     "countAll": 2,
-    "items_loop": [
+    "items": [
         {
             "id": "0CA286CC-993F-4B90-B44A-3E6DB00C89B0",
             "name": "Test Device 1",

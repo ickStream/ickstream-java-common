@@ -10,18 +10,18 @@ import java.util.List;
 
 public class PlaylistAddTracksRequest {
     private Integer playlistPos;
-    private List<PlaylistItem> tracks_loop = new ArrayList<PlaylistItem>();
+    private List<PlaylistItem> items = new ArrayList<PlaylistItem>();
 
     public PlaylistAddTracksRequest() {
     }
 
     public PlaylistAddTracksRequest(List<PlaylistItem> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+        this.items = tracks_loop;
     }
 
-    public PlaylistAddTracksRequest(Integer playlistPos, List<PlaylistItem> tracks_loop) {
+    public PlaylistAddTracksRequest(Integer playlistPos, List<PlaylistItem> items) {
         this.playlistPos = playlistPos;
-        this.tracks_loop = tracks_loop;
+        this.items = items;
     }
 
     public Integer getPlaylistPos() {
@@ -32,11 +32,11 @@ public class PlaylistAddTracksRequest {
         this.playlistPos = playlistPos;
     }
 
-    public List<PlaylistItem> getTracks_loop() {
-        return tracks_loop;
+    public List<PlaylistItem> getItems() {
+        return items;
     }
 
-    public void setTracks_loop(List<PlaylistItem> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public void setItems(List<PlaylistItem> items) {
+        this.items = items;
     }
 }

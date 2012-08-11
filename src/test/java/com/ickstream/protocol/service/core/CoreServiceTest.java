@@ -149,9 +149,9 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCount(), new Integer(2));
         Assert.assertEquals(response.getCountAll(), new Integer(2));
-        Assert.assertNotNull(response.getItems_loop());
-        Assert.assertEquals(response.getItems_loop().size(), 2);
-        for (DeviceResponse deviceResponse : response.getItems_loop()) {
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 2);
+        for (DeviceResponse deviceResponse : response.getItems()) {
             Assert.assertNotNull(deviceResponse.getId());
             Assert.assertNotNull(deviceResponse.getName());
             Assert.assertNotNull(deviceResponse.getModel());
@@ -166,9 +166,9 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCount(), new Integer(1));
         Assert.assertEquals(response.getCountAll(), new Integer(1));
-        Assert.assertNotNull(response.getItems_loop());
-        Assert.assertEquals(response.getItems_loop().size(), 1);
-        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 1);
+        for (ServiceResponse serviceResponse : response.getItems()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
             Assert.assertEquals(serviceResponse.getType(), "library");
@@ -183,9 +183,9 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCount(), new Integer(2));
         Assert.assertEquals(response.getCountAll(), new Integer(2));
-        Assert.assertNotNull(response.getItems_loop());
-        Assert.assertEquals(response.getItems_loop().size(), 2);
-        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 2);
+        for (ServiceResponse serviceResponse : response.getItems()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
             Assert.assertNotNull(serviceResponse.getType());
@@ -200,9 +200,9 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCount(), new Integer(3));
         Assert.assertEquals(response.getCountAll(), new Integer(3));
-        Assert.assertNotNull(response.getItems_loop());
-        Assert.assertEquals(response.getItems_loop().size(), 3);
-        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 3);
+        for (ServiceResponse serviceResponse : response.getItems()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
             Assert.assertNotNull(serviceResponse.getType());
@@ -217,9 +217,9 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getCount(), new Integer(2));
         Assert.assertEquals(response.getCountAll(), new Integer(2));
-        Assert.assertNotNull(response.getItems_loop());
-        Assert.assertEquals(response.getItems_loop().size(), 2);
-        for (ServiceResponse serviceResponse : response.getItems_loop()) {
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 2);
+        for (ServiceResponse serviceResponse : response.getItems()) {
             Assert.assertNotNull(serviceResponse.getId());
             Assert.assertNotNull(serviceResponse.getName());
             Assert.assertEquals(serviceResponse.getType(), "content");

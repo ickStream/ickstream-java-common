@@ -9,20 +9,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PlaylistRemoveTracksRequest {
-    private List<PlaylistItemReference> tracks_loop = new ArrayList<PlaylistItemReference>();
+    private List<PlaylistItemReference> items = new ArrayList<PlaylistItemReference>();
 
     public PlaylistRemoveTracksRequest() {
     }
 
-    public PlaylistRemoveTracksRequest(List<PlaylistItemReference> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public PlaylistRemoveTracksRequest(List<PlaylistItemReference> items) {
+        this.items = items;
     }
 
-    public List<PlaylistItemReference> getTracks_loop() {
-        return tracks_loop;
+    public List<PlaylistItemReference> getItems() {
+        return items;
     }
 
-    public void setTracks_loop(List<PlaylistItemReference> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public void setItems(List<PlaylistItemReference> items) {
+        this.items = items;
     }
 }

@@ -61,8 +61,8 @@ public class ServiceFactory {
     public static ScrobbleService getScrobbleService(String accessToken, MessageLogger messageLogger) {
         try {
             FindServicesResponse response = getCoreService(accessToken, messageLogger).findServices(new FindServicesRequest("scrobble"));
-            if (response != null && response.getItems_loop().size() > 0) {
-                ScrobbleService scrobbleService = new ScrobbleService(new DefaultHttpClient(), response.getItems_loop().get(0).getUrl());
+            if (response != null && response.getItems().size() > 0) {
+                ScrobbleService scrobbleService = new ScrobbleService(new DefaultHttpClient(), response.getItems().get(0).getUrl());
                 scrobbleService.setAccessToken(accessToken);
                 scrobbleService.setMessageLogger(messageLogger);
                 return scrobbleService;
@@ -82,8 +82,8 @@ public class ServiceFactory {
     public static LibraryService getLibraryService(String accessToken, MessageLogger messageLogger) {
         try {
             FindServicesResponse response = getCoreService(accessToken, messageLogger).findServices(new FindServicesRequest("librarymanagement"));
-            if (response != null && response.getItems_loop().size() > 0) {
-                LibraryService libraryService = new LibraryService(new DefaultHttpClient(), response.getItems_loop().get(0).getUrl());
+            if (response != null && response.getItems().size() > 0) {
+                LibraryService libraryService = new LibraryService(new DefaultHttpClient(), response.getItems().get(0).getUrl());
                 libraryService.setAccessToken(accessToken);
                 libraryService.setMessageLogger(messageLogger);
                 return libraryService;

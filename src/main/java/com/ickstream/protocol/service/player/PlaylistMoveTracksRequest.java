@@ -10,14 +10,14 @@ import java.util.List;
 
 public class PlaylistMoveTracksRequest {
     private Integer playlistPos;
-    private List<PlaylistItemReference> tracks_loop = new ArrayList<PlaylistItemReference>();
+    private List<PlaylistItemReference> items = new ArrayList<PlaylistItemReference>();
 
     public PlaylistMoveTracksRequest() {
     }
 
-    public PlaylistMoveTracksRequest(Integer playlistPos, List<PlaylistItemReference> tracks_loop) {
+    public PlaylistMoveTracksRequest(Integer playlistPos, List<PlaylistItemReference> items) {
         this.playlistPos = playlistPos;
-        this.tracks_loop = tracks_loop;
+        this.items = items;
     }
 
     public Integer getPlaylistPos() {
@@ -28,11 +28,11 @@ public class PlaylistMoveTracksRequest {
         this.playlistPos = playlistPos;
     }
 
-    public List<PlaylistItemReference> getTracks_loop() {
-        return tracks_loop;
+    public List<PlaylistItemReference> getItems() {
+        return items;
     }
 
-    public void setTracks_loop(List<PlaylistItemReference> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public void setItems(List<PlaylistItemReference> items) {
+        this.items = items;
     }
 }

@@ -13,7 +13,7 @@ public class PlaylistResponse extends ChunkedResponse {
     private Long lastChanged;
     private String playlistId;
     private String playlistName;
-    private List<PlaylistItem> tracks_loop;
+    private List<PlaylistItem> items;
 
     public String getPlaylistId() {
         return playlistId;
@@ -39,11 +39,11 @@ public class PlaylistResponse extends ChunkedResponse {
         this.lastChanged = lastChanged;
     }
 
-    public List<PlaylistItem> getTracks_loop() {
-        return tracks_loop;
+    public List<PlaylistItem> getItems() {
+        return items;
     }
 
-    public void setTracks_loop(List<PlaylistItem> tracks_loop) {
-        this.tracks_loop = tracks_loop;
+    public void setItems(List<PlaylistItem> items) {
+        this.items = items;
     }
 }

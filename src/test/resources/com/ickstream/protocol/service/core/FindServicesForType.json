@@ -5,7 +5,7 @@
     "offset" : 0,
     "count" : 1,
     "countAll": 1,
-    "items_loop": [
+    "items": [
         {
             "id": "service2",
             "name": "Service 2",

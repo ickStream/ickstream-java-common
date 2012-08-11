@@ -10,13 +10,13 @@ import com.ickstream.protocol.common.ChunkedResponse;
 import java.util.List;
 
 public class FindDevicesResponse extends ChunkedResponse {
-    private List<DeviceResponse> items_loop;
+    private List<DeviceResponse> items;
 
-    public List<DeviceResponse> getItems_loop() {
-        return items_loop;
+    public List<DeviceResponse> getItems() {
+        return items;
     }
 
-    public void setItems_loop(List<DeviceResponse> items_loop) {
-        this.items_loop = items_loop;
+    public void setItems(List<DeviceResponse> items) {
+        this.items = items;
     }
 }
