@@ -71,10 +71,10 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
         Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), status.getPlaylist().getItems().size());
-        Assert.assertEquals(playlist.getTracks_loop().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(2).getId(), status.getPlaylist().getItems().get(2).getId());
+        Assert.assertEquals(playlist.getItems().size(), status.getPlaylist().getItems().size());
+        Assert.assertEquals(playlist.getItems().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
+        Assert.assertEquals(playlist.getItems().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
+        Assert.assertEquals(playlist.getItems().get(2).getId(), status.getPlaylist().getItems().get(2).getId());
     }
 
     @Test
@@ -89,8 +89,8 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
         Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), status.getPlaylist().getItems().size());
-        Assert.assertEquals(playlist.getTracks_loop().size(), 0);
+        Assert.assertEquals(playlist.getItems().size(), status.getPlaylist().getItems().size());
+        Assert.assertEquals(playlist.getItems().size(), 0);
     }
 
     @Test
@@ -106,10 +106,10 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertNull(playlist.getPlaylistId());
         Assert.assertNull(playlist.getPlaylistName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), status.getPlaylist().getItems().size());
-        Assert.assertEquals(playlist.getTracks_loop().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(2).getId(), status.getPlaylist().getItems().get(2).getId());
+        Assert.assertEquals(playlist.getItems().size(), status.getPlaylist().getItems().size());
+        Assert.assertEquals(playlist.getItems().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
+        Assert.assertEquals(playlist.getItems().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
+        Assert.assertEquals(playlist.getItems().get(2).getId(), status.getPlaylist().getItems().get(2).getId());
     }
 
     @Test
@@ -124,9 +124,9 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
         Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), status.getPlaylist().getItems().size() - 1);
-        Assert.assertEquals(playlist.getTracks_loop().get(0).getId(), status.getPlaylist().getItems().get(1).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(1).getId(), status.getPlaylist().getItems().get(2).getId());
+        Assert.assertEquals(playlist.getItems().size(), status.getPlaylist().getItems().size() - 1);
+        Assert.assertEquals(playlist.getItems().get(0).getId(), status.getPlaylist().getItems().get(1).getId());
+        Assert.assertEquals(playlist.getItems().get(1).getId(), status.getPlaylist().getItems().get(2).getId());
     }
 
     @Test
@@ -141,9 +141,9 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
         Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), status.getPlaylist().getItems().size() - 1);
-        Assert.assertEquals(playlist.getTracks_loop().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
-        Assert.assertEquals(playlist.getTracks_loop().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
+        Assert.assertEquals(playlist.getItems().size(), status.getPlaylist().getItems().size() - 1);
+        Assert.assertEquals(playlist.getItems().get(0).getId(), status.getPlaylist().getItems().get(0).getId());
+        Assert.assertEquals(playlist.getItems().get(1).getId(), status.getPlaylist().getItems().get(1).getId());
     }
 
     @Test
@@ -159,8 +159,8 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playlist.getPlaylistId(), status.getPlaylist().getId());
         Assert.assertEquals(playlist.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(playlist.getTracks_loop().size(), 1);
-        Assert.assertEquals(playlist.getTracks_loop().get(0).getId(), status.getPlaylist().getItems().get(1).getId());
+        Assert.assertEquals(playlist.getItems().size(), 1);
+        Assert.assertEquals(playlist.getItems().get(0).getId(), status.getPlaylist().getItems().get(1).getId());
     }
 
     @Test
@@ -173,8 +173,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         added2.setId("added1");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistAddTracksRequest request = new PlaylistAddTracksRequest();
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
 
         PlaylistModificationResponse response = service.addTracks(request);
 
@@ -195,8 +195,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         added2.setId("added1");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistAddTracksRequest request = new PlaylistAddTracksRequest();
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
         request.setPlaylistPos(0);
 
         PlaylistModificationResponse response = service.addTracks(request);
@@ -218,8 +218,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         added2.setId("added1");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistAddTracksRequest request = new PlaylistAddTracksRequest();
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
         request.setPlaylistPos(1);
 
         PlaylistModificationResponse response = service.addTracks(request);
@@ -241,8 +241,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         added2.setId("added1");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistAddTracksRequest request = new PlaylistAddTracksRequest();
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
         request.setPlaylistPos(2);
 
         PlaylistModificationResponse response = service.addTracks(request);
@@ -266,8 +266,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         removed2.setPlaylistPos(3);
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistRemoveTracksRequest request = new PlaylistRemoveTracksRequest();
-        request.getTracks_loop().add(removed1);
-        request.getTracks_loop().add(removed2);
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
 
         PlaylistModificationResponse response = service.removeTracks(request);
 
@@ -288,8 +288,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         removed2.setPlaylistPos(0);
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistRemoveTracksRequest request = new PlaylistRemoveTracksRequest();
-        request.getTracks_loop().add(removed1);
-        request.getTracks_loop().add(removed2);
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
 
         PlaylistModificationResponse response = service.removeTracks(request);
 
@@ -309,8 +309,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         removed2.setPlaylistPos(2);
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistRemoveTracksRequest request = new PlaylistRemoveTracksRequest();
-        request.getTracks_loop().add(removed1);
-        request.getTracks_loop().add(removed2);
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
 
         PlaylistModificationResponse response = service.removeTracks(request);
 
@@ -332,8 +332,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         removed2.setId("track3");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistRemoveTracksRequest request = new PlaylistRemoveTracksRequest();
-        request.getTracks_loop().add(removed1);
-        request.getTracks_loop().add(removed2);
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
 
         PlaylistModificationResponse response = service.removeTracks(request);
 
@@ -354,8 +354,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         removed2.setPlaylistPos(0);
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistRemoveTracksRequest request = new PlaylistRemoveTracksRequest();
-        request.getTracks_loop().add(removed1);
-        request.getTracks_loop().add(removed2);
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
 
         try {
             PlaylistModificationResponse response = service.removeTracks(request);
@@ -375,8 +375,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         PlaylistSetTracksRequest request = new PlaylistSetTracksRequest();
         request.setPlaylistId("newplaylist1");
         request.setPlaylistId("NewPlaylist1");
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
 
         PlaylistModificationResponse response = service.setTracks(request);
 
@@ -398,8 +398,8 @@ public class PlayerCommandServicePlaylistManagementTest {
         added2.setId("mytrack2");
         PlayerCommandService service = new PlayerCommandService(status);
         PlaylistSetTracksRequest request = new PlaylistSetTracksRequest();
-        request.getTracks_loop().add(added1);
-        request.getTracks_loop().add(added2);
+        request.getItems().add(added1);
+        request.getItems().add(added2);
 
         PlaylistModificationResponse response = service.setTracks(request);
 

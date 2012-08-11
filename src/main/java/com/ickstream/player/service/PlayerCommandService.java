@@ -96,12 +96,12 @@ public class PlayerCommandService {
         response.setCountAll(playerStatus.getPlaylist().getItems().size());
         if (offset < playerStatus.getPlaylist().getItems().size()) {
             if (offset + count > playerStatus.getPlaylist().getItems().size()) {
-                response.setTracks_loop(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
+                response.setItems(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
             } else {
-                response.setTracks_loop(playerStatus.getPlaylist().getItems().subList(offset, offset + count));
+                response.setItems(playerStatus.getPlaylist().getItems().subList(offset, offset + count));
             }
         } else {
-            response.setTracks_loop(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
+            response.setItems(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
         }
         response.setLastChanged(playerStatus.getPlaylist().getChangedTimestamp());
         return response;
@@ -110,14 +110,14 @@ public class PlayerCommandService {
     public synchronized PlaylistModificationResponse addTracks(@JsonRpcParamStructure PlaylistAddTracksRequest request) {
         if (request.getPlaylistPos() != null) {
             // Insert tracks in middle
-            playerStatus.getPlaylist().getItems().addAll(request.getPlaylistPos(), request.getTracks_loop());
+            playerStatus.getPlaylist().getItems().addAll(request.getPlaylistPos(), request.getItems());
             playerStatus.getPlaylist().updateTimestamp();
             if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos() >= request.getPlaylistPos()) {
-                playerStatus.setPlaylistPos(playerStatus.getPlaylistPos() + request.getTracks_loop().size());
+                playerStatus.setPlaylistPos(playerStatus.getPlaylistPos() + request.getItems().size());
             }
         } else {
             // Add tracks at end
-            playerStatus.getPlaylist().getItems().addAll(request.getTracks_loop());
+            playerStatus.getPlaylist().getItems().addAll(request.getItems());
             playerStatus.getPlaylist().updateTimestamp();
         }
         // Set playlist position to first track if there weren't any tracks in the playlist before
@@ -133,7 +133,7 @@ public class PlayerCommandService {
         List<PlaylistItem> modifiedPlaylist = new ArrayList<PlaylistItem>(playerStatus.getPlaylist().getItems());
         int modifiedPlaylistPos = playerStatus.getPlaylistPos();
         boolean affectsPlayback = false;
-        for (PlaylistItemReference itemReference : request.getTracks_loop()) {
+        for (PlaylistItemReference itemReference : request.getItems()) {
             if (itemReference.getPlaylistPos() != null) {
                 PlaylistItem item = playerStatus.getPlaylist().getItems().get(itemReference.getPlaylistPos());
                 if (item.getId().equals(itemReference.getId())) {
@@ -189,10 +189,10 @@ public class PlayerCommandService {
     public synchronized PlaylistModificationResponse setTracks(@JsonRpcParamStructure PlaylistSetTracksRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
-        playerStatus.getPlaylist().setItems(request.getTracks_loop());
+        playerStatus.getPlaylist().setItems(request.getItems());
 
         Integer playlistPos = request.getPlaylistPos() != null ? request.getPlaylistPos() : 0;
-        if (request.getTracks_loop().size() > 0) {
+        if (request.getItems().size() > 0) {
             setTrack(playlistPos);
         } else {
             playerStatus.setSeekPos(null);
