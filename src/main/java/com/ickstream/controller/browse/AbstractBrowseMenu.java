@@ -28,7 +28,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
                 public void onMessage(ProtocolDescriptionResponse message) {
                     synchronized (supportedRequests) {
                         supportedRequests.clear();
-                        for (ProtocolDescriptionResponseContext context : message.getItems_loop()) {
+                        for (ProtocolDescriptionResponseContext context : message.getItems()) {
                             supportedRequests.put(context.getContextId(), context);
 
                         }

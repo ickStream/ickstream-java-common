@@ -27,7 +27,7 @@ import java.util.Map;
 public class FullBrowseMenuTest {
     String ARTIST_TRACK_SERVICE = "" +
             "{" +
-            "    \"items_loop\": [\n" +
+            "    \"items\": [\n" +
             "        {\n" +
             "            \"contextId\": \"myMusic\",\n" +
             "            \"name\": \"My Music\",\n" +
@@ -52,7 +52,7 @@ public class FullBrowseMenuTest {
 
     String ARTIST_TRACK_WITHOUT_FILTERING_SERVICE = "" +
             "{" +
-            "    \"items_loop\": [\n" +
+            "    \"items\": [\n" +
             "        {\n" +
             "            \"contextId\": \"myMusic\",\n" +
             "            \"name\": \"My Music\",\n" +
@@ -88,7 +88,7 @@ public class FullBrowseMenuTest {
 
     String ARTIST_ALBUM_TRACK_SERVICE = "" +
             "{" +
-            "    \"items_loop\": [\n" +
+            "    \"items\": [\n" +
             "        {\n" +
             "            \"contextId\": \"myMusic\",\n" +
             "            \"name\": \"My Music\",\n" +
@@ -121,7 +121,7 @@ public class FullBrowseMenuTest {
 
     String MENU_STREAM_SERVICE = "" +
             "{" +
-            "    \"items_loop\": [\n" +
+            "    \"items\": [\n" +
             "        {\n" +
             "            \"contextId\": \"allRadio\",\n" +
             "            \"name\": \"Local Radio\",\n" +
@@ -154,7 +154,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"artist1\"," +
             "            \"type\": \"artist\"" +
@@ -171,7 +171,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"album1\"," +
             "            \"type\": \"album\"" +
@@ -188,7 +188,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"track1\"," +
             "            \"type\": \"track\"" +
@@ -205,7 +205,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"menu1\"," +
             "            \"type\": \"menu\"" +
@@ -222,7 +222,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"submenu1\"," +
             "            \"type\": \"menu\"" +
@@ -239,7 +239,7 @@ public class FullBrowseMenuTest {
             "   \"count\": 2," +
             "   \"offset\": 0," +
             "   \"countAll\": 2," +
-            "   \"items_loop\": [" +
+            "   \"items\": [" +
             "        {" +
             "            \"id\": \"stream1\"," +
             "            \"type\": \"stream\"" +
@@ -386,7 +386,7 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
-        Assert.assertEquals(1, response[0].getItems_loop().size());
+        Assert.assertEquals(1, response[0].getItems().size());
     }
 
     @Test

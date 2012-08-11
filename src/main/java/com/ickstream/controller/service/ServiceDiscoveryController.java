@@ -52,11 +52,11 @@ public class ServiceDiscoveryController implements DeviceListener {
                 Set<String> previous;
                 synchronized (services) {
                     previous = new HashSet<String>(services.keySet());
-                    for (ServiceResponse response : message.getItems_loop()) {
+                    for (ServiceResponse response : message.getItems()) {
                         previous.remove(response.getId());
                     }
                 }
-                for (ServiceResponse response : message.getItems_loop()) {
+                for (ServiceResponse response : message.getItems()) {
                     addUpdateDiscoveredServices(response.getId(), response.getName(), EventSource.CLOUD, response.getUrl());
                 }
                 for (String serviceId : previous) {

@@ -19,10 +19,10 @@ public class FullCompactBrowseMenu extends FullBrowseMenu {
         super.findContexts(new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse browseResponse) {
-                if (browseResponse.getItems_loop().size() != 1) {
+                if (browseResponse.getItems().size() != 1) {
                     listener.onResponse(browseResponse);
                 } else {
-                    MenuItem menuItem = browseResponse.getItems_loop().get(0);
+                    MenuItem menuItem = browseResponse.getItems().get(0);
                     findItemsInContext(menuItem.getContextId(), menuItem.getParent(), listener);
                 }
             }
@@ -34,10 +34,10 @@ public class FullCompactBrowseMenu extends FullBrowseMenu {
         super.findItemsInContext(contextId, menuItem, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse browseResponse) {
-                if (browseResponse.getItems_loop().size() != 1 || !(browseResponse.getItems_loop().get(0) instanceof TypeMenuItem)) {
+                if (browseResponse.getItems().size() != 1 || !(browseResponse.getItems().get(0) instanceof TypeMenuItem)) {
                     listener.onResponse(browseResponse);
                 } else {
-                    String type = browseResponse.getItems_loop().get(0).getId();
+                    String type = browseResponse.getItems().get(0).getId();
                     findItemsInContextByType(contextId, type, menuItem, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
                         @Override
                         public void onResponse(BrowseResponse response) {

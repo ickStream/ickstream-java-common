@@ -46,11 +46,11 @@ public class DeviceDiscoveryController implements DeviceListener {
                 Set<String> previous;
                 synchronized (devices) {
                     previous = new HashSet<String>(devices.keySet());
-                    for (DeviceResponse response : message.getItems_loop()) {
+                    for (DeviceResponse response : message.getItems()) {
                         previous.remove(response.getId());
                     }
                 }
-                for (DeviceResponse response : message.getItems_loop()) {
+                for (DeviceResponse response : message.getItems()) {
                     addUpdateDiscoveredDevices(response.getId(), response.getName(), EventSource.CLOUD, response.getModel(), response.getAddress(), response.getPublicAddress());
                 }
                 for (String serviceId : previous) {

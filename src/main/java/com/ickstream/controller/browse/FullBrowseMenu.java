@@ -74,9 +74,9 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                                 browseResponse.setCount(message.getCount());
                                 browseResponse.setCountAll(message.getCountAll());
                                 browseResponse.setOffset(message.getOffset());
-                                browseResponse.setItems_loop(new ArrayList<MenuItem>(message.getCount()));
-                                for (ContentItem item : message.getItems_loop()) {
-                                    browseResponse.getItems_loop().add(new ContentMenuItem(service, context, item, contentItem));
+                                browseResponse.setItems(new ArrayList<MenuItem>(message.getCount()));
+                                for (ContentItem item : message.getItems()) {
+                                    browseResponse.getItems().add(new ContentMenuItem(service, context, item, contentItem));
                                 }
                                 listener.onResponse(browseResponse);
                             }
@@ -91,11 +91,11 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
 
     private BrowseResponse createContextsResponse() {
         BrowseResponse response = new BrowseResponse();
-        response.setItems_loop(new ArrayList<MenuItem>());
-        response.setItems_loop(new ArrayList<MenuItem>(findPossibleTopLevelContexts()));
+        response.setItems(new ArrayList<MenuItem>());
+        response.setItems(new ArrayList<MenuItem>(findPossibleTopLevelContexts()));
 
-        if (response.getItems_loop().size() > 1) {
-            Iterator<MenuItem> it = response.getItems_loop().iterator();
+        if (response.getItems().size() > 1) {
+            Iterator<MenuItem> it = response.getItems().iterator();
             while (it.hasNext()) {
                 if (it.next().getContextId().equals("allMusic")) {
                     it.remove();
@@ -104,26 +104,26 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         }
 
         response.setOffset(0);
-        response.setCount(response.getItems_loop().size());
-        response.setCountAll(response.getItems_loop().size());
+        response.setCount(response.getItems().size());
+        response.setCountAll(response.getItems().size());
         return response;
     }
 
     private BrowseResponse createTypeMenuResponse(String contextId, MenuItem parent) {
         BrowseResponse response = new BrowseResponse();
-        response.setItems_loop(new ArrayList<MenuItem>());
+        response.setItems(new ArrayList<MenuItem>());
         List<String> possibleTypeRequests = findPossibleTypeRequests(contextId, parent);
         for (String possibleTypeRequest : possibleTypeRequests) {
             if (typeMenus.containsKey(possibleTypeRequest)) {
                 TypeMenuItem template = typeMenus.get(possibleTypeRequest);
-                response.getItems_loop().add(new TypeMenuItem(service, contextId, possibleTypeRequest, template.getText(), template.getImage(), parent));
+                response.getItems().add(new TypeMenuItem(service, contextId, possibleTypeRequest, template.getText(), template.getImage(), parent));
             } else {
-                response.getItems_loop().add(new TypeMenuItem(service, contextId, possibleTypeRequest, possibleTypeRequest, null, parent));
+                response.getItems().add(new TypeMenuItem(service, contextId, possibleTypeRequest, possibleTypeRequest, null, parent));
             }
         }
         response.setOffset(0);
-        response.setCount(response.getItems_loop().size());
-        response.setCountAll(response.getItems_loop().size());
+        response.setCount(response.getItems().size());
+        response.setCountAll(response.getItems().size());
         return response;
     }
 

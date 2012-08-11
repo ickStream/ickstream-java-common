@@ -6,7 +6,7 @@ import java.util.List;
 
 public class BrowseResponse extends ChunkedResponse {
     private Long expirationTimestamp;
-    private List<MenuItem> items_loop;
+    private List<MenuItem> items;
 
     public Long getExpirationTimestamp() {
         return expirationTimestamp;
@@ -16,11 +16,11 @@ public class BrowseResponse extends ChunkedResponse {
         this.expirationTimestamp = expirationTimestamp;
     }
 
-    public List<MenuItem> getItems_loop() {
-        return items_loop;
+    public List<MenuItem> getItems() {
+        return items;
     }
 
-    public void setItems_loop(List<MenuItem> items_loop) {
-        this.items_loop = items_loop;
+    public void setItems(List<MenuItem> items) {
+        this.items = items;
     }
 }
