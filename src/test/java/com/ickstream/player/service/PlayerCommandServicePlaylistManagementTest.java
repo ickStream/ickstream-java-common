@@ -12,6 +12,9 @@ import com.ickstream.protocol.service.player.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class PlayerCommandServicePlaylistManagementTest {
 
     @Test
@@ -433,6 +436,318 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaylist().getItems().size(), 0);
         Assert.assertEquals(status.getPlaylist().getId(), request.getPlaylistId());
         Assert.assertEquals(status.getPlaylist().getName(), request.getPlaylistName());
+    }
+
+    @Test
+    public void testMoveTracksInvalidId() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(2);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track2", 0)
+        );
+        request.setItems(movedTracks);
+
+        try {
+            PlaylistModificationResponse response = service.moveTracks(request);
+            Assert.assertTrue(false);
+        } catch (IllegalArgumentException e) {
+            // Success
+        }
+    }
+
+    @Test
+    public void testMoveTracksAllBeforeCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(2);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksAllAfterCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(4);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksAllAfterCurrentPosToEnd() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(null);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track4", 3)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksBeforeToAfterCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(4);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksBeforeToAfterCurrentPosToEnd() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(null);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track1");
+    }
+
+    @Test
+    public void testMoveTracksAfterToBeforeCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(1);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToBeforeCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(1);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToAfterCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(3);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBeforeToAfterCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(3);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track2", 1),
+                new PlaylistItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(0));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(0));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveMultipleTracksAfterToBeforeCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(1);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track4", 3),
+                new PlaylistItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track4");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track3");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBothBeforeAndAfterToBeforeCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(2);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track1", 0),
+                new PlaylistItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBothBeforeAndAfterToAfterCurrentPos() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaylistPos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaylistMoveTracksRequest request = new PlaylistMoveTracksRequest();
+        request.setPlaylistPos(3);
+        List<PlaylistItemReference> movedTracks = Arrays.asList(
+                new PlaylistItemReference("track1", 0),
+                new PlaylistItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaylistModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylistPos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaylist().getItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaylist().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaylist().getItems().get(4).getId(), "track4");
     }
 
     private Playlist getDefaultPlaylist(int numOfTracks) {

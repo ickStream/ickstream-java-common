@@ -183,7 +183,85 @@ public class PlayerCommandService {
     }
 
     public synchronized PlaylistModificationResponse moveTracks(@JsonRpcParamStructure PlaylistMoveTracksRequest request) {
-        throw new IllegalArgumentException("moveTracks method Not Implemented");
+        Integer modifiedPlaylistPos = playerStatus.getPlaylistPos();
+        List<PlaylistItem> modifiedPlaylist = new ArrayList<PlaylistItem>(playerStatus.getPlaylist().getItems());
+        Integer wantedPlaylistPos = request.getPlaylistPos() != null ? request.getPlaylistPos() : playerStatus.getPlaylist().getItems().size();
+        for (PlaylistItemReference playlistItemReference : request.getItems()) {
+            if (playlistItemReference.getPlaylistPos() == null) {
+                throw new IllegalArgumentException("moveTracks with items without playlistPos not supported");
+            }
+            if (playlistItemReference.getId() == null) {
+                throw new IllegalArgumentException("moveTracks with items without id not supported");
+            }
+            // Move that doesn't affect playlist position
+            if (wantedPlaylistPos <= modifiedPlaylistPos && playlistItemReference.getPlaylistPos() < modifiedPlaylistPos ||
+                    wantedPlaylistPos > modifiedPlaylistPos && playlistItemReference.getPlaylistPos() > modifiedPlaylistPos) {
+
+                PlaylistItem item = modifiedPlaylist.remove(playlistItemReference.getPlaylistPos().intValue());
+                if (!item.getId().equals(playlistItemReference.getId())) {
+                    throw new IllegalArgumentException("Playlist position " + playlistItemReference.getPlaylistPos() + " does not match " + playlistItemReference.getId());
+                }
+                int offset = 0;
+                if (wantedPlaylistPos >= playlistItemReference.getPlaylistPos()) {
+                    offset = -1;
+                }
+                if (wantedPlaylistPos + offset < modifiedPlaylist.size()) {
+                    modifiedPlaylist.add(wantedPlaylistPos + offset, item);
+                } else {
+                    modifiedPlaylist.add(item);
+                }
+                if (wantedPlaylistPos < playlistItemReference.getPlaylistPos()) {
+                    wantedPlaylistPos++;
+                }
+
+                // Move that increase playlist position
+            } else if (wantedPlaylistPos <= modifiedPlaylistPos && playlistItemReference.getPlaylistPos() > modifiedPlaylistPos) {
+                PlaylistItem item = modifiedPlaylist.remove(playlistItemReference.getPlaylistPos().intValue());
+                if (!item.getId().equals(playlistItemReference.getId())) {
+                    throw new IllegalArgumentException("Playlist position " + playlistItemReference.getPlaylistPos() + " does not match " + playlistItemReference.getId());
+                }
+                modifiedPlaylist.add(wantedPlaylistPos, item);
+                modifiedPlaylistPos++;
+                wantedPlaylistPos++;
+
+                // Move that decrease playlist position
+            } else if (wantedPlaylistPos > modifiedPlaylistPos && playlistItemReference.getPlaylistPos() < modifiedPlaylistPos) {
+                PlaylistItem item = modifiedPlaylist.remove(playlistItemReference.getPlaylistPos().intValue());
+                if (!item.getId().equals(playlistItemReference.getId())) {
+                    throw new IllegalArgumentException("Playlist position " + playlistItemReference.getPlaylistPos() + " does not match " + playlistItemReference.getId());
+                }
+                int offset = 0;
+                if (wantedPlaylistPos >= playlistItemReference.getPlaylistPos()) {
+                    offset = -1;
+                }
+                if (wantedPlaylistPos + offset < modifiedPlaylist.size()) {
+                    modifiedPlaylist.add(wantedPlaylistPos + offset, item);
+                } else {
+                    modifiedPlaylist.add(item);
+                }
+                modifiedPlaylistPos--;
+
+                // Move of currently playing track
+            } else if (playlistItemReference.getPlaylistPos().equals(modifiedPlaylistPos)) {
+                PlaylistItem item = modifiedPlaylist.remove(playlistItemReference.getPlaylistPos().intValue());
+                if (!item.getId().equals(playlistItemReference.getId())) {
+                    throw new IllegalArgumentException("Playlist position " + playlistItemReference.getPlaylistPos() + " does not match " + playlistItemReference.getId());
+                }
+                if (wantedPlaylistPos < modifiedPlaylist.size()) {
+                    modifiedPlaylist.add(wantedPlaylistPos, item);
+                } else {
+                    modifiedPlaylist.add(item);
+                }
+                modifiedPlaylistPos = wantedPlaylistPos;
+                if (wantedPlaylistPos < playlistItemReference.getPlaylistPos()) {
+                    wantedPlaylistPos++;
+                }
+            }
+        }
+        playerStatus.getPlaylist().setItems(modifiedPlaylist);
+        playerStatus.getPlaylist().updateTimestamp();
+        playerStatus.setPlaylistPos(modifiedPlaylistPos);
+        return new PlaylistModificationResponse(true, modifiedPlaylistPos);
     }
 
     public synchronized PlaylistModificationResponse setTracks(@JsonRpcParamStructure PlaylistSetTracksRequest request) {
