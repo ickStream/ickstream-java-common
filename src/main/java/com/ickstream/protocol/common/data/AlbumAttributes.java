@@ -10,7 +10,7 @@ import java.util.List;
 
 public class AlbumAttributes extends ItemAttributes {
     private String image;
-    private List<ArtistAttributes> mainartists = new ArrayList<ArtistAttributes>();
+    private List<ArtistAttributes> mainArtists = new ArrayList<ArtistAttributes>();
     private Integer year;
 
     public String getImage() {
@@ -21,12 +21,12 @@ public class AlbumAttributes extends ItemAttributes {
         this.image = image;
     }
 
-    public List<ArtistAttributes> getMainartists() {
-        return mainartists;
+    public List<ArtistAttributes> getMainArtists() {
+        return mainArtists;
     }
 
-    public void setMainartists(List<ArtistAttributes> mainartists) {
-        this.mainartists = mainartists;
+    public void setMainArtists(List<ArtistAttributes> mainArtists) {
+        this.mainArtists = mainArtists;
     }
 
     public Integer getYear() {

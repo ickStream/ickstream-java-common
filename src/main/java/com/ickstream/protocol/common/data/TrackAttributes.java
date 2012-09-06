@@ -14,7 +14,7 @@ public class TrackAttributes extends ItemAttributes {
     private Integer duration;
     private String disc;
     private AlbumAttributes album;
-    private List<ArtistAttributes> mainartists = new ArrayList<ArtistAttributes>();
+    private List<ArtistAttributes> mainArtists = new ArrayList<ArtistAttributes>();
     private List<ArtistAttributes> composers = new ArrayList<ArtistAttributes>();
     private List<ArtistAttributes> conductors = new ArrayList<ArtistAttributes>();
     private List<ArtistAttributes> performers = new ArrayList<ArtistAttributes>();
@@ -62,12 +62,12 @@ public class TrackAttributes extends ItemAttributes {
         this.album = album;
     }
 
-    public List<ArtistAttributes> getMainartists() {
-        return mainartists;
+    public List<ArtistAttributes> getMainArtists() {
+        return mainArtists;
     }
 
-    public void setMainartists(List<ArtistAttributes> mainartists) {
-        this.mainartists = mainartists;
+    public void setMainArtists(List<ArtistAttributes> mainArtists) {
+        this.mainArtists = mainArtists;
     }
 
     public List<ArtistAttributes> getComposers() {
