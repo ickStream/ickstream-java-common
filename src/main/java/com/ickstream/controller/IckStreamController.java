@@ -19,6 +19,7 @@ import com.ickstream.protocol.common.ServiceFactory;
 import com.ickstream.protocol.service.core.*;
 import org.codehaus.jackson.JsonNode;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class IckStreamController implements MessageListener {
@@ -277,29 +278,39 @@ public class IckStreamController implements MessageListener {
     }
 
     @Override
-    public void onMessage(String deviceId, String message) {
+    public void onMessage(String deviceId, byte[] message) {
         LocalServiceController localServiceController = localServiceControllers.get(deviceId);
         if (localServiceController != null) {
-            JsonNode jsonMessage = jsonHelper.stringToObject(message, JsonNode.class);
-            String jsonMessageString = jsonHelper.objectToString(jsonMessage);
-            if (messageLogger != null) {
-                messageLogger.onIncomingMessage(deviceId, jsonMessageString);
-            }
-            if (!jsonMessage.has("method")) {
-                localServiceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+            try {
+                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message,"UTF-8"), JsonNode.class);
+                String jsonMessageString = jsonHelper.objectToString(jsonMessage);
+                if (messageLogger != null) {
+                    messageLogger.onIncomingMessage(deviceId, jsonMessageString);
+                }
+                if (!jsonMessage.has("method")) {
+                    localServiceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                }
+            } catch (UnsupportedEncodingException e) {
+                // Just ignore, all platforms we support should support UTF-8
+                e.printStackTrace();
             }
         }
         PlayerDeviceController playerDeviceController = playerDeviceControllers.get(deviceId);
         if (playerDeviceController != null) {
-            JsonNode jsonMessage = jsonHelper.stringToObject(message, JsonNode.class);
-            String jsonMessageString = jsonHelper.objectToString(jsonMessage);
-            if (messageLogger != null) {
-                messageLogger.onIncomingMessage(deviceId, jsonMessageString);
-            }
-            if (jsonMessage.has("method")) {
-                playerDeviceController.onRequest(jsonHelper.jsonToObject(jsonMessage, JsonRpcRequest.class));
-            } else {
-                playerDeviceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+            try {
+                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message,"UTF-8"), JsonNode.class);
+                String jsonMessageString = jsonHelper.objectToString(jsonMessage);
+                if (messageLogger != null) {
+                    messageLogger.onIncomingMessage(deviceId, jsonMessageString);
+                }
+                if (jsonMessage.has("method")) {
+                    playerDeviceController.onRequest(jsonHelper.jsonToObject(jsonMessage, JsonRpcRequest.class));
+                } else {
+                    playerDeviceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                }
+            } catch (UnsupportedEncodingException e) {
+                // Just ignore, all platforms we support should support UTF-8
+                e.printStackTrace();
             }
         }
     }
