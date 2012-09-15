@@ -8,7 +8,7 @@ package com.ickstream.protocol.service.player;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.common.ickdiscovery.MessageSender;
-import com.ickstream.protocol.common.DeviceMessageSender;
+import com.ickstream.protocol.common.DeviceStringMessageSender;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,12 +29,12 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
     }
 
     public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
-        super(new DeviceMessageSender(deviceId, messageSender), idProvider, defaultTimeout);
+        super(new DeviceStringMessageSender(deviceId, messageSender), idProvider, defaultTimeout);
         this.deviceId = deviceId;
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {
-        ((DeviceMessageSender) getMessageSender()).setMessageLogger(messageLogger);
+        ((DeviceStringMessageSender) getMessageSender()).setMessageLogger(messageLogger);
     }
 
     public void setPlayerConfiguration(PlayerConfigurationRequest request, MessageHandler<PlayerConfigurationResponse> messageHandler) {
