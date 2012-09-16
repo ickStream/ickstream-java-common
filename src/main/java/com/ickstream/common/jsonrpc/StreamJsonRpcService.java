@@ -25,19 +25,25 @@ public class StreamJsonRpcService {
     private ObjectMapper mapper;
     private static final Map<String, List<Method>> methodCache = new HashMap<String, List<Method>>();
     private Boolean returnOnVoid;
+    private Boolean ignoreResponses;
     private MessageLogger messageLogger;
 
     public <T> StreamJsonRpcService(T serviceImplementation, Class<T> serviceInterface) {
-        this(serviceImplementation, serviceInterface, false);
+        this(serviceImplementation, serviceInterface, false, true);
     }
 
     public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid) {
+        this(serviceImplementation, serviceInterface, returnOnVoid, true);
+    }
+
+    public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid, Boolean ignoreResponses) {
         this.serviceImplementation = serviceImplementation;
         this.serviceInterface = serviceInterface;
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
         mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.returnOnVoid = returnOnVoid;
+        this.ignoreResponses = ignoreResponses;
     }
 
     public void setMessageLogger(MessageLogger messageLogger) {
@@ -72,6 +78,10 @@ public class StreamJsonRpcService {
             messageLogger.onIncomingMessage(null, mapper.valueToTree(request).toString());
         }
         if (StringUtils.isEmpty(request.getJsonrpc()) || StringUtils.isEmpty(request.getMethod())) {
+            if (ignoreResponses && StringUtils.isEmpty(request.getMethod())) {
+                // Just ignore responses which doesn't have a "method" attribute
+                return;
+            }
             JsonRpcResponse response = new JsonRpcResponse(
                     !StringUtils.isEmpty(request.getJsonrpc()) ? request.getJsonrpc() : "2.0",
                     !StringUtils.isEmpty(request.getId()) ? request.getId() : null

@@ -415,14 +415,24 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testWithoutMethod() throws IOException {
-        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+    public void testWithoutMethodNotAllowed() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class, true, false);
         StringWriter outputString = new StringWriter();
 
         service.handle(IOUtils.toInputStream(createJsonRequest("1", null, null)), new WriterOutputStream(outputString));
 
 
         Assert.assertEquals("-32600", getParamFromJson(outputString.toString(), "error.code"));
+    }
+
+    @Test
+    public void testWithoutMethodAllowed() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", null, null)), new WriterOutputStream(outputString));
+
+        Assert.assertEquals("", outputString.toString());
     }
 
     @Test
