@@ -23,7 +23,7 @@ import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 public class ServiceFactory {
-    private static final String CORESERVICE_ENDPOINT = "http://ickstream.isaksson.info/ickstream-cloud-core/jsonrpc";
+    private static final String CORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/jsonrpc";
 
     private static String getEndpoint() {
         String url = System.getProperty("ickstream-core-url");
