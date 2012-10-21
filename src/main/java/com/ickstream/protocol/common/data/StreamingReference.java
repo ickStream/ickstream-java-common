@@ -8,6 +8,7 @@ package com.ickstream.protocol.common.data;
 public class StreamingReference {
     private String format;
     private String url;
+    private Boolean intermediate;
 
     public StreamingReference() {
     }
@@ -31,5 +32,13 @@ public class StreamingReference {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Boolean getIntermediate() {
+        return intermediate;
+    }
+
+    public void setIntermediate(Boolean intermediate) {
+        this.intermediate = intermediate;
     }
 }
