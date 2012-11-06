@@ -9,6 +9,10 @@ public class StreamingReference {
     private String format;
     private String url;
     private Boolean intermediate;
+    private Integer sampleRate;
+    private Integer sampleSize;
+    private Integer channels;
+    private String streamFormatInformation;
 
     public StreamingReference() {
     }
@@ -40,5 +44,37 @@ public class StreamingReference {
 
     public void setIntermediate(Boolean intermediate) {
         this.intermediate = intermediate;
+    }
+
+    public Integer getSampleRate() {
+        return sampleRate;
+    }
+
+    public void setSampleRate(Integer sampleRate) {
+        this.sampleRate = sampleRate;
+    }
+
+    public Integer getSampleSize() {
+        return sampleSize;
+    }
+
+    public void setSampleSize(Integer sampleSize) {
+        this.sampleSize = sampleSize;
+    }
+
+    public Integer getChannels() {
+        return channels;
+    }
+
+    public void setChannels(Integer channels) {
+        this.channels = channels;
+    }
+
+    public String getStreamFormatInformation() {
+        return streamFormatInformation;
+    }
+
+    public void setStreamFormatInformation(String streamFormatInformation) {
+        this.streamFormatInformation = streamFormatInformation;
     }
 }
