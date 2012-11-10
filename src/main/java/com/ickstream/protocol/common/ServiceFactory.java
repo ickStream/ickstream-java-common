@@ -11,6 +11,7 @@ import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.core.CoreService;
 import com.ickstream.protocol.service.core.FindServicesRequest;
 import com.ickstream.protocol.service.core.FindServicesResponse;
+import com.ickstream.protocol.service.core.PublicCoreService;
 import com.ickstream.protocol.service.library.LibraryService;
 import com.ickstream.protocol.service.scrobble.ScrobbleService;
 import org.apache.http.client.HttpClient;
@@ -24,6 +25,7 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 
 public class ServiceFactory {
     private static final String CORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/jsonrpc";
+    private static final String PUBLICCORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/public/jsonrpc";
 
     private static String getEndpoint() {
         String url = System.getProperty("ickstream-core-url");
@@ -34,11 +36,27 @@ public class ServiceFactory {
         }
     }
 
+    private static String getPublicEndpoint() {
+        String url = System.getProperty("ickstream-core-public-url");
+        if (url != null) {
+            return url;
+        } else {
+            return PUBLICCORESERVICE_ENDPOINT;
+        }
+    }
+
     public static CoreService getCoreService(String accessToken, MessageLogger messageLogger) {
         CoreService coreService = new CoreService(createHttpClient(), getEndpoint());
         coreService.setAccessToken(accessToken);
         coreService.setMessageLogger(messageLogger);
         return coreService;
+    }
+
+    public static PublicCoreService getPublicCoreService(String accessToken, MessageLogger messageLogger) {
+        PublicCoreService publicCoreService = new PublicCoreService(createHttpClient(), getPublicEndpoint());
+        publicCoreService.setAccessToken(accessToken);
+        publicCoreService.setMessageLogger(messageLogger);
+        return publicCoreService;
     }
 
     private static HttpClient createHttpClient() {
@@ -56,6 +74,10 @@ public class ServiceFactory {
 
     public static CoreService getCoreService(String accessToken) {
         return getCoreService(accessToken, null);
+    }
+
+    public static PublicCoreService getPublicCoreService(String accessToken) {
+        return getPublicCoreService(accessToken, null);
     }
 
     public static ScrobbleService getScrobbleService(String accessToken, MessageLogger messageLogger) {

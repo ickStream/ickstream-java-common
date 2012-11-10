@@ -47,6 +47,11 @@ public class CoreServiceTest {
         return service;
     }
 
+    private PublicCoreService getPublicCoreService(String responseData) {
+        PublicCoreService service = new PublicCoreService(createClient(ENDPOINT, responseData), ENDPOINT, new InstanceIdProvider());
+        return service;
+    }
+
     @Test
     public void testGetUser() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/service/core/GetUser.json");
@@ -226,4 +231,46 @@ public class CoreServiceTest {
             Assert.assertNotNull(serviceResponse.getUrl());
         }
     }
+
+    @Test
+    public void testRemoveService() throws IOException, ServiceException, ServiceTimeoutException {
+        CoreService service = getCoreService("/com/ickstream/protocol/service/core/RemoveService.json");
+        Boolean success = service.removeService(new ServiceRequest("service1"));
+        Assert.assertNotNull(success);
+        Assert.assertTrue(success);
+    }
+
+    @Test
+    public void testRemoveUserIdentity() throws IOException, ServiceException, ServiceTimeoutException {
+        CoreService service = getCoreService("/com/ickstream/protocol/service/core/RemoveUserIdentity.json");
+        Boolean success = service.removeUserIdentity(new UserIdentityRequest("email", "test@example.org"));
+        Assert.assertNotNull(success);
+        Assert.assertTrue(success);
+    }
+
+    @Test
+    public void testCreateUserCode() throws IOException, ServiceException, ServiceTimeoutException {
+        CoreService service = getCoreService("/com/ickstream/protocol/service/core/CreateUserCode.json");
+        String code = service.createUserCode();
+        Assert.assertNotNull(code);
+        Assert.assertEquals(code, "12AF25B7-1F76-46E8-8A8B-C33885C5D696");
+    }
+
+    @Test
+    public void testFindAuthenticationProviders() throws IOException, ServiceException, ServiceTimeoutException {
+        PublicCoreService service = getPublicCoreService("/com/ickstream/protocol/service/core/FindAuthenticationProviders.json");
+        FindAuthenticationProviderResponse response = service.findAuthenticationProviders(null);
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getCount(), new Integer(2));
+        Assert.assertEquals(response.getCountAll(), new Integer(2));
+        Assert.assertNotNull(response.getItems());
+        Assert.assertEquals(response.getItems().size(), 2);
+        for (AuthenticationProviderResponse providerResponse : response.getItems()) {
+            Assert.assertNotNull(providerResponse.getId());
+            Assert.assertNotNull(providerResponse.getName());
+            Assert.assertNotNull(providerResponse.getIcon());
+            Assert.assertNotNull(providerResponse.getUrl());
+        }
+    }
+
 }

@@ -7,10 +7,10 @@ package com.ickstream.protocol.service.core;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
-import com.ickstream.protocol.service.Service;
-import com.ickstream.protocol.service.AbstractService;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
+import com.ickstream.protocol.service.AbstractService;
+import com.ickstream.protocol.service.Service;
 import org.apache.http.client.HttpClient;
 
 public class CoreService extends AbstractService implements Service {
@@ -280,5 +280,71 @@ public class CoreService extends AbstractService implements Service {
 
     public void findAllServices(FindServicesRequest request, MessageHandler<FindServicesResponse> messageHandler, Integer timeout) {
         sendRequest("findAllServices", request, FindServicesResponse.class, messageHandler, timeout);
+    }
+
+    public Boolean removeService(ServiceRequest request) throws ServiceException, ServiceTimeoutException {
+        return removeService(request, (Integer) null);
+    }
+
+    public Boolean removeService(ServiceRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("removeService", request, Boolean.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void removeService(ServiceRequest request, MessageHandler<Boolean> messageHandler) {
+        removeService(request, messageHandler, (Integer) null);
+    }
+
+    public void removeService(ServiceRequest request, MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("removeService", request, Boolean.class, messageHandler, timeout);
+    }
+
+    public Boolean removeUserIdentity(UserIdentityRequest request) throws ServiceException, ServiceTimeoutException {
+        return removeUserIdentity(request, (Integer) null);
+    }
+
+    public Boolean removeUserIdentity(UserIdentityRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("removeUserIdentity", request, Boolean.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void removeUserIdentity(UserIdentityRequest request, MessageHandler<Boolean> messageHandler) {
+        removeUserIdentity(request, messageHandler, (Integer) null);
+    }
+
+    public void removeUserIdentity(UserIdentityRequest request, MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("removeUserIdentity", request, Boolean.class, messageHandler, timeout);
+    }
+
+    public String createUserCode() throws ServiceException, ServiceTimeoutException {
+        return createUserCode((Integer) null);
+    }
+
+    public String createUserCode(Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("createUserCode", null, String.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void createUserCode(MessageHandler<String> messageHandler) {
+        createUserCode(messageHandler, (Integer) null);
+    }
+
+    public void createUserCode(MessageHandler<String> messageHandler, Integer timeout) {
+        sendRequest("createUserCode", null, String.class, messageHandler, timeout);
     }
 }

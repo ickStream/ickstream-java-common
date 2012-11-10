@@ -1,0 +1,23 @@
+{
+  "jsonrpc" : "2.0",
+  "id" : "1",
+  "result" : {
+    "offset" : 0,
+    "count" : 2,
+    "countAll": 2,
+    "items": [
+        {
+            "id": "provider1",
+            "name": "Provider 1",
+            "icon": "http://example.org/provider1/icon.jpg",
+            "url": "http://example.org/provider1"
+        },
+        {
+            "id": "provider2",
+            "name": "Provider 2",
+            "icon": "http://example.org/provider2/icon.jpg",
+            "url": "http://example.org/provider2"
+        }
+    ]
+  }
+}
