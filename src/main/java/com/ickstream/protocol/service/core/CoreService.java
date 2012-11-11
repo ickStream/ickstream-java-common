@@ -238,6 +238,28 @@ public class CoreService extends AbstractService implements Service {
         sendRequest("getUser", null, GetUserResponse.class, messageHandler, timeout);
     }
 
+    public GetUserResponse setUserData(SetUserDataRequest request) throws ServiceException, ServiceTimeoutException {
+        return setUserData(request, (Integer) null);
+    }
+
+    public GetUserResponse setUserData(SetUserDataRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("setUserData", request, GetUserResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void setUserData(SetUserDataRequest request, MessageHandler<GetUserResponse> messageHandler) {
+        setUserData(request, messageHandler, (Integer) null);
+    }
+
+    public void setUserData(SetUserDataRequest request, MessageHandler<GetUserResponse> messageHandler, Integer timeout) {
+        sendRequest("setUserData", request, GetUserResponse.class, messageHandler, timeout);
+    }
+
     public FindServicesResponse findServices(FindServicesRequest request) throws ServiceException, ServiceTimeoutException {
         return findServices(request, (Integer) null);
     }

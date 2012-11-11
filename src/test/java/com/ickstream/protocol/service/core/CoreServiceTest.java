@@ -66,6 +66,19 @@ public class CoreServiceTest {
     }
 
     @Test
+    public void testSetUserData() throws IOException, ServiceException, ServiceTimeoutException {
+        CoreService service = getCoreService("/com/ickstream/protocol/service/core/SetUserData.json");
+        GetUserResponse response = service.setUserData(new SetUserDataRequest("MyNewName"));
+        Assert.assertNotNull(response);
+        Assert.assertEquals(response.getName(), "MyNewName");
+        Assert.assertEquals(response.getId(), "2E560913-F9BB-41A2-BAC4-A6EB272500EC");
+        Assert.assertNotNull(response.getIdentities());
+        Assert.assertEquals(response.getIdentities().size(), 1);
+        Assert.assertEquals(response.getIdentities().get(0).getType(), "email");
+        Assert.assertEquals(response.getIdentities().get(0).getIdentity(), "user@example.org");
+    }
+
+    @Test
     public void testRemoveDevice() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/service/core/RemoveDevice.json");
         Boolean success = service.removeDevice(new DeviceRequest("F75C0B6A-06DB-44B4-8558-F8842C0EEB99"));
