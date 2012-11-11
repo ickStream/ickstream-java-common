@@ -59,6 +59,10 @@ public class CoreServiceTest {
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getName(), "Some User");
         Assert.assertEquals(response.getId(), "2E560913-F9BB-41A2-BAC4-A6EB272500EC");
+        Assert.assertNotNull(response.getIdentities());
+        Assert.assertEquals(response.getIdentities().size(), 1);
+        Assert.assertEquals(response.getIdentities().get(0).getType(), "email");
+        Assert.assertEquals(response.getIdentities().get(0).getIdentity(), "user@example.org");
     }
 
     @Test

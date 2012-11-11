@@ -5,9 +5,13 @@
 
 package com.ickstream.protocol.service.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GetUserResponse {
     private String id;
     private String name;
+    private List<UserIdentityResponse> identities = new ArrayList<UserIdentityResponse>();
 
     public String getId() {
         return id;
@@ -23,5 +27,13 @@ public class GetUserResponse {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<UserIdentityResponse> getIdentities() {
+        return identities;
+    }
+
+    public void setIdentities(List<UserIdentityResponse> identities) {
+        this.identities = identities;
     }
 }
