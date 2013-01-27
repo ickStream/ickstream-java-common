@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.controller;
@@ -282,7 +282,7 @@ public class IckStreamController implements MessageListener {
         LocalServiceController localServiceController = localServiceControllers.get(deviceId);
         if (localServiceController != null) {
             try {
-                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message,"UTF-8"), JsonNode.class);
+                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
                 String jsonMessageString = jsonHelper.objectToString(jsonMessage);
                 if (messageLogger != null) {
                     messageLogger.onIncomingMessage(deviceId, jsonMessageString);
@@ -298,7 +298,7 @@ public class IckStreamController implements MessageListener {
         PlayerDeviceController playerDeviceController = playerDeviceControllers.get(deviceId);
         if (playerDeviceController != null) {
             try {
-                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message,"UTF-8"), JsonNode.class);
+                JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
                 String jsonMessageString = jsonHelper.objectToString(jsonMessage);
                 if (messageLogger != null) {
                     messageLogger.onIncomingMessage(deviceId, jsonMessageString);
