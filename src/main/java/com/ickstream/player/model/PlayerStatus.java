@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.player.model;
@@ -85,7 +85,7 @@ public class PlayerStatus {
 
     public PlaylistItem getCurrentPlaylistItem() {
         if (getPlaylistPos() != null) {
-            if(getPlaylistPos()<getPlaylist().getItems().size()) {
+            if (getPlaylistPos() < getPlaylist().getItems().size()) {
                 return getPlaylist().getItems().get(getPlaylistPos());
             }
         }
