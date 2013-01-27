@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.common.jsonrpc;
@@ -13,7 +13,7 @@ public class JsonRpcException extends Exception {
     }
 
     public JsonRpcException(int code, String message, String data) {
-        super(code +": "+message);
+        super(code + ": " + message);
         this.code = code;
         this.data = data;
     }

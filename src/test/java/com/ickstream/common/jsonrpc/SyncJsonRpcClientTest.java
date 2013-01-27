@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.common.jsonrpc;
@@ -174,10 +174,10 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         try {
             client.sendRequest("someMethod", 1, Integer.class);
             Assert.assertFalse(true);
-        }catch(JsonRpcException e) {
-            Assert.assertEquals(-32000,e.getCode());
-            Assert.assertEquals("-32000: Some message",e.getMessage());
-            Assert.assertEquals("Some data",e.getData());
+        } catch (JsonRpcException e) {
+            Assert.assertEquals(-32000, e.getCode());
+            Assert.assertEquals("-32000: Some message", e.getMessage());
+            Assert.assertEquals("Some data", e.getData());
         }
     }
 
@@ -208,7 +208,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         try {
             client.sendRequest("someMethod", 1, Integer.class, 500);
             Assert.assertTrue(false);
-        }catch (JsonRpcTimeoutException e) {
+        } catch (JsonRpcTimeoutException e) {
             //Ok, this is the expected path
         }
         Assert.assertEquals("1", getParamFromJson(sender.message, "params"));
