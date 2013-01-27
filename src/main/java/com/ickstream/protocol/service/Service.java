@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
+ */
+
 package com.ickstream.protocol.service;
 
 import com.ickstream.common.jsonrpc.MessageHandler;

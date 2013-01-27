@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.protocol.common;
@@ -26,11 +26,11 @@ public class DeviceStringMessageSender implements MessageSender {
 
     @Override
     public void sendMessage(String message) {
-        if(messageLogger != null) {
+        if (messageLogger != null) {
             messageLogger.onOutgoingMessage(deviceId, message);
         }
         try {
-            messageSender.sendMessage(deviceId,message.getBytes("UTF-8"));
+            messageSender.sendMessage(deviceId, message.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             // Just ignore, all platforms we support need to support UTF-8
             e.printStackTrace();

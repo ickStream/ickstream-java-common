@@ -1,14 +1,14 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.protocol.service.scrobble;
 
 import com.ickstream.common.jsonrpc.*;
-import com.ickstream.protocol.service.AbstractService;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
+import com.ickstream.protocol.service.AbstractService;
 import org.apache.http.client.HttpClient;
 
 public class ScrobbleService extends AbstractService {

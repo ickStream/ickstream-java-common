@@ -1,13 +1,13 @@
 /*
- * Copyright (C) 2012 Erland Isaksson (erland@isaksson.info)
- * All rights reserved.
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
  */
 
 package com.ickstream.protocol.service.player;
 
+import com.ickstream.common.ickdiscovery.MessageSender;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
-import com.ickstream.common.ickdiscovery.MessageSender;
 import com.ickstream.protocol.common.DeviceStringMessageSender;
 
 import java.util.HashMap;
