@@ -1,0 +1,29 @@
+{
+  "jsonrpc" : "2.0",
+  "id" : "1",
+  "result" : {
+    "offset" : 0,
+    "count" : 3,
+    "countAll": 3,
+    "items": [
+        {
+            "id": "service1",
+            "name": "Service 1",
+            "type": "content",
+            "url": "http://example.org/service1"
+        },
+        {
+            "id": "service2",
+            "name": "Service 2",
+            "type": "library",
+            "url": "http://example.org/service2"
+        },
+        {
+            "id": "service3",
+            "name": "Service 3",
+            "type": "content",
+            "url": "http://example.org/service3"
+        }
+    ]
+  }
+}
