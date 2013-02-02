@@ -17,6 +17,25 @@
 
     <packaging>jar</packaging>
 
+    <scm>
+        <connection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</connection>
+        <url>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</url>
+        <developerConnection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</developerConnection>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>deployment</id>
+            <name>Internal Releases</name>
+            <url>http://ickstream.isaksson.info/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>deployment</id>
+            <name>Internal Releases</name>
+            <url>http://ickstream.isaksson.info/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>com.ickstream.common.jsonrpc</groupId>
