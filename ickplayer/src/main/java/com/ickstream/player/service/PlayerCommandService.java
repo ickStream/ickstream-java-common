@@ -247,12 +247,18 @@ public class PlayerCommandService {
                 if (!item.getId().equals(playlistItemReference.getId())) {
                     throw new IllegalArgumentException("Playlist position " + playlistItemReference.getPlaylistPos() + " does not match " + playlistItemReference.getId());
                 }
-                if (wantedPlaylistPos < modifiedPlaylist.size()) {
-                    modifiedPlaylist.add(wantedPlaylistPos, item);
+                if (wantedPlaylistPos < modifiedPlaylist.size() + 1) {
+                    if (wantedPlaylistPos > playlistItemReference.getPlaylistPos()) {
+                        modifiedPlaylist.add(wantedPlaylistPos - 1, item);
+                        modifiedPlaylistPos = wantedPlaylistPos - 1;
+                    } else {
+                        modifiedPlaylist.add(wantedPlaylistPos, item);
+                        modifiedPlaylistPos = wantedPlaylistPos;
+                    }
                 } else {
                     modifiedPlaylist.add(item);
+                    modifiedPlaylistPos = wantedPlaylistPos - 1;
                 }
-                modifiedPlaylistPos = wantedPlaylistPos;
                 if (wantedPlaylistPos < playlistItemReference.getPlaylistPos()) {
                     wantedPlaylistPos++;
                 }
