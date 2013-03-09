@@ -513,7 +513,7 @@ public class PlayerCommandServicePlaybackControlTest {
     }
 
     private PlayerStatus getDefaultPlayerStatus(int numOfTracks) {
-        PlayerStatus status = new PlayerStatus();
+        PlayerStatus status = new PlayerStatus(new Playlist());
         status.setPlaying(false);
         status.setVolumeLevel(0.42);
         status.setMuted(false);

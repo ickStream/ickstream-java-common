@@ -6,6 +6,7 @@
 package com.ickstream.player.model;
 
 import com.ickstream.protocol.service.player.PlaylistItem;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 public class PlayerStatus {
     private Long changedTimestamp = System.currentTimeMillis();
@@ -14,7 +15,24 @@ public class PlayerStatus {
     private Boolean muted = Boolean.FALSE;
     private Double seekPos;
     private Integer playlistPos;
-    private Playlist playlist = new Playlist();
+    @JsonIgnore
+    private Playlist playlist;
+
+    @JsonIgnore
+    private PlayerStatusStorage storage;
+
+    public PlayerStatus() {
+        this(new Playlist());
+    }
+
+    public PlayerStatus(Playlist playlist) {
+        this.playlist = playlist;
+    }
+
+    public PlayerStatus(Playlist playlist, PlayerStatusStorage storage) {
+        this(playlist);
+        this.storage = storage;
+    }
 
     public void updateTimestamp() {
         Long newTimestamp = System.currentTimeMillis();
@@ -22,6 +40,9 @@ public class PlayerStatus {
             newTimestamp++;
         }
         changedTimestamp = newTimestamp;
+        if (this.storage != null) {
+            storage.store(this);
+        }
     }
 
     public Boolean getPlaying() {
@@ -83,6 +104,7 @@ public class PlayerStatus {
         updateTimestamp();
     }
 
+    @JsonIgnore
     public PlaylistItem getCurrentPlaylistItem() {
         if (getPlaylistPos() != null) {
             if (getPlaylistPos() < getPlaylist().getItems().size()) {
@@ -94,5 +116,13 @@ public class PlayerStatus {
 
     public Long getChangedTimestamp() {
         return changedTimestamp;
+    }
+
+    public PlayerStatusStorage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(PlayerStatusStorage storage) {
+        this.storage = storage;
     }
 }

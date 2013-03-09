@@ -6,15 +6,26 @@
 package com.ickstream.player.model;
 
 import com.ickstream.protocol.service.player.PlaylistItem;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Playlist {
     private Long changedTimestamp = System.currentTimeMillis();
-    String id;
-    String name;
-    List<PlaylistItem> items = new ArrayList<PlaylistItem>();
+    private String id;
+    private String name;
+    private List<PlaylistItem> items = new ArrayList<PlaylistItem>();
+
+    @JsonIgnore
+    private PlaylistStorage storage;
+
+    public Playlist() {
+    }
+
+    public Playlist(PlaylistStorage storage) {
+        this.storage = storage;
+    }
 
     public void updateTimestamp() {
         Long newTimestamp = System.currentTimeMillis();
@@ -22,6 +33,9 @@ public class Playlist {
             newTimestamp++;
         }
         changedTimestamp = newTimestamp;
+        if (storage != null) {
+            storage.store(this);
+        }
     }
 
     public String getId() {
@@ -53,5 +67,13 @@ public class Playlist {
 
     public Long getChangedTimestamp() {
         return changedTimestamp;
+    }
+
+    public PlaylistStorage getStorage() {
+        return storage;
+    }
+
+    public void setStorage(PlaylistStorage storage) {
+        this.storage = storage;
     }
 }

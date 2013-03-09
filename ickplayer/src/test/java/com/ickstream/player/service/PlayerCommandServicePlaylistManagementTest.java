@@ -811,7 +811,7 @@ public class PlayerCommandServicePlaylistManagementTest {
     }
 
     private PlayerStatus getDefaultPlayerStatus(int numOfTracks) {
-        PlayerStatus status = new PlayerStatus();
+        PlayerStatus status = new PlayerStatus(new Playlist());
         status.setPlaying(true);
         status.setSeekPos(42.3);
         status.setPlaylist(getDefaultPlaylist(numOfTracks));
