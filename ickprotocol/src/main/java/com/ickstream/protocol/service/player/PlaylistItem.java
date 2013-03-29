@@ -8,7 +8,7 @@ package com.ickstream.protocol.service.player;
 import com.ickstream.protocol.common.data.StreamingReference;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -179,6 +179,22 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
         sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
     }
 
+    public void setRepeatMode(RepeatModeRequest request, MessageHandler<RepeatModeResponse> messageHandler) {
+        setRepeatMode(request, messageHandler, (Integer) null);
+    }
+
+    public void setRepeatMode(RepeatModeRequest request, MessageHandler<RepeatModeResponse> messageHandler, Integer timeout) {
+        sendRequest("setRepeatMode", request, RepeatModeResponse.class, messageHandler, timeout);
+    }
+
+    public void shuffle(MessageHandler<Boolean> messageHandler) {
+        shuffle(messageHandler, (Integer) null);
+    }
+
+    public void shuffle(MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("shuffle", null, Boolean.class, messageHandler, timeout);
+    }
+
     public void addPlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> listener) {
         addNotificationListener("playerStatusChanged", PlayerStatusResponse.class, listener);
     }

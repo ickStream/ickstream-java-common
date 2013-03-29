@@ -5,13 +5,13 @@
 
 package com.ickstream.common.jsonrpc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -25,10 +25,16 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     public static class SomeOtherException extends Exception {
     }
 
+    public static enum EnumValue {
+        OFF,
+        ON
+    }
+
     public static class ExtraParameters {
         private String param2;
         private Boolean param3;
         private Integer param4;
+        private EnumValue param5;
 
         public String getParam2() {
             return param2;
@@ -54,6 +60,14 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
             this.param4 = param4;
         }
 
+        public EnumValue getParam5() {
+            return param5;
+        }
+
+        public void setParam5(EnumValue param5) {
+            this.param5 = param5;
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
@@ -65,6 +79,9 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
             }
             if (param4 != null) {
                 sb.append("param4");
+            }
+            if (param5 != null) {
+                sb.append("param5");
             }
             return sb.toString();
         }
@@ -126,6 +143,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         private String resultString;
         private Boolean resultBoolean;
         private JsonNode resultJson;
+        private EnumValue resultEnum;
 
         public Integer getResultInteger() {
             return resultInteger;
@@ -157,6 +175,14 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
         public void setResultJson(JsonNode resultJson) {
             this.resultJson = resultJson;
+        }
+
+        public EnumValue getResultEnum() {
+            return resultEnum;
+        }
+
+        public void setResultEnum(EnumValue resultEnum) {
+            this.resultEnum = resultEnum;
         }
     }
 
@@ -271,7 +297,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
             Assert.assertNotNull(extraParameters);
             String extraAttributes = "";
             if (extraParameters != null) {
-                Iterator<Map.Entry<String, JsonNode>> fields = extraParameters.getFields();
+                Iterator<Map.Entry<String, JsonNode>> fields = extraParameters.fields();
                 List<String> fieldNames = new ArrayList<String>();
                 while (fields.hasNext()) {
                     Map.Entry<String, JsonNode> next = fields.next();
@@ -290,7 +316,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
             Assert.assertNotNull(extraParameters);
             String extraAttributes = "";
             if (extraParameters != null) {
-                Iterator<Map.Entry<String, JsonNode>> fields = extraParameters.getFields();
+                Iterator<Map.Entry<String, JsonNode>> fields = extraParameters.fields();
                 List<String> fieldNames = new ArrayList<String>();
                 while (fields.hasNext()) {
                     Map.Entry<String, JsonNode> next = fields.next();
@@ -366,6 +392,7 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
             object.put("attr1", 3);
             object.put("attr2", "4");
             result.setResultJson(object);
+            result.setResultEnum(EnumValue.OFF);
             return result;
         }
 

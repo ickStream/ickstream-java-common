@@ -95,7 +95,7 @@ public class HttpMessageSenderTest {
             public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getError());
                 Assert.assertNotNull(response.getResult());
-                Assert.assertEquals("42", response.getResult().getTextValue());
+                Assert.assertEquals("42", response.getResult().asText());
                 executed[0] = true;
                 return true;
             }
@@ -124,7 +124,7 @@ public class HttpMessageSenderTest {
             public boolean onResponse(JsonRpcResponse response) {
                 Assert.assertNull(response.getError());
                 Assert.assertNotNull(response.getResult());
-                Assert.assertEquals("42", response.getResult().getTextValue());
+                Assert.assertEquals("42", response.getResult().asText());
                 executed[0] = true;
                 return true;
             }

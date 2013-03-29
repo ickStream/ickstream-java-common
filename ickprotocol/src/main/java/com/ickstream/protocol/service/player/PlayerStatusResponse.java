@@ -13,6 +13,7 @@ public class PlayerStatusResponse {
     private Double volumeLevel;
     private Boolean muted;
     private PlaylistItem track;
+    private RepeatMode repeatMode;
 
     public Long getLastChanged() {
         return lastChanged;
@@ -68,5 +69,13 @@ public class PlayerStatusResponse {
 
     public void setTrack(PlaylistItem track) {
         this.track = track;
+    }
+
+    public RepeatMode getRepeatMode() {
+        return repeatMode;
+    }
+
+    public void setRepeatMode(RepeatMode repeatMode) {
+        this.repeatMode = repeatMode;
     }
 }

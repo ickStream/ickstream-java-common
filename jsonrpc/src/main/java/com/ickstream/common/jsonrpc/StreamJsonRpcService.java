@@ -5,12 +5,12 @@
 
 package com.ickstream.common.jsonrpc;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.node.ObjectNode;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -40,8 +40,8 @@ public class StreamJsonRpcService {
         this.serviceImplementation = serviceImplementation;
         this.serviceInterface = serviceInterface;
         mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.returnOnVoid = returnOnVoid;
         this.ignoreResponses = ignoreResponses;
     }
@@ -313,7 +313,7 @@ public class StreamJsonRpcService {
         for (int i = 0; i < parameterTypes.length; i++) {
             if (params.get(i) != null) {
                 convertedParams[i] = mapper.readValue(
-                        params.get(i), mapper.getTypeFactory().constructType(parameterTypes[i]));
+                        params.get(i).traverse(), mapper.getTypeFactory().constructType(parameterTypes[i]));
             } else {
                 convertedParams[i] = null;
             }

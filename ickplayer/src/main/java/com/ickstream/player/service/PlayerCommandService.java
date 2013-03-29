@@ -76,6 +76,7 @@ public class PlayerCommandService {
         }
         response.setLastChanged(playerStatus.getChangedTimestamp());
         response.setMuted(playerStatus.getMuted());
+        response.setRepeatMode(playerStatus.getRepeatMode());
         return response;
     }
 
@@ -488,6 +489,31 @@ public class PlayerCommandService {
             }, 2000);
         }
         return getVolume();
+    }
+
+    public synchronized RepeatModeResponse setRepeatMode(@JsonRpcParamStructure RepeatModeRequest request) {
+        playerStatus.setRepeatMode(request.getRepeatMode());
+        sendPlayerStatusChangedNotification();
+        return new RepeatModeResponse(playerStatus.getRepeatMode());
+    }
+
+    public synchronized Boolean shuffle() {
+        List<PlaylistItem> playlistItems = playerStatus.getPlaylist().getItems();
+        if(playlistItems.size()>1) {
+            PlaylistItem currentItem = null;
+            if(playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos() < playlistItems.size()) {
+                currentItem = playlistItems.remove(playerStatus.getPlaylistPos().intValue());
+            }
+            Collections.shuffle(playlistItems);
+            if(currentItem != null) {
+                playlistItems.add(0,currentItem);
+            }
+            playerStatus.getPlaylist().setItems(playlistItems);
+            playerStatus.setPlaylistPos(0);
+            sendPlaylistChangedNotification();
+            sendPlayerStatusChangedNotification();
+        }
+        return true;
     }
 
     private synchronized void sendPlaylistChangedNotification() {

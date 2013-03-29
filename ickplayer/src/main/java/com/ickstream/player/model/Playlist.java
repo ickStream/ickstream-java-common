@@ -5,8 +5,8 @@
 
 package com.ickstream.player.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ickstream.protocol.service.player.PlaylistItem;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -17,7 +17,7 @@ import com.ickstream.controller.service.*;
 import com.ickstream.protocol.common.NetworkAddressHelper;
 import com.ickstream.protocol.common.ServiceFactory;
 import com.ickstream.protocol.service.core.*;
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;

@@ -5,7 +5,7 @@
 
 package com.ickstream.common.jsonrpc;
 
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class JsonRpcResponse {
     private String jsonrpc = JsonRpcRequest.VERSION_2_0;

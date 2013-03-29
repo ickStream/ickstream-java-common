@@ -5,8 +5,9 @@
 
 package com.ickstream.player.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ickstream.protocol.service.player.PlaylistItem;
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.ickstream.protocol.service.player.RepeatMode;
 
 public class PlayerStatus {
     private Long changedTimestamp = System.currentTimeMillis();
@@ -15,6 +16,7 @@ public class PlayerStatus {
     private Boolean muted = Boolean.FALSE;
     private Double seekPos;
     private Integer playlistPos;
+    private RepeatMode repeatMode = RepeatMode.REPEAT_OFF;
     @JsonIgnore
     private Playlist playlist;
 
@@ -102,6 +104,17 @@ public class PlayerStatus {
             this.playlist = new Playlist();
         }
         updateTimestamp();
+    }
+
+    public RepeatMode getRepeatMode() {
+        return repeatMode;
+    }
+
+    public void setRepeatMode(RepeatMode repeatMode) {
+        if(!this.repeatMode.equals(repeatMode)) {
+            this.repeatMode = repeatMode;
+            updateTimestamp();
+        }
     }
 
     @JsonIgnore

@@ -5,8 +5,8 @@
 
 package com.ickstream.common.jsonrpc;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -53,7 +53,7 @@ public abstract class AbstractJsonRpcTest {
             }
             if (json != null) {
                 if (json.isTextual()) {
-                    return json.getTextValue();
+                    return json.asText();
                 } else {
                     return json.toString();
                 }

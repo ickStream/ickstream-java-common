@@ -154,6 +154,14 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
         playerService.play(false);
     }
 
+    public void setRepeatMode(RepeatModeRequest request) {
+        playerService.setRepeatMode(request, null);
+    }
+
+    public void shuffle() {
+        playerService.shuffle(null);
+    }
+
     public void setTrack(Integer playlistPos) {
         playerService.setTrack(playlistPos, null);
     }
