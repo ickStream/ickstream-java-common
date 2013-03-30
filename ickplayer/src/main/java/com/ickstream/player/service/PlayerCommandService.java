@@ -497,7 +497,7 @@ public class PlayerCommandService {
         return new RepeatModeResponse(playerStatus.getRepeatMode());
     }
 
-    public synchronized Boolean shuffle() {
+    public synchronized PlaylistModificationResponse shuffleTracks() {
         List<PlaylistItem> playlistItems = playerStatus.getPlaylist().getItems();
         if(playlistItems.size()>1) {
             PlaylistItem currentItem = null;
@@ -513,7 +513,7 @@ public class PlayerCommandService {
             sendPlaylistChangedNotification();
             sendPlayerStatusChangedNotification();
         }
-        return true;
+        return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
     private synchronized void sendPlaylistChangedNotification() {
