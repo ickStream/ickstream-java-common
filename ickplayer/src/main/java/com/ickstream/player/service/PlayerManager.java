@@ -25,4 +25,8 @@ public interface PlayerManager {
     void setVolume(Double volume);
 
     Double getSeekPosition();
+
+    void sendPlayerStatusChangedNotification();
+
+    void sendPlaylistChangedNotification();
 }

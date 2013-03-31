@@ -17,26 +17,14 @@ import java.util.*;
 public class PlayerCommandService {
     private PlayerStatus playerStatus;
     private PlayerManager player;
-    private PlayerNotificationSender notificationSender;
     private Timer volumeNotificationTimer;
 
     public PlayerCommandService(PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
     }
 
-    public PlayerCommandService(PlayerStatus playerStatus, PlayerNotificationSender notificationSender) {
-        this.playerStatus = playerStatus;
-        this.notificationSender = notificationSender;
-    }
-
     public PlayerCommandService(PlayerManager player, PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
-        this.player = player;
-    }
-
-    public PlayerCommandService(PlayerManager player, PlayerNotificationSender notificationSender, PlayerStatus playerStatus) {
-        this.playerStatus = playerStatus;
-        this.notificationSender = notificationSender;
         this.player = player;
     }
 
@@ -83,7 +71,9 @@ public class PlayerCommandService {
     public synchronized SetPlaylistNameResponse setPlaylistName(@JsonRpcParamStructure SetPlaylistNameRequest request) {
         playerStatus.getPlaylist().setId(request.getPlaylistId());
         playerStatus.getPlaylist().setName(request.getPlaylistName());
-        sendPlaylistChangedNotification();
+        if (player != null) {
+            player.sendPlaylistChangedNotification();
+        }
         return new SetPlaylistNameResponse(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size());
     }
 
@@ -125,7 +115,9 @@ public class PlayerCommandService {
         if (playerStatus.getPlaylistPos() == null) {
             playerStatus.setPlaylistPos(0);
         }
-        sendPlaylistChangedNotification();
+        if (player != null) {
+            player.sendPlaylistChangedNotification();
+        }
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
@@ -166,7 +158,9 @@ public class PlayerCommandService {
         if (!playerStatus.getPlaylistPos().equals(modifiedPlaylistPos)) {
             playerStatus.setPlaylistPos(modifiedPlaylistPos);
             if (playerStatus.getPlaying() && !affectsPlayback) {
-                sendPlayerStatusChangedNotification();
+                if (player != null) {
+                    player.sendPlayerStatusChangedNotification();
+                }
             }
         }
         // Make sure we make the player aware that it should change track
@@ -179,7 +173,9 @@ public class PlayerCommandService {
                 player.pause();
             }
         }
-        sendPlaylistChangedNotification();
+        if (player != null) {
+            player.sendPlaylistChangedNotification();
+        }
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
@@ -286,7 +282,9 @@ public class PlayerCommandService {
                 player.pause();
             }
         }
-        sendPlaylistChangedNotification();
+        if (player != null) {
+            player.sendPlaylistChangedNotification();
+        }
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
     }
 
@@ -352,7 +350,9 @@ public class PlayerCommandService {
             if (playerStatus.getPlaying() && player != null) {
                 player.play();
             } else {
-                sendPlayerStatusChangedNotification();
+                if (player != null) {
+                    player.sendPlayerStatusChangedNotification();
+                }
             }
             return playlistPos;
         } else {
@@ -390,9 +390,13 @@ public class PlayerCommandService {
                     }
                     if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos().equals(request.getPlaylistPos())) {
                         playerStatus.updateTimestamp();
-                        sendPlayerStatusChangedNotification();
+                        if (player != null) {
+                            player.sendPlayerStatusChangedNotification();
+                        }
                     }
-                    sendPlaylistChangedNotification();
+                    if (player != null) {
+                        player.sendPlaylistChangedNotification();
+                    }
                     return playerStatus.getPlaylist().getItems().get(request.getPlaylistPos());
                 } else {
                     throw new RuntimeException("Specified track doesn't exist at the specified playlist position");
@@ -431,11 +435,15 @@ public class PlayerCommandService {
                     }
                     if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos().equals(playlistPos)) {
                         playerStatus.updateTimestamp();
-                        sendPlayerStatusChangedNotification();
+                        if (player != null) {
+                            player.sendPlayerStatusChangedNotification();
+                        }
                     }
                 }
             }
-            sendPlaylistChangedNotification();
+            if (player != null) {
+                player.sendPlaylistChangedNotification();
+            }
             return response;
         }
     }
@@ -483,7 +491,9 @@ public class PlayerCommandService {
             volumeNotificationTimer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    sendPlayerStatusChangedNotification();
+                    if (player != null) {
+                        player.sendPlayerStatusChangedNotification();
+                    }
                     volumeNotificationTimer = null;
                 }
             }, 2000);
@@ -493,38 +503,30 @@ public class PlayerCommandService {
 
     public synchronized RepeatModeResponse setRepeatMode(@JsonRpcParamStructure RepeatModeRequest request) {
         playerStatus.setRepeatMode(request.getRepeatMode());
-        sendPlayerStatusChangedNotification();
+        if (player != null) {
+            player.sendPlayerStatusChangedNotification();
+        }
         return new RepeatModeResponse(playerStatus.getRepeatMode());
     }
 
     public synchronized PlaylistModificationResponse shuffleTracks() {
         List<PlaylistItem> playlistItems = playerStatus.getPlaylist().getItems();
-        if(playlistItems.size()>1) {
+        if (playlistItems.size() > 1) {
             PlaylistItem currentItem = null;
-            if(playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos() < playlistItems.size()) {
+            if (playerStatus.getPlaylistPos() != null && playerStatus.getPlaylistPos() < playlistItems.size()) {
                 currentItem = playlistItems.remove(playerStatus.getPlaylistPos().intValue());
             }
             Collections.shuffle(playlistItems);
-            if(currentItem != null) {
-                playlistItems.add(0,currentItem);
+            if (currentItem != null) {
+                playlistItems.add(0, currentItem);
             }
             playerStatus.getPlaylist().setItems(playlistItems);
             playerStatus.setPlaylistPos(0);
-            sendPlaylistChangedNotification();
-            sendPlayerStatusChangedNotification();
+            if (player != null) {
+                player.sendPlaylistChangedNotification();
+                player.sendPlayerStatusChangedNotification();
+            }
         }
         return new PlaylistModificationResponse(true, playerStatus.getPlaylistPos());
-    }
-
-    private synchronized void sendPlaylistChangedNotification() {
-        if (notificationSender != null) {
-            notificationSender.playlistChanged(new PlaylistChangedNotification(playerStatus.getPlaylist().getId(), playerStatus.getPlaylist().getName(), playerStatus.getPlaylist().getItems().size(), playerStatus.getPlaylist().getChangedTimestamp()));
-        }
-    }
-
-    private synchronized void sendPlayerStatusChangedNotification() {
-        if (notificationSender != null) {
-            notificationSender.playerStatusChanged(getPlayerStatus());
-        }
     }
 }
