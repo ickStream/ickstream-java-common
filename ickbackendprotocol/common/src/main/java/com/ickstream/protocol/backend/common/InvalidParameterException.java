@@ -3,7 +3,7 @@
  * All rights reserved
  */
 
-package com.ickstream.protocol.service.backend;
+package com.ickstream.protocol.backend.common;
 
 public class InvalidParameterException extends RuntimeException {
     public InvalidParameterException() {

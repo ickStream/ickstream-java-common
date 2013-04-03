@@ -3,16 +3,16 @@
  * All rights reserved
  */
 
-package com.ickstream.protocol.service.contentbackend;
+package com.ickstream.protocol.backend.content;
 
 import com.ickstream.common.jsonrpc.JsonRpcError;
 import com.ickstream.common.jsonrpc.JsonRpcErrors;
 import com.ickstream.common.jsonrpc.JsonRpcParam;
 import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
+import com.ickstream.protocol.backend.common.CloudService;
+import com.ickstream.protocol.backend.common.InvalidParameterException;
+import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.data.ContentItem;
-import com.ickstream.protocol.service.backend.CloudService;
-import com.ickstream.protocol.service.backend.InvalidParameterException;
-import com.ickstream.protocol.service.backend.UnauthorizedAccessException;
 import com.ickstream.protocol.service.content.ContentResponse;
 import com.ickstream.protocol.service.content.GetManagementProtocolDescriptionResponse;
 import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;

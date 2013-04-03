@@ -8,9 +8,9 @@ package com.ickstream.protocol.service.corebackend;
 import com.ickstream.common.jsonrpc.JsonRpcError;
 import com.ickstream.common.jsonrpc.JsonRpcErrors;
 import com.ickstream.common.jsonrpc.JsonRpcParam;
-import com.ickstream.protocol.service.backend.CloudService;
-import com.ickstream.protocol.service.backend.InvalidParameterException;
-import com.ickstream.protocol.service.backend.UnauthorizedAccessException;
+import com.ickstream.protocol.backend.common.CloudService;
+import com.ickstream.protocol.backend.common.InvalidParameterException;
+import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 
 public interface CoreBackendService extends CloudService {
     @JsonRpcErrors({

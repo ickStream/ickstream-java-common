@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.inject.Singleton;
 import com.ickstream.common.jsonrpc.HttpJsonRpcService;
-import com.ickstream.protocol.service.backend.CloudService;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

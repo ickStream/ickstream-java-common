@@ -7,7 +7,6 @@ package com.ickstream.protocol.backend.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ickstream.protocol.service.backend.UnauthorizedAccessException;
 import com.ickstream.protocol.service.corebackend.UserServiceResponse;
 import com.sun.jersey.api.client.*;
 import com.sun.jersey.api.client.filter.ClientFilter;

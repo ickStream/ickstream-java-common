@@ -10,8 +10,6 @@ import com.google.inject.Inject;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.service.ImageReference;
-import com.ickstream.protocol.service.backend.InvalidParameterException;
-import com.ickstream.protocol.service.backend.UnauthorizedAccessException;
 import com.ickstream.protocol.service.content.*;
 import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
@@ -26,7 +24,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class AbstractContentService extends AbstractCloudService implements com.ickstream.protocol.service.contentbackend.ContentService {
+public abstract class AbstractContentService extends AbstractCloudService implements ContentService {
     @Inject
     BusinessLogger businessLogger;
 

@@ -3,7 +3,7 @@
  * All rights reserved
  */
 
-package com.ickstream.protocol.service.backend;
+package com.ickstream.protocol.backend.common;
 
 import com.ickstream.common.jsonrpc.JsonRpcError;
 import com.ickstream.common.jsonrpc.JsonRpcErrors;

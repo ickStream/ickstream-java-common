@@ -3,7 +3,7 @@
  * All rights reserved
  */
 
-package com.ickstream.protocol.backend.core;
+package com.ickstream.protocol.service.corebackend;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.backend.common.BackendRequestContext;
@@ -12,7 +12,6 @@ import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
 import com.ickstream.protocol.service.ServiceInformation;
-import com.ickstream.protocol.service.corebackend.*;
 import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;

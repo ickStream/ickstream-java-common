@@ -7,15 +7,15 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ickstream.common.ickprotocol</groupId>
-    <artifactId>ickBackendProtocolParent</artifactId>
+    <artifactId>ickBackendProtocolCommon</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>ickBackendProtocolParent</name>
+    <name>ickBackendProtocolCommon</name>
     <organization>
         <name>ickStream GmbH</name>
         <url>http://www.ickstream.com</url>
     </organization>
 
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
     <scm>
         <connection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</connection>
@@ -44,7 +44,7 @@
         </dependency>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocol</artifactId>
+            <artifactId>ickProtocolCommon</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -99,8 +99,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <modules>
-        <module>common</module>
-        <module>content</module>
-    </modules>
 </project>

@@ -7,7 +7,6 @@ package com.ickstream.protocol.backend.common;
 
 import com.ickstream.protocol.service.ImageReference;
 import com.ickstream.protocol.service.ServiceInformation;
-import com.ickstream.protocol.service.backend.CloudService;
 import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.ServiceResponse;
 
