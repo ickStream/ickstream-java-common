@@ -5,6 +5,7 @@
 
 package com.ickstream.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ickstream.common.ickdiscovery.IckDiscovery;
 import com.ickstream.common.ickdiscovery.MessageListener;
 import com.ickstream.common.ickdiscovery.ServiceType;
@@ -15,9 +16,7 @@ import com.ickstream.controller.device.PlayerDeviceController;
 import com.ickstream.controller.device.PlayerListener;
 import com.ickstream.controller.service.*;
 import com.ickstream.protocol.common.NetworkAddressHelper;
-import com.ickstream.protocol.common.ServiceFactory;
 import com.ickstream.protocol.service.core.*;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.UnsupportedEncodingException;
 import java.util.*;
@@ -185,7 +184,7 @@ public class IckStreamController implements MessageListener {
 
     public CoreService getCoreService() {
         if (coreService == null) {
-            coreService = ServiceFactory.getCoreService(null, messageLogger);
+            coreService = CoreServiceFactory.getCoreService(null, messageLogger);
             coreService.setAccessToken(accessToken);
         }
         return coreService;

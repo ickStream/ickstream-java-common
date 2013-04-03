@@ -39,7 +39,17 @@
     <dependencies>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocol</artifactId>
+            <artifactId>ickProtocolPlayerService</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ickstream.common.ickprotocol</groupId>
+            <artifactId>ickProtocolCoreService</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ickstream.common.ickprotocol</groupId>
+            <artifactId>ickProtocolContentService</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
