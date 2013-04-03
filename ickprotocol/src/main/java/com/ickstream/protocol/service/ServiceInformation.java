@@ -5,11 +5,14 @@
 
 package com.ickstream.protocol.service;
 
+import java.util.List;
+
 public class ServiceInformation {
     private String id;
     private String name;
     private String type;
     private String url;
+    private List<ImageReference> images;
     private String serviceUrl;
 
     public String getId() {
@@ -50,5 +53,13 @@ public class ServiceInformation {
 
     public void setServiceUrl(String serviceUrl) {
         this.serviceUrl = serviceUrl;
+    }
+
+    public List<ImageReference> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ImageReference> images) {
+        this.images = images;
     }
 }

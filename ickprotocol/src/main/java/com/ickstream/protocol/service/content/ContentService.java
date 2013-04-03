@@ -41,13 +41,13 @@ public abstract class ContentService extends AbstractService implements Service 
 
     public abstract void setMessageLogger(MessageLogger messageLogger);
 
-    public ProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+    public GetProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
         return getProtocolDescription(request, (Integer) null);
     }
 
-    public ProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+    public GetProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
-            return sendRequest("getProtocolDescription", request, ProtocolDescriptionResponse.class, timeout);
+            return sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, timeout);
         } catch (JsonRpcException e) {
             throw getServiceException(e);
         } catch (JsonRpcTimeoutException e) {
@@ -55,12 +55,34 @@ public abstract class ContentService extends AbstractService implements Service 
         }
     }
 
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler) {
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         getProtocolDescription(request, messageHandler, (Integer) null);
     }
 
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout) {
-        sendRequest("getProtocolDescription", request, ProtocolDescriptionResponse.class, messageHandler, timeout);
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
+        sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, messageHandler, timeout);
+    }
+
+    public GetManagementProtocolDescriptionResponse getManagementProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+        return getManagementProtocolDescription(request, (Integer) null);
+    }
+
+    public GetManagementProtocolDescriptionResponse getManagementProtocolDescription(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getManagementProtocolDescription", request, GetManagementProtocolDescriptionResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getManagementProtocolDescription(ChunkedRequest request, MessageHandler<GetManagementProtocolDescriptionResponse> messageHandler) {
+        getManagementProtocolDescription(request, messageHandler, (Integer) null);
+    }
+
+    public void getManagementProtocolDescription(ChunkedRequest request, MessageHandler<GetManagementProtocolDescriptionResponse> messageHandler, Integer timeout) {
+        sendRequest("getManagementProtocolDescription", request, GetManagementProtocolDescriptionResponse.class, messageHandler, timeout);
     }
 
     public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {

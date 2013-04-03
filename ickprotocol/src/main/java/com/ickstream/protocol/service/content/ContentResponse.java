@@ -8,11 +8,12 @@ package com.ickstream.protocol.service.content;
 import com.ickstream.protocol.common.ChunkedResponse;
 import com.ickstream.protocol.common.data.ContentItem;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ContentResponse extends ChunkedResponse {
     private Long expirationTimestamp;
-    private List<ContentItem> items;
+    private List<ContentItem> items = new ArrayList<ContentItem>();
 
     public List<ContentItem> getItems() {
         return items;

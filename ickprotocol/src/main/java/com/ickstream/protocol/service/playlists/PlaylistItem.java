@@ -3,21 +3,22 @@
  * All rights reserved
  */
 
-package com.ickstream.protocol.common.data;
+package com.ickstream.protocol.service.playlists;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.ickstream.protocol.common.data.AbstractContentItem;
+import com.ickstream.protocol.common.data.StreamingReference;
+import com.ickstream.protocol.common.data.TrackAttributes;
 
 import java.util.List;
 
-public class ContentItem implements AbstractContentItem {
+public class PlaylistItem implements AbstractContentItem {
     private String id;
     private String parentNode;
     private String text;
-    private String sortText;
     private String type;
     private String image;
     private List<StreamingReference> streamingRefs;
-    private JsonNode itemAttributes;
+    private TrackAttributes itemAttributes;
 
     public String getId() {
         return id;
@@ -27,20 +28,20 @@ public class ContentItem implements AbstractContentItem {
         this.id = id;
     }
 
+    public String getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(String parentNode) {
+        this.parentNode = parentNode;
+    }
+
     public String getText() {
         return text;
     }
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public String getSortText() {
-        return sortText;
-    }
-
-    public void setSortText(String sortText) {
-        this.sortText = sortText;
     }
 
     public String getType() {
@@ -67,19 +68,11 @@ public class ContentItem implements AbstractContentItem {
         this.streamingRefs = streamingRefs;
     }
 
-    public JsonNode getItemAttributes() {
+    public TrackAttributes getItemAttributes() {
         return itemAttributes;
     }
 
-    public void setItemAttributes(JsonNode itemAttributes) {
+    public void setItemAttributes(TrackAttributes itemAttributes) {
         this.itemAttributes = itemAttributes;
-    }
-
-    public String getParentNode() {
-        return parentNode;
-    }
-
-    public void setParentNode(String parentNode) {
-        this.parentNode = parentNode;
     }
 }

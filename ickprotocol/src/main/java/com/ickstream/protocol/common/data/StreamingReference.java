@@ -22,6 +22,16 @@ public class StreamingReference {
         this.format = format;
     }
 
+    public StreamingReference(String format, Integer sampleRate, String url) {
+        this(format, url);
+        this.sampleRate = sampleRate;
+    }
+
+    public StreamingReference(String format, String url, Boolean intermediate) {
+        this(format, url);
+        this.intermediate = intermediate;
+    }
+
     public String getFormat() {
         return format;
     }

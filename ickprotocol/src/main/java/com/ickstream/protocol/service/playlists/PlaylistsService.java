@@ -1,0 +1,217 @@
+/*
+ * Copyright (C) 2013 ickStream GmbH
+ * All rights reserved
+ */
+
+package com.ickstream.protocol.service.playlists;
+
+import com.ickstream.common.jsonrpc.*;
+import com.ickstream.protocol.common.exception.ServiceException;
+import com.ickstream.protocol.common.exception.ServiceTimeoutException;
+import com.ickstream.protocol.service.AbstractService;
+import com.ickstream.protocol.service.Service;
+import org.apache.http.client.HttpClient;
+
+public class PlaylistsService extends AbstractService implements Service {
+
+    public PlaylistsService(HttpClient client, String endpoint) {
+        this(client, endpoint, (Integer) null);
+    }
+
+    public PlaylistsService(HttpClient client, String endpoint, IdProvider idProvider) {
+        this(client, endpoint, idProvider, null);
+    }
+
+    public PlaylistsService(HttpClient client, String endpoint, Integer defaultTimeout) {
+        this(client, endpoint, null, defaultTimeout);
+    }
+
+    public PlaylistsService(HttpClient client, String endpoint, IdProvider idProvider, Integer defaultTimeout) {
+        super(new HttpMessageSender(client, endpoint, true), idProvider, defaultTimeout);
+        ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
+    }
+
+    public void setMessageLogger(MessageLogger messageLogger) {
+        ((HttpMessageSender) getMessageSender()).setMessageLogger(messageLogger);
+    }
+
+    public void setAccessToken(String accessToken) {
+        ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
+    }
+
+    public FindPlaylistsResponse findPlaylists(FindPlaylistsRequest request) throws ServiceException, ServiceTimeoutException {
+        return findPlaylists(request, (Integer) null);
+    }
+
+    public FindPlaylistsResponse findPlaylists(FindPlaylistsRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("findPlaylists", request, FindPlaylistsResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void findPlaylists(FindPlaylistsRequest request, MessageHandler<FindPlaylistsResponse> messageHandler) {
+        findPlaylists(request, messageHandler, (Integer) null);
+    }
+
+    public void findPlaylists(FindPlaylistsRequest request, MessageHandler<FindPlaylistsResponse> messageHandler, Integer timeout) {
+        sendRequest("findPlaylists", request, FindPlaylistsResponse.class, messageHandler, timeout);
+    }
+
+    public GetPlaylistResponse getPlaylist(GetPlaylistRequest request) throws ServiceException, ServiceTimeoutException {
+        return getPlaylist(request, (Integer) null);
+    }
+
+    public GetPlaylistResponse getPlaylist(GetPlaylistRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getPlaylist", request, GetPlaylistResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getPlaylist(GetPlaylistRequest request, MessageHandler<GetPlaylistResponse> messageHandler) {
+        getPlaylist(request, messageHandler, (Integer) null);
+    }
+
+    public void getPlaylist(GetPlaylistRequest request, MessageHandler<GetPlaylistResponse> messageHandler, Integer timeout) {
+        sendRequest("getPlaylist", request, GetPlaylistResponse.class, messageHandler, timeout);
+    }
+
+    public Boolean removePlaylist(RemovePlaylistRequest request) throws ServiceException, ServiceTimeoutException {
+        return removePlaylist(request, (Integer) null);
+    }
+
+    public Boolean removePlaylist(RemovePlaylistRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("removePlaylist", request, Boolean.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void removePlaylist(RemovePlaylistRequest request, MessageHandler<Boolean> messageHandler) {
+        removePlaylist(request, messageHandler, (Integer) null);
+    }
+
+    public void removePlaylist(RemovePlaylistRequest request, MessageHandler<Boolean> messageHandler, Integer timeout) {
+        sendRequest("removePlaylist", request, Boolean.class, messageHandler, timeout);
+    }
+
+    public SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request) throws ServiceException, ServiceTimeoutException {
+        return setPlaylistName(request, (Integer) null);
+    }
+
+    public SetPlaylistNameResponse setPlaylistName(SetPlaylistNameRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messageHandler) {
+        setPlaylistName(request, messageHandler, (Integer) null);
+    }
+
+    public void setPlaylistName(SetPlaylistNameRequest request, MessageHandler<SetPlaylistNameResponse> messageHandler, Integer timeout) {
+        sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, messageHandler, timeout);
+    }
+
+    public PlaylistModificationResponse setTracks(PlaylistSetTracksRequest request) throws ServiceException, ServiceTimeoutException {
+        return setTracks(request, (Integer) null);
+    }
+
+    public PlaylistModificationResponse setTracks(PlaylistSetTracksRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("setTracks", request, PlaylistModificationResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        setTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public PlaylistModificationResponse addTracks(PlaylistAddTracksRequest request) throws ServiceException, ServiceTimeoutException {
+        return addTracks(request, (Integer) null);
+    }
+
+    public PlaylistModificationResponse addTracks(PlaylistAddTracksRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("addTracks", request, PlaylistModificationResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        addTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("addTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public PlaylistModificationResponse removeTracks(PlaylistRemoveTracksRequest request) throws ServiceException, ServiceTimeoutException {
+        return removeTracks(request, (Integer) null);
+    }
+
+    public PlaylistModificationResponse removeTracks(PlaylistRemoveTracksRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("removeTracks", request, PlaylistModificationResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        removeTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("removeTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+
+    public PlaylistModificationResponse moveTracks(PlaylistMoveTracksRequest request) throws ServiceException, ServiceTimeoutException {
+        return moveTracks(request, (Integer) null);
+    }
+
+    public PlaylistModificationResponse moveTracks(PlaylistMoveTracksRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("moveTracks", request, PlaylistModificationResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+        moveTracks(request, messageHandler, (Integer) null);
+    }
+
+    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("moveTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    }
+}

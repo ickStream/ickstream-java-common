@@ -5,20 +5,8 @@
 
 package com.ickstream.protocol.service.core;
 
-public class AddDeviceResponse {
-    private String id;
+public class AddDeviceResponse extends DeviceResponse {
     private String accessToken;
-    private String name;
-    private String model;
-    private String address;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getAccessToken() {
         return accessToken;
@@ -26,29 +14,5 @@ public class AddDeviceResponse {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public void setModel(String model) {
-        this.model = model;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 }
