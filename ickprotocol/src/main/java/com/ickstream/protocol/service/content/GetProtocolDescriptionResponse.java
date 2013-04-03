@@ -7,10 +7,11 @@ package com.ickstream.protocol.service.content;
 
 import com.ickstream.protocol.common.ChunkedResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GetProtocolDescriptionResponse extends ChunkedResponse {
-    private List<ProtocolDescriptionContext> items;
+    private List<ProtocolDescriptionContext> items = new ArrayList<ProtocolDescriptionContext>();
 
     public List<ProtocolDescriptionContext> getItems() {
         return items;
