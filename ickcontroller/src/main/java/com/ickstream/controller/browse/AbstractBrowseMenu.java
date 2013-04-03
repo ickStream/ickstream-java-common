@@ -7,15 +7,15 @@ package com.ickstream.controller.browse;
 
 import com.ickstream.common.jsonrpc.MessageHandlerAdapter;
 import com.ickstream.controller.service.ServiceController;
-import com.ickstream.protocol.service.content.ProtocolDescriptionResponse;
-import com.ickstream.protocol.service.content.ProtocolDescriptionResponseContext;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.ProtocolDescriptionContext;
 import com.ickstream.protocol.service.content.RequestDescription;
 
 import java.util.*;
 
 public abstract class AbstractBrowseMenu implements BrowseMenu {
     protected ServiceController service;
-    private final Map<String, ProtocolDescriptionResponseContext> supportedRequests = new HashMap<String, ProtocolDescriptionResponseContext>();
+    private final Map<String, ProtocolDescriptionContext> supportedRequests = new HashMap<String, ProtocolDescriptionContext>();
 
     public AbstractBrowseMenu(ServiceController service) {
         this.service = service;
@@ -23,12 +23,12 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
 
     protected void getProtocol(final ResponseListener<Boolean> listener) {
         if (supportedRequests.size() == 0) {
-            service.getProtocolDescription(null, new MessageHandlerAdapter<ProtocolDescriptionResponse>() {
+            service.getProtocolDescription(null, new MessageHandlerAdapter<GetProtocolDescriptionResponse>() {
                 @Override
-                public void onMessage(ProtocolDescriptionResponse message) {
+                public void onMessage(GetProtocolDescriptionResponse message) {
                     synchronized (supportedRequests) {
                         supportedRequests.clear();
-                        for (ProtocolDescriptionResponseContext context : message.getItems()) {
+                        for (ProtocolDescriptionContext context : message.getItems()) {
                             supportedRequests.put(context.getContextId(), context);
 
                         }
@@ -42,7 +42,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
     }
 
     protected Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem, Comparator<Map<String, String>> comparator) {
-        ProtocolDescriptionResponseContext context;
+        ProtocolDescriptionContext context;
         synchronized (supportedRequests) {
             context = supportedRequests.get(contextId);
         }
@@ -96,7 +96,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
     protected List<ContextMenuItem> findPossibleTopLevelContexts() {
         List<ContextMenuItem> response = new ArrayList<ContextMenuItem>();
         synchronized (supportedRequests) {
-            for (ProtocolDescriptionResponseContext context : supportedRequests.values()) {
+            for (ProtocolDescriptionContext context : supportedRequests.values()) {
                 boolean supported = false;
                 for (RequestDescription supportedRequest : context.getSupportedRequests()) {
                     for (List<String> parameters : supportedRequest.getParameters()) {
@@ -125,7 +125,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
     }
 
     protected List<String> findPossibleTypeRequests(String contextId, MenuItem parentItem) {
-        ProtocolDescriptionResponseContext context;
+        ProtocolDescriptionContext context;
         synchronized (supportedRequests) {
             context = supportedRequests.get(contextId);
         }
@@ -158,7 +158,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         return availableTypeRequests;
     }
 
-    protected List<Map<String, String>> findPossibleRequests(ProtocolDescriptionResponseContext context, String type, MenuItem parentItem) {
+    protected List<Map<String, String>> findPossibleRequests(ProtocolDescriptionContext context, String type, MenuItem parentItem) {
         boolean supported = false;
         String supportedType = null;
         List<Map<String, String>> possibleRequests = new ArrayList<Map<String, String>>();

@@ -11,7 +11,7 @@ import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.service.content.ContentResponse;
 import com.ickstream.protocol.service.content.ContentService;
-import com.ickstream.protocol.service.content.ProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 
 import java.util.Map;
 
@@ -40,12 +40,12 @@ public class AbstractServiceController implements ServiceController, JsonRpcResp
     }
 
     @Override
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler) {
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         contentService.getProtocolDescription(request, messageHandler);
     }
 
     @Override
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout) {
+    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
         contentService.getProtocolDescription(request, messageHandler, timeout);
     }
 

@@ -8,7 +8,7 @@ package com.ickstream.controller.service;
 import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.service.content.ContentResponse;
-import com.ickstream.protocol.service.content.ProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 
 import java.util.Map;
 
@@ -19,9 +19,9 @@ public interface ServiceController {
 
     String getServiceUrl();
 
-    void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler);
+    void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler);
 
-    void getProtocolDescription(ChunkedRequest request, MessageHandler<ProtocolDescriptionResponse> messageHandler, Integer timeout);
+    void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout);
 
     void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler);
 

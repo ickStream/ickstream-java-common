@@ -13,7 +13,7 @@ import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.content.ContentResponse;
-import com.ickstream.protocol.service.content.ProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -277,12 +277,12 @@ public class FullBrowseMenuTest {
         return menu;
     }
 
-    private void setupGetProtocolDescriptionAnswer(ServiceController serviceController, final ProtocolDescriptionResponse protocolDescription) {
+    private void setupGetProtocolDescriptionAnswer(ServiceController serviceController, final GetProtocolDescriptionResponse protocolDescription) {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                MessageHandler<ProtocolDescriptionResponse> callback = (MessageHandler<ProtocolDescriptionResponse>) args[1];
+                MessageHandler<GetProtocolDescriptionResponse> callback = (MessageHandler<GetProtocolDescriptionResponse>) args[1];
                 callback.onMessage(protocolDescription);
                 return null;
             }
@@ -304,7 +304,7 @@ public class FullBrowseMenuTest {
     @Test
     public void testArtistTrack_TopLevelContexts() throws ServiceTimeoutException, ServiceException {
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        final ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        final GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         Mockito.doAnswer(new Answer() {
             @Override
@@ -329,7 +329,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("type", "artist");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
@@ -351,7 +351,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("artistId", "artist1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
@@ -369,7 +369,7 @@ public class FullBrowseMenuTest {
     @Test
     public void testArtistTrackWithoutFiltering_TopLevelContexts() throws ServiceTimeoutException, ServiceException {
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         Mockito.doAnswer(new Answer() {
             @Override
@@ -395,7 +395,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("type", "artist");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
@@ -417,7 +417,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("artistId", "artist1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "allMusic", expectedRequest, trackList);
@@ -435,7 +435,7 @@ public class FullBrowseMenuTest {
     @Test
     public void testArtistAlbumTrack_TopLevelContexts() throws ServiceTimeoutException, ServiceException {
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         Mockito.doAnswer(new Answer() {
             @Override
@@ -460,7 +460,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("type", "artist");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
@@ -482,7 +482,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("artistId", "artist1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse albumList = jsonHelper.stringToObject(ALBUM_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, albumList);
@@ -504,7 +504,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("albumId", "album1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
@@ -522,7 +522,7 @@ public class FullBrowseMenuTest {
     @Test
     public void testMenuStream_TopLevelContexts() throws ServiceTimeoutException, ServiceException {
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         Mockito.doAnswer(new Answer() {
             @Override
@@ -547,7 +547,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("type", "menu");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse menuList = jsonHelper.stringToObject(MENU_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "allRadio", expectedRequest, menuList);
@@ -568,7 +568,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("menuId", "menu1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse subMenuList = jsonHelper.stringToObject(SUB_MENU_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "allRadio", expectedRequest, subMenuList);
@@ -590,7 +590,7 @@ public class FullBrowseMenuTest {
         expectedRequest.put("menuId", "submenu1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
-        ProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, ProtocolDescriptionResponse.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(STREAM_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
