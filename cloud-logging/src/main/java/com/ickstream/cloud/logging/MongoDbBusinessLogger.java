@@ -142,33 +142,37 @@ public class MongoDbBusinessLogger implements BusinessLogger, BusinessLoggerQuer
             query = new BasicDBObject();
         }
         DBCursor cursor = db.getCollection("businesslog").find(query).sort(new BasicDBObject("timestamp", -1));
-        List<BusinessLoggerEntry> result = new ArrayList<BusinessLoggerEntry>(count != null ? count : 100);
-        while (cursor.hasNext() && (count == null || count > result.size())) {
-            DBObject obj = cursor.next();
-            Map<String, Object> parameters = new HashMap<String, Object>();
-            Object paramObj = obj.get("parameters");
-            if (paramObj instanceof Map) {
-                Map paramMap = (Map) paramObj;
-                for (Object key : paramMap.keySet()) {
-                    parameters.put(key.toString(), paramMap.get(key));
+        try {
+            List<BusinessLoggerEntry> result = new ArrayList<BusinessLoggerEntry>(count != null ? count : 100);
+            while (cursor.hasNext() && (count == null || count > result.size())) {
+                DBObject obj = cursor.next();
+                Map<String, Object> parameters = new HashMap<String, Object>();
+                Object paramObj = obj.get("parameters");
+                if (paramObj instanceof Map) {
+                    Map paramMap = (Map) paramObj;
+                    for (Object key : paramMap.keySet()) {
+                        parameters.put(key.toString(), paramMap.get(key));
+                    }
                 }
-            }
 
-            BusinessLoggerEntry entry = new BusinessLoggerEntry(
-                    obj.get("service") != null ? obj.get("service").toString() : null,
-                    obj.get("deviceId") != null ? obj.get("deviceId").toString() : null,
-                    obj.get("deviceModel") != null ? obj.get("deviceModel").toString() : null,
-                    obj.get("userId") != null ? obj.get("userId").toString() : null,
-                    obj.get("address") != null ? obj.get("address").toString() : null,
-                    obj.get("method") != null ? obj.get("method").toString() : null,
-                    parameters,
-                    obj.get("error") != null ? obj.get("error").toString() : null,
-                    obj.get("exception") != null ? obj.get("exception").toString() : null,
-                    obj.get("duration") != null ? (Long) obj.get("duration") : null,
-                    obj.get("timestamp") != null ? ((Date) obj.get("timestamp")).getTime() : null
-            );
-            result.add(entry);
+                BusinessLoggerEntry entry = new BusinessLoggerEntry(
+                        obj.get("service") != null ? obj.get("service").toString() : null,
+                        obj.get("deviceId") != null ? obj.get("deviceId").toString() : null,
+                        obj.get("deviceModel") != null ? obj.get("deviceModel").toString() : null,
+                        obj.get("userId") != null ? obj.get("userId").toString() : null,
+                        obj.get("address") != null ? obj.get("address").toString() : null,
+                        obj.get("method") != null ? obj.get("method").toString() : null,
+                        parameters,
+                        obj.get("error") != null ? obj.get("error").toString() : null,
+                        obj.get("exception") != null ? obj.get("exception").toString() : null,
+                        obj.get("duration") != null ? (Long) obj.get("duration") : null,
+                        obj.get("timestamp") != null ? ((Date) obj.get("timestamp")).getTime() : null
+                );
+                result.add(entry);
+            }
+            return result;
+        } finally {
+            cursor.close();
         }
-        return result;
     }
 }
