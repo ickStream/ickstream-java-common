@@ -3,7 +3,7 @@
  * All rights reserved
  */
 
-package com.ickstream.cloud.core.support;
+package com.ickstream.cloud.database;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -14,10 +14,21 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.Properties;
 
-public class JPATestModule extends AbstractModule {
-    private static final String H2_MEMORY_DATABASE = "jdbc:h2:mem:ickstream";
+public abstract class AbstractJPATestModule extends AbstractModule {
     private static final ThreadLocal<EntityManager> ENTITY_MANAGER_CACHE = new ThreadLocal<EntityManager>();
     private static EntityManagerFactory emFactory;
+
+    protected abstract String getDatabaseUrl();
+
+    protected abstract String getPersistentUnit();
+
+    protected String getDatabaseDriver() {
+        return "org.h2.Driver";
+    }
+
+    protected String getDatabaseDialect() {
+        return "org.hibernate.dialect.H2Dialect";
+    }
 
     @Override
     protected void configure() {
@@ -28,13 +39,13 @@ public class JPATestModule extends AbstractModule {
     @Singleton
     public EntityManagerFactory provideEntityManagerFactory() throws ClassNotFoundException {
         if (emFactory == null) {
-            Class.forName("org.h2.Driver");
+            Class.forName(getDatabaseDriver());
             Properties properties = new Properties();
-            properties.put("hibernate.connection.url", H2_MEMORY_DATABASE);
-            properties.put("hibernate.connection.driver_class", "org.h2.Driver");
-            properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
+            properties.put("hibernate.connection.url", getDatabaseUrl());
+            properties.put("hibernate.connection.driver_class", getDatabaseDriver());
+            properties.put("hibernate.dialect", getDatabaseDialect());
             properties.put("hibernate.show_sql", "true");
-            emFactory = Persistence.createEntityManagerFactory("ickstream", properties);
+            emFactory = Persistence.createEntityManagerFactory(getPersistentUnit(), properties);
         }
         return emFactory;
     }

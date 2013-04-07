@@ -3,7 +3,7 @@
  * All rights reserved
  */
 
-package com.ickstream.cloud.core;
+package com.ickstream.cloud.database;
 
 import org.testng.annotations.BeforeMethod;
 
