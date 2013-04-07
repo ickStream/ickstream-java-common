@@ -66,6 +66,17 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     @Override
+    public UserServiceResponse setUserService(UserServiceRequest request) {
+        try {
+            return sendRequest("setUserService", request, UserServiceResponse.class, (Integer) null);
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
     public ServiceInformation getServiceInformation() {
         try {
             return sendRequest("getServiceInformation", null, ServiceInformation.class, (Integer) null);

@@ -8,6 +8,7 @@ package com.ickstream.protocol.service.corebackend;
 import com.ickstream.common.jsonrpc.JsonRpcError;
 import com.ickstream.common.jsonrpc.JsonRpcErrors;
 import com.ickstream.common.jsonrpc.JsonRpcParam;
+import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
 import com.ickstream.protocol.backend.common.CloudService;
 import com.ickstream.protocol.backend.common.InvalidParameterException;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
@@ -18,6 +19,12 @@ public interface CoreBackendService extends CloudService {
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
     UserServiceResponse getUserService(@JsonRpcParam(name = "deviceId") String deviceId);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    UserServiceResponse setUserService(@JsonRpcParamStructure UserServiceRequest request);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
