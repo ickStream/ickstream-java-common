@@ -155,7 +155,7 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
             if (list.size() == 0 && header != null) {
                 Matcher m = Pattern.compile("\\s*(\\w*)\\s+(.*)").matcher(header);
                 if (m.matches()) {
-                    if ("OAuth".equalsIgnoreCase(m.group(1))) {
+                    if ("OAuth".equalsIgnoreCase(m.group(1)) || "Bearer".equalsIgnoreCase(m.group(1))) {
                         list.add(new OAuth.Parameter(OAuth.OAUTH_TOKEN, m.group(2)));
                     }
                 }
