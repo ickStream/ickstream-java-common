@@ -252,7 +252,7 @@ public class JsonCallHelper {
         client.addFilter(new ClientFilter() {
             @Override
             public ClientResponse handle(ClientRequest clientRequest) throws ClientHandlerException {
-                clientRequest.getHeaders().add("Authorization", "OAuth " + userService.getAccessToken());
+                clientRequest.getHeaders().add("Authorization", "Bearer " + userService.getAccessToken());
                 return getNext().handle(clientRequest);
             }
         });
