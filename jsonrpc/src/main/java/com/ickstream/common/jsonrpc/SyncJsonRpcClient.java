@@ -63,7 +63,7 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         }
     }
 
-    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer timeout) throws JsonRpcException, JsonRpcTimeoutException {
+    public <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer timeout) throws JsonRpcException, JsonRpcTimeoutException {
         List<T> results = new ArrayList<T>();
         List<JsonRpcResponse.Error> errors = new ArrayList<JsonRpcResponse.Error>();
         Semaphore semaphore = new Semaphore(0);
@@ -98,7 +98,7 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         }
     }
 
-    protected <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException, JsonRpcTimeoutException {
+    public <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException, JsonRpcTimeoutException {
         return sendRequest(method, params, messageResponseClass, (Integer) null);
     }
 }

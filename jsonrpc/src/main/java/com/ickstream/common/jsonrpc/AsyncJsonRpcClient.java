@@ -58,15 +58,15 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
         return messageSender;
     }
 
-    protected String sendRequest(String method, Object params) {
+    public String sendRequest(String method, Object params) {
         return sendRequest(method, params, null, null);
     }
 
-    protected String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
+    public String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
         return sendRequest(method, params, messageResponseClass, messageHandler, null);
     }
 
-    protected String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
+    public String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
         Object id;
         synchronized (messageHandlers) {
             id = idProvider.getNextId().toString();
