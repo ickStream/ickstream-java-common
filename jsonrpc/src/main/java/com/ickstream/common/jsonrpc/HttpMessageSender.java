@@ -91,7 +91,7 @@ public class HttpMessageSender implements MessageSender {
                 return;
             }
         }
-        httpRequest.setHeader("Authorization", "OAuth " + accessToken);
+        httpRequest.setHeader("Authorization", "Bearer " + accessToken);
         if (messageLogger != null) {
             messageLogger.onOutgoingMessage(endpoint, message);
         }
