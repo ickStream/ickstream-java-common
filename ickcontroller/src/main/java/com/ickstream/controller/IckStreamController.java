@@ -23,6 +23,7 @@ import java.util.*;
 
 public class IckStreamController implements MessageListener {
     private String id;
+    private String name;
     private static final String API_KEY = "987C3A70-A076-4312-8EF9-53E954B65F8B";
     private IckDiscovery ickDiscovery;
     private MessageLogger messageLogger;
@@ -42,6 +43,19 @@ public class IckStreamController implements MessageListener {
     public String getId() {
         return id;
     }
+
+    protected void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    protected void setName(String name) {
+        this.name = name;
+    }
+
 
     private ObjectChangeListener<Device> deviceListener = new ObjectChangeListener<Device>() {
         @Override
@@ -66,32 +80,56 @@ public class IckStreamController implements MessageListener {
         }
     };
 
+    protected ServiceController removeLocalService(Service object) {
+        return localServiceControllers.remove(object.getId());
+    }
+
+    protected ServiceController removeCloudService(Service object) {
+        return cloudServiceControllers.remove(object.getId());
+    }
+
+    protected LocalServiceController addLocalService(Service object, com.ickstream.common.ickdiscovery.MessageSender messageSender, MessageLogger messageLogger) {
+        return new LocalServiceController(object, messageSender, messageLogger);
+    }
+
+    protected CloudServiceController addCloudService(Service object, String accessToken, MessageLogger messageLogger) {
+        return new CloudServiceController(object, accessToken, messageLogger);
+    }
+
     private ObjectChangeListener<Service> serviceListener = new ObjectChangeListener<Service>() {
         @Override
         public void onRemoved(Service object) {
-            ServiceController removedService = localServiceControllers.remove(object.getId());
+            ServiceController removedService = removeLocalService(object);
             if (removedService == null) {
-                removedService = cloudServiceControllers.remove(object.getId());
+                removedService = removeCloudService(object);
             }
-            for (ServiceListener serviceListener : serviceListeners) {
-                serviceListener.onServiceRemoved(removedService);
+            if (removedService != null) {
+                for (ServiceListener serviceListener : serviceListeners) {
+                    serviceListener.onServiceRemoved(removedService);
+                }
             }
         }
 
         @Override
         public void onAdded(Service object) {
-            ServiceController controller;
+            ServiceController controller = null;
             if (object.getUrl() == null) {
-                LocalServiceController localServiceController = new LocalServiceController(object, ickDiscovery, messageLogger);
-                localServiceControllers.put(object.getId(), localServiceController);
-                controller = localServiceController;
+                LocalServiceController localServiceController = addLocalService(object, ickDiscovery, messageLogger);
+                if (localServiceController != null) {
+                    localServiceControllers.put(object.getId(), localServiceController);
+                    controller = localServiceController;
+                }
             } else {
-                CloudServiceController cloudServiceController = new CloudServiceController(object, accessToken, messageLogger);
-                cloudServiceControllers.put(object.getId(), cloudServiceController);
-                controller = cloudServiceController;
+                CloudServiceController cloudServiceController = addCloudService(object, accessToken, messageLogger);
+                if (cloudServiceController != null) {
+                    cloudServiceControllers.put(object.getId(), cloudServiceController);
+                    controller = cloudServiceController;
+                }
             }
-            for (ServiceListener serviceListener : serviceListeners) {
-                serviceListener.onServiceAdded(controller);
+            if (controller != null) {
+                for (ServiceListener serviceListener : serviceListeners) {
+                    serviceListener.onServiceAdded(controller);
+                }
             }
         }
     };
@@ -106,25 +144,36 @@ public class IckStreamController implements MessageListener {
     }
 
     public void unregisterCloud() {
-        getCoreService().getDevice(new MessageHandlerAdapter<DeviceResponse>() {
-            @Override
-            public void onMessage(DeviceResponse message) {
-                getCoreService().removeDevice(new DeviceRequest(message.getId()), new MessageHandlerAdapter<Boolean>() {
-                    @Override
-                    public void onMessage(Boolean message) {
-                        if (message) {
-                            for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                                ickStreamListener.onCloudUnregistered();
+        final CoreService coreService = getCoreService();
+        if (coreService != null) {
+            coreService.getDevice(new MessageHandlerAdapter<DeviceResponse>() {
+                @Override
+                public void onMessage(DeviceResponse message) {
+                    coreService.removeDevice(new DeviceRequest(message.getId()), new MessageHandlerAdapter<Boolean>() {
+                        @Override
+                        public void onMessage(Boolean message) {
+                            if (message) {
+                                for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                                    ickStreamListener.onCloudUnregistered();
+                                }
                             }
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
+            });
+        }
     }
 
     public void registerCloud(String model, String name, String userToken) {
-        getCoreService().setAccessToken(userToken);
+        registerCloud(model, name, userToken, null);
+    }
+
+    public void registerCloud(String model, String name, String userToken, String hardwareIdAppPostfix) {
+        CoreService coreService = getCoreService();
+        if (coreService == null) {
+            return;
+        }
+        coreService.setAccessToken(userToken);
         AddDeviceWithHardwareIdRequest request = new AddDeviceWithHardwareIdRequest();
         request.setModel(model);
         request.setApplicationId(API_KEY);
@@ -133,6 +182,9 @@ public class IckStreamController implements MessageListener {
         String hardwareId = NetworkAddressHelper.getNetworkHardwareAddress();
         if (hardwareId != null) {
             hardwareId = UUID.nameUUIDFromBytes(hardwareId.getBytes()).toString();
+            if (hardwareIdAppPostfix != null) {
+                hardwareId += hardwareIdAppPostfix;
+            }
         }
         request.setHardwareId(hardwareId);
         if (hardwareId != null) {
@@ -192,13 +244,16 @@ public class IckStreamController implements MessageListener {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
-        getCoreService().setAccessToken(accessToken);
+        CoreService coreService = getCoreService();
+        if (coreService != null) {
+            getCoreService().setAccessToken(accessToken);
+        }
         for (CloudServiceController cloudServiceController : cloudServiceControllers.values()) {
             cloudServiceController.setAccessToken(accessToken);
         }
     }
 
-    private void start(String deviceId, String deviceName) {
+    protected void start(String deviceId, String deviceName) {
         deviceDiscoveryController = new DeviceDiscoveryController(threadFramework, getCoreService(), messageLogger);
         deviceDiscoveryController.addDeviceListener(deviceListener);
         serviceDiscoveryController = new ServiceDiscoveryController(threadFramework, getCoreService(), messageLogger);
@@ -211,7 +266,13 @@ public class IckStreamController implements MessageListener {
         for (IckStreamListener ickStreamListener : ickStreamListeners) {
             ickStreamListener.onNetworkInitialized();
         }
+    }
+
+    protected void refreshServices() {
         serviceDiscoveryController.refreshServices();
+    }
+
+    protected void refreshDevices() {
         deviceDiscoveryController.refreshDevices();
     }
 
@@ -223,24 +284,30 @@ public class IckStreamController implements MessageListener {
     }
 
     public void start() {
-        getCoreService().setDeviceAddress(new SetDeviceAddressRequest(NetworkAddressHelper.getNetworkAddress()), new MessageHandlerAdapter<DeviceResponse>() {
-            @Override
-            public void onMessage(DeviceResponse message) {
-                id = message.getId();
-                start(message.getId(), message.getName());
-            }
+        CoreService coreService = getCoreService();
+        if (coreService != null) {
+            getCoreService().setDeviceAddress(new SetDeviceAddressRequest(NetworkAddressHelper.getNetworkAddress()), new MessageHandlerAdapter<DeviceResponse>() {
+                @Override
+                public void onMessage(DeviceResponse message) {
+                    setId(message.getId());
+                    setName(message.getName());
+                    start(getId(), getName());
+                }
 
-            @Override
-            public void onError(int code, String message, String data) {
-                for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                    if (code == JsonRpcError.UNAUTHORIZED) {
-                        ickStreamListener.onUnauthorized();
-                    } else {
-                        ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
+                @Override
+                public void onError(int code, String message, String data) {
+                    for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                        if (code == JsonRpcError.UNAUTHORIZED) {
+                            ickStreamListener.onUnauthorized();
+                        } else {
+                            ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
+                        }
                     }
                 }
-            }
-        }, 5000);
+            }, 5000);
+        } else if (getId() != null) {
+            start(getId(), getName());
+        }
     }
 
     public void stopNetwork() {
