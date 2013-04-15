@@ -249,10 +249,14 @@ public class JsonCallHelper {
     }
 
     public static void addAuthorizationHeader(Client client, final UserServiceResponse userService) {
+        addAuthorizationHeader(client, "Bearer", userService);
+    }
+
+    public static void addAuthorizationHeader(Client client, final String tokenType, final UserServiceResponse userService) {
         client.addFilter(new ClientFilter() {
             @Override
             public ClientResponse handle(ClientRequest clientRequest) throws ClientHandlerException {
-                clientRequest.getHeaders().add("Authorization", "Bearer " + userService.getAccessToken());
+                clientRequest.getHeaders().add("Authorization", tokenType + " " + userService.getAccessToken());
                 return getNext().handle(clientRequest);
             }
         });
