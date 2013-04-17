@@ -266,6 +266,8 @@ public class IckStreamController implements MessageListener {
         for (IckStreamListener ickStreamListener : ickStreamListeners) {
             ickStreamListener.onNetworkInitialized();
         }
+        refreshDevices();
+        refreshServices();
     }
 
     protected void refreshServices() {
