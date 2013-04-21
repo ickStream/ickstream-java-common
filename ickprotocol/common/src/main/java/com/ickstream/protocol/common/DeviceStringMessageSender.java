@@ -5,6 +5,7 @@
 
 package com.ickstream.protocol.common;
 
+import com.ickstream.common.ickdiscovery.ServiceType;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.common.jsonrpc.MessageSender;
 
@@ -12,11 +13,13 @@ import java.io.UnsupportedEncodingException;
 
 public class DeviceStringMessageSender implements MessageSender {
     private String deviceId;
+    private ServiceType serviceType;
     private com.ickstream.common.ickdiscovery.MessageSender messageSender;
     private MessageLogger messageLogger;
 
-    public DeviceStringMessageSender(String deviceId, com.ickstream.common.ickdiscovery.MessageSender messageSender) {
+    public DeviceStringMessageSender(String deviceId, ServiceType serviceType, com.ickstream.common.ickdiscovery.MessageSender messageSender) {
         this.deviceId = deviceId;
+        this.serviceType = serviceType;
         this.messageSender = messageSender;
     }
 
@@ -30,7 +33,11 @@ public class DeviceStringMessageSender implements MessageSender {
             messageLogger.onOutgoingMessage(deviceId, message);
         }
         try {
-            messageSender.sendMessage(deviceId, message.getBytes("UTF-8"));
+            if(serviceType != null) {
+                messageSender.sendMessage(deviceId, serviceType, message.getBytes("UTF-8"));
+            }else {
+                messageSender.sendMessage(deviceId, message.getBytes("UTF-8"));
+            }
         } catch (UnsupportedEncodingException e) {
             // Just ignore, all platforms we support need to support UTF-8
             e.printStackTrace();

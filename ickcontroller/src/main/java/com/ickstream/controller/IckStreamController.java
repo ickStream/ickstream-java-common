@@ -346,14 +346,14 @@ public class IckStreamController implements MessageListener {
     }
 
     @Override
-    public void onMessage(String deviceId, byte[] message) {
-        LocalServiceController localServiceController = localServiceControllers.get(deviceId);
+    public void onMessage(String sourceDeviceId, String targetDeviceId, ServiceType targetServiceType, byte[] message) {
+        LocalServiceController localServiceController = localServiceControllers.get(sourceDeviceId);
         if (localServiceController != null) {
             try {
                 JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
                 String jsonMessageString = jsonHelper.objectToString(jsonMessage);
                 if (messageLogger != null) {
-                    messageLogger.onIncomingMessage(deviceId, jsonMessageString);
+                    messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
                 }
                 if (!jsonMessage.has("method")) {
                     localServiceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
@@ -363,13 +363,13 @@ public class IckStreamController implements MessageListener {
                 e.printStackTrace();
             }
         }
-        PlayerDeviceController playerDeviceController = playerDeviceControllers.get(deviceId);
+        PlayerDeviceController playerDeviceController = playerDeviceControllers.get(sourceDeviceId);
         if (playerDeviceController != null) {
             try {
                 JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
                 String jsonMessageString = jsonHelper.objectToString(jsonMessage);
                 if (messageLogger != null) {
-                    messageLogger.onIncomingMessage(deviceId, jsonMessageString);
+                    messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
                 }
                 if (jsonMessage.has("method")) {
                     playerDeviceController.onRequest(jsonHelper.jsonToObject(jsonMessage, JsonRpcRequest.class));

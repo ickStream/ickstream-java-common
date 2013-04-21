@@ -6,6 +6,7 @@
 package com.ickstream.protocol.service.player;
 
 import com.ickstream.common.ickdiscovery.MessageSender;
+import com.ickstream.common.ickdiscovery.ServiceType;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.common.DeviceStringMessageSender;
@@ -29,7 +30,7 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
     }
 
     public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
-        super(new DeviceStringMessageSender(deviceId, messageSender), idProvider, defaultTimeout);
+        super(new DeviceStringMessageSender(deviceId, ServiceType.PLAYER, messageSender), idProvider, defaultTimeout);
         this.deviceId = deviceId;
     }
 
