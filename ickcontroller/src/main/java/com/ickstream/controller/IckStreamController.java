@@ -6,6 +6,7 @@
 package com.ickstream.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.ickstream.common.ickdiscovery.DiscoveryResult;
 import com.ickstream.common.ickdiscovery.IckDiscovery;
 import com.ickstream.common.ickdiscovery.MessageListener;
 import com.ickstream.common.ickdiscovery.ServiceType;
@@ -261,8 +262,13 @@ public class IckStreamController implements MessageListener {
         ickDiscovery.addMessageListener(IckStreamController.this);
         ickDiscovery.addDeviceListener(deviceDiscoveryController);
         ickDiscovery.addDeviceListener(serviceDiscoveryController);
-        ickDiscovery.initDiscovery(deviceId, NetworkAddressHelper.getNetworkAddress(), deviceName, null);
-        ickDiscovery.addService(ServiceType.CONTROLLER);
+        String ip = NetworkAddressHelper.getNetworkAddress();
+        System.out.println("initDiscovery(\"" + deviceId + "\",\"" + ip + "\",\"" + deviceName + "\",NULL)");
+        DiscoveryResult result = ickDiscovery.initDiscovery(deviceId, ip, deviceName, null);
+        System.out.println("initDiscovery = " + result);
+        System.out.println("addService(" + ServiceType.CONTROLLER + ")");
+        result = ickDiscovery.addService(ServiceType.CONTROLLER);
+        System.out.println("addService = " + result);
         for (IckStreamListener ickStreamListener : ickStreamListeners) {
             ickStreamListener.onNetworkInitialized();
         }
