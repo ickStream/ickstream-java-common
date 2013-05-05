@@ -10,12 +10,13 @@ import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.AbstractService;
-import com.ickstream.protocol.service.Service;
+import com.ickstream.protocol.service.AccountInformation;
+import com.ickstream.protocol.service.PersonalizedService;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class ContentService extends AbstractService implements Service {
+public abstract class ContentService extends AbstractService implements PersonalizedService {
     private String id;
 
     public ContentService(String id, MessageSender messageSender) {
@@ -40,6 +41,30 @@ public abstract class ContentService extends AbstractService implements Service 
     }
 
     public abstract void setMessageLogger(MessageLogger messageLogger);
+
+    @Override
+    public AccountInformation getAccountInformation() throws ServiceException, ServiceTimeoutException {
+        return getAccountInformation((Integer) null);
+    }
+
+    @Override
+    public AccountInformation getAccountInformation(Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getAccountInformation", null, AccountInformation.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getAccountInformation(MessageHandler<AccountInformation> messageHandler) {
+        getAccountInformation(messageHandler, (Integer) null);
+    }
+
+    public void getAccountInformation(MessageHandler<AccountInformation> messageHandler, Integer timeout) {
+        sendRequest("getAccountInformation", null, AccountInformation.class, messageHandler, timeout);
+    }
 
     public GetProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
         return getProtocolDescription(request, (Integer) null);
