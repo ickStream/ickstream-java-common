@@ -43,7 +43,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         return null;
     }
 
-    protected AccountInformation getAccountInformation(UserServiceResponse userService) {
+    protected AccountInformation getAccountInformation(Client client, UserServiceResponse userService) throws IOException {
         return null;
     }
 
@@ -66,9 +66,22 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 }
             }
             if (userService != null) {
-                AccountInformation result = getAccountInformation(userService);
-                businessLogger.logSuccessful(businessCall);
-                return result;
+                Client client = Client.create();
+                try {
+                    AccountInformation result = getAccountInformation(client, userService);
+                    businessLogger.logSuccessful(businessCall);
+                    return result;
+                } catch (UnsupportedEncodingException e) {
+                    //TODO: How do we handle errors ?
+                    e.printStackTrace();
+                } catch (JsonProcessingException e) {
+                    //TODO: How do we handle errors ?
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    //TODO: How do we handle errors ?
+                    e.printStackTrace();
+                }
+                return null;
             }
             throw new UnauthorizedAccessException();
         } catch (RuntimeException e) {
@@ -178,13 +191,17 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected abstract BusinessCall createBusinessCall(String serviceId, String deviceId, String deviceModel, String userId, String deviceAddress, String method);
 
-    protected BusinessCall startBusinessCall(String method) {
+    protected BusinessCall startBusinessCall(String serviceId, String method) {
         RequestContext requestContext = InjectHelper.instance(RequestContext.class);
         DeviceResponse device = null;
         if (requestContext.getDeviceId() != null) {
             device = getCoreBackendService().getDeviceById(requestContext.getDeviceId());
         }
-        return createBusinessCall(getServiceId(), requestContext.getDeviceId(), device != null ? device.getModel() : null, device != null ? device.getUserId() : requestContext.getUserId(), requestContext.getDeviceAddress(), method);
+        return createBusinessCall(serviceId, requestContext.getDeviceId(), device != null ? device.getModel() : null, device != null ? device.getUserId() : requestContext.getUserId(), requestContext.getDeviceAddress(), method);
+    }
+
+    protected BusinessCall startBusinessCall(String method) {
+        return startBusinessCall(getServiceId(), method);
     }
 
     public GetManagementProtocolDescriptionResponse getManagementProtocolDescription(Integer offset, Integer count) {
