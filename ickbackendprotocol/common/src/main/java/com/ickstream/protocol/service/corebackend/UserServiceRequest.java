@@ -17,10 +17,11 @@ public class UserServiceRequest {
     }
 
     public UserServiceRequest(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public UserServiceRequest(String deviceId, UserServiceResponse response) {
-        this.deviceId = deviceId;
+        this(deviceId);
         this.identity = response.getIdentity();
         this.accessToken = response.getAccessToken();
         this.accessTokenSecret = response.getAccessTokenSecret();

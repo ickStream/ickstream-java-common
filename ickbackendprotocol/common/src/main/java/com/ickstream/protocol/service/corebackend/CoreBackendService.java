@@ -18,7 +18,13 @@ public interface CoreBackendService extends CloudService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
-    UserServiceResponse getUserService(@JsonRpcParam(name = "deviceId") String deviceId);
+    UserServiceResponse getUserServiceByDevice(@JsonRpcParam(name = "deviceId") String deviceId);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    UserServiceResponse getUserServiceByUser(@JsonRpcParam(name = "userId") String userId);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
@@ -49,6 +55,12 @@ public interface CoreBackendService extends CloudService {
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
     UserResponse getUserByToken(@JsonRpcParam(name = "userToken") String userToken);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    UserResponse getUserById(@JsonRpcParam(name = "userId") String userId);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),

@@ -53,11 +53,24 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     @Override
-    public UserServiceResponse getUserService(String deviceId) {
+    public UserServiceResponse getUserServiceByDevice(String deviceId) {
         try {
             Map<String, String> request = new HashMap<String, String>();
             request.put("deviceId", deviceId);
-            return sendRequest("getUserService", request, UserServiceResponse.class, (Integer) null);
+            return sendRequest("getUserServiceByDevice", request, UserServiceResponse.class, (Integer) null);
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public UserServiceResponse getUserServiceByUser(String userId) {
+        try {
+            Map<String, String> request = new HashMap<String, String>();
+            request.put("userId", userId);
+            return sendRequest("getUserServiceByUser", request, UserServiceResponse.class, (Integer) null);
         } catch (JsonRpcException e) {
             throw new RuntimeException(getServiceException(e));
         } catch (JsonRpcTimeoutException e) {
@@ -126,7 +139,28 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
         try {
             Map<String, String> request = new HashMap<String, String>();
             request.put("userToken", userToken);
-            return sendRequest("getUserByToken", request, UserResponse.class, (Integer) null);
+            UserResponse userResponse = sendRequest("getUserByToken", request, UserResponse.class, (Integer) null);
+            InjectHelper.instance(BackendRequestContext.class).setUser(userResponse);
+            return userResponse;
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public UserResponse getUserById(String userId) {
+        BackendRequestContext requestContext = InjectHelper.instance(BackendRequestContext.class);
+        if (requestContext.getUser() != null && requestContext.getUser().getId().equals(userId)) {
+            return requestContext.getUser();
+        }
+        try {
+            Map<String, String> request = new HashMap<String, String>();
+            request.put("userId", userId);
+            UserResponse userResponse = sendRequest("getUserById", request, UserResponse.class, (Integer) null);
+            requestContext.setUser(userResponse);
+            return userResponse;
         } catch (JsonRpcException e) {
             throw new RuntimeException(getServiceException(e));
         } catch (JsonRpcTimeoutException e) {
