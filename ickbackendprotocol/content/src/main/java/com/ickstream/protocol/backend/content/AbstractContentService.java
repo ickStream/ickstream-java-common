@@ -9,10 +9,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
+import com.ickstream.protocol.service.AccountInformation;
 import com.ickstream.protocol.service.ImageReference;
 import com.ickstream.protocol.service.content.*;
 import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
+import com.ickstream.protocol.service.corebackend.UserResponse;
 import com.ickstream.protocol.service.corebackend.UserServiceResponse;
 import com.sun.jersey.api.client.Client;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -39,6 +41,40 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected List<ImageReference> getImages(String contextId) {
         return null;
+    }
+
+    protected AccountInformation getAccountInformation(UserServiceResponse userService) {
+        return null;
+    }
+
+    @Override
+    public AccountInformation getAccountInformation() {
+        BusinessCall businessCall = startBusinessCall("getAccountInformation");
+        try {
+            String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
+            String userId = InjectHelper.instance(RequestContext.class).getUserId();
+            UserServiceResponse userService = null;
+            if (deviceId != null) {
+                DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+                if (device != null) {
+                    userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+                }
+            } else if (userId != null) {
+                UserResponse user = getCoreBackendService().getUserById(userId);
+                if (user != null) {
+                    userService = getCoreBackendService().getUserServiceByUser(userId);
+                }
+            }
+            if (userService != null) {
+                AccountInformation result = getAccountInformation(userService);
+                businessLogger.logSuccessful(businessCall);
+                return result;
+            }
+            throw new UnauthorizedAccessException();
+        } catch (RuntimeException e) {
+            businessLogger.logFailed(businessCall, e);
+            throw e;
+        }
     }
 
     protected void addManagementContext(String contextId, List<String> supportedTypes) {
@@ -220,7 +256,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
             if (device != null) {
-                UserServiceResponse userService = getCoreBackendService().getUserService(deviceId);
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         if (contextId == null || contextId.equals(entry.getContextId())) {
@@ -265,7 +301,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             offset = offset != null ? offset : 0;
             DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
             if (device != null) {
-                UserServiceResponse userService = getCoreBackendService().getUserService(deviceId);
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
                     ContentResponse result = findTopLevelItems(userService, offset, count);
                     businessLogger.logSuccessful(businessCall);
@@ -299,7 +335,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameters(parameters);
         try {
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
-            UserServiceResponse userService = getCoreBackendService().getUserService(deviceId);
+            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
                 Boolean result = addItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
@@ -318,7 +354,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameters(parameters);
         try {
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
-            UserServiceResponse userService = getCoreBackendService().getUserService(deviceId);
+            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
                 Boolean result = removeItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
@@ -343,7 +379,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
             DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
             if (device != null) {
-                UserServiceResponse userService = getCoreBackendService().getUserService(deviceId);
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
                     ContentResponse result = findItems(userService, offset, count, contextId, parameters);
                     businessLogger.logSuccessful(businessCall);

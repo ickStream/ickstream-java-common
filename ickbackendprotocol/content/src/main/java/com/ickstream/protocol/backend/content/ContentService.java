@@ -9,8 +9,8 @@ import com.ickstream.common.jsonrpc.JsonRpcError;
 import com.ickstream.common.jsonrpc.JsonRpcErrors;
 import com.ickstream.common.jsonrpc.JsonRpcParam;
 import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
-import com.ickstream.protocol.backend.common.CloudService;
 import com.ickstream.protocol.backend.common.InvalidParameterException;
+import com.ickstream.protocol.backend.common.PersonalizedService;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.service.content.ContentResponse;
@@ -19,7 +19,7 @@ import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 
 import java.util.Map;
 
-public interface ContentService extends CloudService {
+public interface ContentService extends PersonalizedService {
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
