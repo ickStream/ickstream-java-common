@@ -249,7 +249,7 @@ public class StreamJsonRpcService {
                 return;
             }
         } else {
-            error = new JsonRpcResponse.Error(JsonRpcError.INVALID_PARAMS, "Invalid parameter list for method " + methodName, paramsNode.toString());
+            error = new JsonRpcResponse.Error(JsonRpcError.INVALID_PARAMS, "Invalid parameter list for method " + methodName, paramsNode != null ? paramsNode.toString() : null);
         }
         JsonRpcResponse response = new JsonRpcResponse(version, id);
         if (error == null) {
