@@ -94,6 +94,7 @@ public class PlayerCommandService {
         } else {
             response.setItems(playerStatus.getPlaylist().getItems().subList(offset, playerStatus.getPlaylist().getItems().size()));
         }
+        response.setCount(response.getItems().size());
         response.setLastChanged(playerStatus.getPlaylist().getChangedTimestamp());
         return response;
     }
@@ -327,7 +328,7 @@ public class PlayerCommandService {
         }
     }
 
-    public synchronized TrackResponse getTrack(@JsonRpcParam(name = "playlistPos") Integer playlistPos) {
+    public synchronized TrackResponse getTrack(@JsonRpcParam(name = "playlistPos", optional = true) Integer playlistPos) {
         TrackResponse response = new TrackResponse();
         response.setPlaylistId(playerStatus.getPlaylist().getId());
         response.setPlaylistName(playerStatus.getPlaylist().getName());
