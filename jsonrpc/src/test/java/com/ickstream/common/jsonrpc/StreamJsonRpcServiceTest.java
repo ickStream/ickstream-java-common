@@ -485,6 +485,36 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
+    public void testNotification() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonNotification("testNotification", null)), new WriterOutputStream(outputString));
+
+        Assert.assertEquals(outputString.toString().length(), 0);
+    }
+
+    @Test
+    public void testNotificationExisting() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonNotification("testMethod", null)), new WriterOutputStream(outputString));
+
+        Assert.assertEquals(outputString.toString().length(), 0);
+    }
+
+    @Test
+    public void testNotificationExistingWithParameter() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonNotification("testMethod", "{\"param1\":\"something\"}")), new WriterOutputStream(outputString));
+
+        Assert.assertEquals(outputString.toString().length(), 0);
+    }
+
+    @Test
     public void testWithoutParametersUnknownMethod() throws IOException {
         StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
         StringWriter outputString = new StringWriter();

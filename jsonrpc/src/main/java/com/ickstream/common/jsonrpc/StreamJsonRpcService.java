@@ -107,6 +107,10 @@ public class StreamJsonRpcService {
         List<Method> methods = getMethods(methodName);
 
         if (methods.size() == 0) {
+            if (id == null) {
+                // This is a notification, let's ignore unknown notifications
+                return;
+            }
             JsonRpcResponse response = new JsonRpcResponse(version, id);
             response.setError(new JsonRpcResponse.Error(JsonRpcError.METHOD_NOT_FOUND, "Method not found"));
             if (messageLogger != null) {

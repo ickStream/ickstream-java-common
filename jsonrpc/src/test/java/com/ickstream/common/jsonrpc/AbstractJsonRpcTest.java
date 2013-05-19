@@ -37,6 +37,27 @@ public abstract class AbstractJsonRpcTest {
         return sb.toString();
     }
 
+    public static String createJsonNotification(String method, String params) {
+        return createJsonNotification(JsonRpcRequest.VERSION_2_0, method, params);
+    }
+
+    public static String createJsonNotification(String version, String method, String params) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        if (version != null) {
+            sb.append("\"jsonrpc\":\"" + version + "\"");
+        }
+        if (method != null) {
+            sb.append(",").append("\"method\":\"").append(method).append("\"");
+        }
+        if (params != null) {
+            sb.append(",");
+            sb.append("\"params\":").append(params).append("");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
     public static String getParamFromJson(String text, String param) throws IOException {
         if (text != null) {
             ObjectMapper mapper = new ObjectMapper();
