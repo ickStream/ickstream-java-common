@@ -19,10 +19,10 @@ import java.util.Observer;
 public class PlayerDeviceController implements Observer, JsonRpcResponseHandler, JsonRpcRequestHandler {
     private static final String API_KEY = "987C3A70-A076-4312-8EF9-53E954B65F8B";
     Device device;
-    List<MessageHandler<PlaylistResponse>> playlistListeners = new ArrayList<MessageHandler<PlaylistResponse>>();
+    List<MessageHandler<PlaybackQueueResponse>> playbackQueueListeners = new ArrayList<MessageHandler<PlaybackQueueResponse>>();
     List<MessageHandler<PlayerStatusResponse>> playerStatusListeners = new ArrayList<MessageHandler<PlayerStatusResponse>>();
     List<PlayerStateListener> playerStateListeners = new ArrayList<PlayerStateListener>();
-    MessageHandler<PlaylistChangedNotification> playlistChangedListener;
+    MessageHandler<PlaybackQueueChangedNotification> playbackQueueChangedListener;
     MessageHandler<PlayerStatusResponse> playerStatusChangedListener;
     PlayerService playerService;
     CoreService coreService;
@@ -154,8 +154,8 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
         playerService.play(false);
     }
 
-    public void setRepeatMode(RepeatModeRequest request) {
-        playerService.setRepeatMode(request, null);
+    public void setPlaybackQueueMode(PlaybackQueueModeRequest request) {
+        playerService.setPlaybackQueueMode(request, null);
     }
 
     public void shuffleTracks() {
@@ -166,11 +166,11 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
         playerService.setTrack(playlistPos, null);
     }
 
-    public void removeTracks(PlaylistRemoveTracksRequest request) {
+    public void removeTracks(PlaybackQueueRemoveTracksRequest request) {
         playerService.removeTracks(request, null);
     }
 
-    public void addTracks(PlaylistAddTracksRequest request) {
+    public void addTracks(PlaybackQueueAddTracksRequest request) {
         playerService.addTracks(request, null);
     }
 
@@ -218,11 +218,11 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
         }
     }
 
-    public void refreshPlaylist() {
-        playerService.getPlaylist(null, new MessageHandlerAdapter<PlaylistResponse>() {
+    public void refreshPlaybackQueue() {
+        playerService.getPlaybackQueue(null, new MessageHandlerAdapter<PlaybackQueueResponse>() {
             @Override
-            public void onMessage(final PlaylistResponse message) {
-                for (MessageHandler<PlaylistResponse> playlistListener : playlistListeners) {
+            public void onMessage(final PlaybackQueueResponse message) {
+                for (MessageHandler<PlaybackQueueResponse> playlistListener : playbackQueueListeners) {
                     playlistListener.onMessage(message);
                 }
             }
@@ -248,29 +248,29 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
         playerStateListeners.remove(listener);
     }
 
-    public void addPlaylistListener(MessageHandler<PlaylistResponse> playlistListener) {
-        playlistListeners.add(playlistListener);
-        if (playlistChangedListener == null) {
-            playlistChangedListener = new MessageHandlerAdapter<PlaylistChangedNotification>() {
+    public void addPlaybackQueueListener(MessageHandler<PlaybackQueueResponse> playlistListener) {
+        playbackQueueListeners.add(playlistListener);
+        if (playbackQueueChangedListener == null) {
+            playbackQueueChangedListener = new MessageHandlerAdapter<PlaybackQueueChangedNotification>() {
                 @Override
-                public void onMessage(PlaylistChangedNotification message) {
+                public void onMessage(PlaybackQueueChangedNotification message) {
                     threadFramework.invoke(new Runnable() {
                         @Override
                         public void run() {
-                            refreshPlaylist();
+                            refreshPlaybackQueue();
                         }
                     });
                 }
             };
-            playerService.addPlaylistChangedListener(playlistChangedListener);
+            playerService.addPlaybackQueueChangedListener(playbackQueueChangedListener);
         }
     }
 
-    public void removePlaylistListener(MessageHandler<PlaylistResponse> playlistListener) {
-        playlistListeners.remove(playlistListener);
-        if (playlistListeners.size() == 0 && playlistChangedListener != null) {
-            playerService.removePlaylistChangedListener(playlistChangedListener);
-            playlistChangedListener = null;
+    public void removePlaybackQueueListener(MessageHandler<PlaybackQueueResponse> playlistListener) {
+        playbackQueueListeners.remove(playlistListener);
+        if (playbackQueueListeners.size() == 0 && playbackQueueChangedListener != null) {
+            playerService.removePlaybackQueueChangedListener(playbackQueueChangedListener);
+            playbackQueueChangedListener = null;
         }
     }
 
