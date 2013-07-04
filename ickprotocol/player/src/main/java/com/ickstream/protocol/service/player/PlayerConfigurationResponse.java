@@ -9,6 +9,7 @@ public class PlayerConfigurationResponse {
     String playerName;
     String playerModel;
     String hardwareId;
+    String cloudCoreUrl;
 
     public String getPlayerName() {
         return playerName;
@@ -32,5 +33,13 @@ public class PlayerConfigurationResponse {
 
     public void setHardwareId(String hardwareId) {
         this.hardwareId = hardwareId;
+    }
+
+    public String getCloudCoreUrl() {
+        return cloudCoreUrl;
+    }
+
+    public void setCloudCoreUrl(String cloudCoreUrl) {
+        this.cloudCoreUrl = cloudCoreUrl;
     }
 }

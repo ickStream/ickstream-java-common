@@ -5,21 +5,21 @@
 
 package com.ickstream.protocol.service.player;
 
-public class PlaylistChangedNotification {
+public class PlaybackQueueChangedNotification {
     private String playlistId;
     private String playlistName;
     private Integer countAll;
     private Long lastChanged;
 
-    public PlaylistChangedNotification() {
+    public PlaybackQueueChangedNotification() {
     }
 
-    public PlaylistChangedNotification(Integer count, Long lastChanged) {
+    public PlaybackQueueChangedNotification(Integer count, Long lastChanged) {
         this.countAll = count;
         this.lastChanged = lastChanged;
     }
 
-    public PlaylistChangedNotification(String playlistId, String playlistName, Integer countAll, Long lastChanged) {
+    public PlaybackQueueChangedNotification(String playlistId, String playlistName, Integer countAll, Long lastChanged) {
         this.playlistId = playlistId;
         this.playlistName = playlistName;
         this.countAll = countAll;

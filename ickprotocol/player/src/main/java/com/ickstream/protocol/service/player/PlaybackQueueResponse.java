@@ -9,11 +9,11 @@ import com.ickstream.protocol.common.ChunkedResponse;
 
 import java.util.List;
 
-public class PlaylistResponse extends ChunkedResponse {
+public class PlaybackQueueResponse extends ChunkedResponse {
     private Long lastChanged;
     private String playlistId;
     private String playlistName;
-    private List<PlaylistItem> items;
+    private List<PlaybackQueueItem> items;
 
     public String getPlaylistId() {
         return playlistId;
@@ -39,11 +39,11 @@ public class PlaylistResponse extends ChunkedResponse {
         this.lastChanged = lastChanged;
     }
 
-    public List<PlaylistItem> getItems() {
+    public List<PlaybackQueueItem> getItems() {
         return items;
     }
 
-    public void setItems(List<PlaylistItem> items) {
+    public void setItems(List<PlaybackQueueItem> items) {
         this.items = items;
     }
 }

@@ -6,25 +6,25 @@
 package com.ickstream.protocol.service.player;
 
 public class TrackMetadataRequest {
-    private Integer playlistPos;
+    private Integer playbackQueuePos;
     private Boolean replace;
-    private PlaylistItem track;
+    private PlaybackQueueItem track;
 
     public TrackMetadataRequest() {
     }
 
-    public TrackMetadataRequest(Integer playlistPos, Boolean replace, PlaylistItem track) {
-        this.playlistPos = playlistPos;
+    public TrackMetadataRequest(Integer playbackQueuePos, Boolean replace, PlaybackQueueItem track) {
+        this.playbackQueuePos = playbackQueuePos;
         this.replace = replace;
         this.track = track;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 
     public Boolean getReplace() {
@@ -35,11 +35,11 @@ public class TrackMetadataRequest {
         this.replace = replace;
     }
 
-    public PlaylistItem getTrack() {
+    public PlaybackQueueItem getTrack() {
         return track;
     }
 
-    public void setTrack(PlaylistItem track) {
+    public void setTrack(PlaybackQueueItem track) {
         this.track = track;
     }
 }

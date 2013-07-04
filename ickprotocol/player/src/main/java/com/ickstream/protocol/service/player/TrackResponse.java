@@ -8,8 +8,8 @@ package com.ickstream.protocol.service.player;
 public class TrackResponse {
     private String playlistId;
     private String playlistName;
-    private Integer playlistPos;
-    private PlaylistItem track;
+    private Integer playbackQueuePos;
+    private PlaybackQueueItem track;
 
     public String getPlaylistId() {
         return playlistId;
@@ -27,19 +27,19 @@ public class TrackResponse {
         this.playlistName = playlistName;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 
-    public PlaylistItem getTrack() {
+    public PlaybackQueueItem getTrack() {
         return track;
     }
 
-    public void setTrack(PlaylistItem track) {
+    public void setTrack(PlaybackQueueItem track) {
         this.track = track;
     }
 }

@@ -6,13 +6,13 @@
 package com.ickstream.protocol.service.player;
 
 public class SetTrackResponse {
-    private Integer playlistPos;
+    private Integer playbackQueuePos;
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 }

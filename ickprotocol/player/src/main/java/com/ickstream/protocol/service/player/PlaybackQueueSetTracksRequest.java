@@ -8,24 +8,24 @@ package com.ickstream.protocol.service.player;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistSetTracksRequest {
+public class PlaybackQueueSetTracksRequest {
     private String playlistId;
     private String playlistName;
-    private Integer playlistPos;
-    private List<PlaylistItem> items = new ArrayList<PlaylistItem>();
+    private Integer playbackQueuePos;
+    private List<PlaybackQueueItem> items = new ArrayList<PlaybackQueueItem>();
 
-    public PlaylistSetTracksRequest() {
+    public PlaybackQueueSetTracksRequest() {
     }
 
-    public PlaylistSetTracksRequest(String playlistId, String playlistName) {
+    public PlaybackQueueSetTracksRequest(String playlistId, String playlistName) {
         this.playlistId = playlistId;
         this.playlistName = playlistName;
     }
 
-    public PlaylistSetTracksRequest(String playlistId, String playlistName, Integer playlistPos, List<PlaylistItem> items) {
+    public PlaybackQueueSetTracksRequest(String playlistId, String playlistName, Integer playbackQueuePos, List<PlaybackQueueItem> items) {
         this.playlistId = playlistId;
         this.playlistName = playlistName;
-        this.playlistPos = playlistPos;
+        this.playbackQueuePos = playbackQueuePos;
         this.items = items;
     }
 
@@ -45,19 +45,19 @@ public class PlaylistSetTracksRequest {
         this.playlistName = playlistName;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 
-    public List<PlaylistItem> getItems() {
+    public List<PlaybackQueueItem> getItems() {
         return items;
     }
 
-    public void setItems(List<PlaylistItem> items) {
+    public void setItems(List<PlaybackQueueItem> items) {
         this.items = items;
     }
 }

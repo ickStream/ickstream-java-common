@@ -8,7 +8,6 @@ package com.ickstream.protocol.service.player;
 import com.ickstream.common.ickdiscovery.MessageSender;
 import com.ickstream.common.ickdiscovery.ServiceType;
 import com.ickstream.common.jsonrpc.*;
-import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.common.DeviceStringMessageSender;
 
 import java.util.HashMap;
@@ -36,6 +35,14 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
 
     public void setMessageLogger(MessageLogger messageLogger) {
         ((DeviceStringMessageSender) getMessageSender()).setMessageLogger(messageLogger);
+    }
+
+    public void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler) {
+        getProtocolVersions(messageHandler, (Integer) null);
+    }
+
+    public void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler, Integer timeout) {
+        sendRequest("getProtocolVersions", null, ProtocolVersionsResponse.class, messageHandler, timeout);
     }
 
     public void setPlayerConfiguration(PlayerConfigurationRequest request, MessageHandler<PlayerConfigurationResponse> messageHandler) {
@@ -88,23 +95,23 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
         sendRequest("setSeekPosition", request, SeekPosition.class, messageHandler, timeout);
     }
 
-    public void getTrack(Integer playlistPos, MessageHandler<TrackResponse> messageHandler) {
-        getTrack(playlistPos, messageHandler, (Integer) null);
+    public void getTrack(Integer playbackQueuePos, MessageHandler<TrackResponse> messageHandler) {
+        getTrack(playbackQueuePos, messageHandler, (Integer) null);
     }
 
-    public void getTrack(Integer playlistPos, MessageHandler<TrackResponse> messageHandler, Integer timeout) {
+    public void getTrack(Integer playbackQueuePos, MessageHandler<TrackResponse> messageHandler, Integer timeout) {
         Map<String, Integer> parameters = new HashMap<String, Integer>();
-        parameters.put("playlistPos", playlistPos);
+        parameters.put("playbackQueuePos", playbackQueuePos);
         sendRequest("getTrack", parameters, TrackResponse.class, messageHandler, timeout);
     }
 
-    public void setTrack(Integer playlistPos, MessageHandler<SetTrackResponse> messageHandler) {
-        setTrack(playlistPos, messageHandler, (Integer) null);
+    public void setTrack(Integer playbackQueuePos, MessageHandler<SetTrackResponse> messageHandler) {
+        setTrack(playbackQueuePos, messageHandler, (Integer) null);
     }
 
-    public void setTrack(Integer playlistPos, MessageHandler<SetTrackResponse> messageHandler, Integer timeout) {
+    public void setTrack(Integer playbackQueuePos, MessageHandler<SetTrackResponse> messageHandler, Integer timeout) {
         Map<String, Integer> parameters = new HashMap<String, Integer>();
-        parameters.put("playlistPos", playlistPos);
+        parameters.put("playbackQueuePos", playbackQueuePos);
         sendRequest("setTrack", parameters, SetTrackResponse.class, messageHandler, timeout);
     }
 
@@ -140,60 +147,68 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
         sendRequest("setPlaylistName", request, SetPlaylistNameResponse.class, messagesHandler, timeout);
     }
 
-    public void getPlaylist(ChunkedRequest request, MessageHandler<PlaylistResponse> messageHandler) {
-        getPlaylist(request, messageHandler, (Integer) null);
+    public void getPlaybackQueue(PlaybackQueueRequest request, MessageHandler<PlaybackQueueResponse> messageHandler) {
+        getPlaybackQueue(request, messageHandler, (Integer) null);
     }
 
-    public void getPlaylist(ChunkedRequest request, MessageHandler<PlaylistResponse> messageHandler, Integer timeout) {
-        sendRequest("getPlaylist", request, PlaylistResponse.class, messageHandler, timeout);
+    public void getPlaybackQueue(PlaybackQueueRequest request, MessageHandler<PlaybackQueueResponse> messageHandler, Integer timeout) {
+        sendRequest("getPlaybackQueue", request, PlaybackQueueResponse.class, messageHandler, timeout);
     }
 
-    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+    public void addTracks(PlaybackQueueAddTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
         addTracks(request, messageHandler, (Integer) null);
     }
 
-    public void addTracks(PlaylistAddTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
-        sendRequest("addTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    public void addTracks(PlaybackQueueAddTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("addTracks", request, PlaybackQueueModificationResponse.class, messageHandler, timeout);
     }
 
-    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+    public void removeTracks(PlaybackQueueRemoveTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
         removeTracks(request, messageHandler, (Integer) null);
     }
 
-    public void removeTracks(PlaylistRemoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
-        sendRequest("removeTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    public void removeTracks(PlaybackQueueRemoveTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("removeTracks", request, PlaybackQueueModificationResponse.class, messageHandler, timeout);
     }
 
-    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+    public void moveTracks(PlaybackQueueMoveTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
         moveTracks(request, messageHandler, (Integer) null);
     }
 
-    public void moveTracks(PlaylistMoveTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
-        sendRequest("moveTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    public void moveTracks(PlaybackQueueMoveTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("moveTracks", request, PlaybackQueueModificationResponse.class, messageHandler, timeout);
     }
 
-    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler) {
+    public void setTracks(PlaybackQueueSetTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
         setTracks(request, messageHandler, (Integer) null);
     }
 
-    public void setTracks(PlaylistSetTracksRequest request, MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
-        sendRequest("setTracks", request, PlaylistModificationResponse.class, messageHandler, timeout);
+    public void setTracks(PlaybackQueueSetTracksRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("setTracks", request, PlaybackQueueModificationResponse.class, messageHandler, timeout);
     }
 
-    public void setRepeatMode(RepeatModeRequest request, MessageHandler<RepeatModeResponse> messageHandler) {
-        setRepeatMode(request, messageHandler, (Integer) null);
+    public void setPlaybackQueueMode(PlaybackQueueModeRequest request, MessageHandler<PlaybackQueueModeResponse> messageHandler) {
+        setPlaybackQueueMode(request, messageHandler, (Integer) null);
     }
 
-    public void setRepeatMode(RepeatModeRequest request, MessageHandler<RepeatModeResponse> messageHandler, Integer timeout) {
-        sendRequest("setRepeatMode", request, RepeatModeResponse.class, messageHandler, timeout);
+    public void setPlaybackQueueMode(PlaybackQueueModeRequest request, MessageHandler<PlaybackQueueModeResponse> messageHandler, Integer timeout) {
+        sendRequest("setPlaybackQueueMode", request, PlaybackQueueModeResponse.class, messageHandler, timeout);
     }
 
-    public void shuffleTracks(MessageHandler<PlaylistModificationResponse> messageHandler) {
+    public void shuffleTracks(MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
         shuffleTracks(messageHandler, (Integer) null);
     }
 
-    public void shuffleTracks(MessageHandler<PlaylistModificationResponse> messageHandler, Integer timeout) {
-        sendRequest("shuffleTracks", null, PlaylistModificationResponse.class, messageHandler, timeout);
+    public void shuffleTracks(MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("shuffleTracks", null, PlaybackQueueModificationResponse.class, messageHandler, timeout);
+    }
+
+    public void setDynamicPlaybackQueueParameters(DynamicPlaybackQueueParametersRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler) {
+        setDynamicPlaybackQueueParameters(request, messageHandler, (Integer) null);
+    }
+
+    public void setDynamicPlaybackQueueParameters(DynamicPlaybackQueueParametersRequest request, MessageHandler<PlaybackQueueModificationResponse> messageHandler, Integer timeout) {
+        sendRequest("setDynamicPlaybackQueueParameters", request, PlaybackQueueModificationResponse.class, messageHandler, timeout);
     }
 
     public void addPlayerStatusChangedListener(MessageHandler<PlayerStatusResponse> listener) {
@@ -204,11 +219,11 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
         removeNotificationListener("playerStatusChanged", listener);
     }
 
-    public void addPlaylistChangedListener(MessageHandler<PlaylistChangedNotification> listener) {
-        addNotificationListener("playlistChanged", PlaylistChangedNotification.class, listener);
+    public void addPlaybackQueueChangedListener(MessageHandler<PlaybackQueueChangedNotification> listener) {
+        addNotificationListener("playbackQueueChanged", PlaybackQueueChangedNotification.class, listener);
     }
 
-    public void removePlaylistChangedListener(MessageHandler<PlaylistChangedNotification> listener) {
-        removeNotificationListener("playlistChanged", listener);
+    public void removePlaybackQueueChangedListener(MessageHandler<PlaybackQueueChangedNotification> listener) {
+        removeNotificationListener("playbackQueueChanged", listener);
     }
 }

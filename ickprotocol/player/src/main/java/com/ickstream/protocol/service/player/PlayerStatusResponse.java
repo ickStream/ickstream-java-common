@@ -9,11 +9,11 @@ public class PlayerStatusResponse {
     private Long lastChanged;
     private Boolean playing;
     private Double seekPos;
-    private Integer playlistPos;
+    private Integer playbackQueuePos;
     private Double volumeLevel;
     private Boolean muted;
-    private PlaylistItem track;
-    private RepeatMode repeatMode;
+    private PlaybackQueueItem track;
+    private PlaybackQueueMode playbackQueueMode;
 
     public Long getLastChanged() {
         return lastChanged;
@@ -39,12 +39,12 @@ public class PlayerStatusResponse {
         this.seekPos = seekPos;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 
     public Double getVolumeLevel() {
@@ -63,19 +63,19 @@ public class PlayerStatusResponse {
         this.muted = muted;
     }
 
-    public PlaylistItem getTrack() {
+    public PlaybackQueueItem getTrack() {
         return track;
     }
 
-    public void setTrack(PlaylistItem track) {
+    public void setTrack(PlaybackQueueItem track) {
         this.track = track;
     }
 
-    public RepeatMode getRepeatMode() {
-        return repeatMode;
+    public PlaybackQueueMode getPlaybackQueueMode() {
+        return playbackQueueMode;
     }
 
-    public void setRepeatMode(RepeatMode repeatMode) {
-        this.repeatMode = repeatMode;
+    public void setPlaybackQueueMode(PlaybackQueueMode playbackQueueMode) {
+        this.playbackQueueMode = playbackQueueMode;
     }
 }

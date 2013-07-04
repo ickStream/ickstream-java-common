@@ -13,7 +13,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistItem {
+public class PlaybackQueueItem {
     private String id;
     private String text;
     private String type;
@@ -21,17 +21,17 @@ public class PlaylistItem {
     private List<StreamingReference> streamingRefs = new ArrayList<StreamingReference>();
     private JsonNode itemAttributes;
 
-    public PlaylistItem() {
+    public PlaybackQueueItem() {
     }
 
-    public PlaylistItem(String id, String text, String type, String image) {
+    public PlaybackQueueItem(String id, String text, String type, String image) {
         this.id = id;
         this.text = text;
         this.type = type;
         this.image = image;
     }
 
-    public PlaylistItem(String id, String text, String type, String image, List<StreamingReference> streamingRefs) {
+    public PlaybackQueueItem(String id, String text, String type, String image, List<StreamingReference> streamingRefs) {
         this.id = id;
         this.text = text;
         this.type = type;
@@ -94,9 +94,9 @@ public class PlaylistItem {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof PlaylistItem)) {
+        if (!(o instanceof PlaybackQueueItem)) {
             return false;
         }
-        return new EqualsBuilder().append(id, ((PlaylistItem) o).getId()).isEquals();
+        return new EqualsBuilder().append(id, ((PlaybackQueueItem) o).getId()).isEquals();
     }
 }

@@ -6,23 +6,23 @@
 package com.ickstream.protocol.service.player;
 
 public class SeekPosition {
-    private Integer playlistPos;
+    private Integer playbackQueuePos;
     private Double seekPos;
 
     public SeekPosition() {
     }
 
-    public SeekPosition(Integer playlistPos, Double seekPos) {
-        this.playlistPos = playlistPos;
+    public SeekPosition(Integer playbackQueuePos, Double seekPos) {
+        this.playbackQueuePos = playbackQueuePos;
         this.seekPos = seekPos;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        this.playbackQueuePos = playbackQueuePos;
     }
 
     public Double getSeekPos() {

@@ -12,7 +12,7 @@ public class CoreServiceFactory extends ServiceFactory {
     private static final String CORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/jsonrpc";
     private static final String PUBLICCORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/public/jsonrpc";
 
-    private static String getEndpoint() {
+    public static String getCoreServiceEndpoint() {
         String url = System.getProperty("ickstream-core-url");
         if (url != null) {
             return url;
@@ -31,7 +31,11 @@ public class CoreServiceFactory extends ServiceFactory {
     }
 
     public static CoreService getCoreService(String accessToken, MessageLogger messageLogger) {
-        CoreService coreService = new CoreService(createHttpClient(), getEndpoint());
+        return getCoreService(null, accessToken, messageLogger);
+    }
+
+    public static CoreService getCoreService(String cloudCoreUrl, String accessToken, MessageLogger messageLogger) {
+        CoreService coreService = new CoreService(createHttpClient(), cloudCoreUrl == null ? getCoreServiceEndpoint() : cloudCoreUrl);
         coreService.setAccessToken(accessToken);
         coreService.setMessageLogger(messageLogger);
         return coreService;
@@ -45,7 +49,11 @@ public class CoreServiceFactory extends ServiceFactory {
     }
 
     public static CoreService getCoreService(String accessToken) {
-        return getCoreService(accessToken, null);
+        return getCoreService(null, accessToken);
+    }
+
+    public static CoreService getCoreService(String cloudCoreUrl, String accessToken) {
+        return getCoreService(cloudCoreUrl, accessToken, null);
     }
 
     public static PublicCoreService getPublicCoreService(String accessToken) {

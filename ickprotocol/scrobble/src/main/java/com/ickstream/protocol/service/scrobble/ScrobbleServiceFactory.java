@@ -14,9 +14,9 @@ import com.ickstream.protocol.service.core.FindServicesResponse;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class ScrobbleServiceFactory extends CoreServiceFactory {
-    public static ScrobbleService getScrobbleService(String accessToken, MessageLogger messageLogger) {
+    public static ScrobbleService getScrobbleService(String cloudCoreUrl, String accessToken, MessageLogger messageLogger) {
         try {
-            FindServicesResponse response = getCoreService(accessToken, messageLogger).findServices(new FindServicesRequest("scrobble"));
+            FindServicesResponse response = getCoreService(cloudCoreUrl, accessToken, messageLogger).findServices(new FindServicesRequest("scrobble"));
             if (response != null && response.getItems().size() > 0) {
                 ScrobbleService scrobbleService = new ScrobbleService(new DefaultHttpClient(), response.getItems().get(0).getUrl());
                 scrobbleService.setAccessToken(accessToken);
@@ -31,7 +31,7 @@ public class ScrobbleServiceFactory extends CoreServiceFactory {
         return null;
     }
 
-    public static ScrobbleService getScrobbleService(String accessToken) {
-        return getScrobbleService(accessToken, null);
+    public static ScrobbleService getScrobbleService(String cloudCoreUrl, String accessToken) {
+        return getScrobbleService(cloudCoreUrl, accessToken, null);
     }
 }
