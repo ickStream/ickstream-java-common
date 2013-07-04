@@ -36,6 +36,30 @@ public class AbstractService extends SyncJsonRpcClient implements Service {
     }
 
     @Override
+    public ProtocolVersionsResponse getProtocolVersions() throws ServiceException, ServiceTimeoutException {
+        return getProtocolVersions((Integer) null);
+    }
+
+    @Override
+    public ProtocolVersionsResponse getProtocolVersions(Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getProtocolVersions", null, ProtocolVersionsResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler) {
+        getProtocolVersions(messageHandler, (Integer) null);
+    }
+
+    public void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler, Integer timeout) {
+        sendRequest("getProtocolVersions", null, ProtocolVersionsResponse.class, messageHandler, timeout);
+    }
+
+    @Override
     public ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException {
         return getServiceInformation((Integer) null);
     }

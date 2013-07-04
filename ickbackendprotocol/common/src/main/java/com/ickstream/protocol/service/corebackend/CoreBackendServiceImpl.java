@@ -11,6 +11,7 @@ import com.ickstream.protocol.backend.common.InjectHelper;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
+import com.ickstream.protocol.service.ProtocolVersionsResponse;
 import com.ickstream.protocol.service.ServiceInformation;
 import org.apache.http.client.HttpClient;
 
@@ -45,6 +46,11 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
         } else {
             return new ServiceException(e.getCode(), e.getMessage() + "\n" + (e.getData() != null ? "\n" + e.getData() : ""));
         }
+    }
+
+    @Override
+    public ProtocolVersionsResponse getProtocolVersions() {
+        return new ProtocolVersionsResponse("1.0","1.0");
     }
 
     @Override

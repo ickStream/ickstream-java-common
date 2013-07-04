@@ -17,4 +17,12 @@ public interface Service {
     void getServiceInformation(MessageHandler<ServiceInformation> messageHandler);
 
     void getServiceInformation(MessageHandler<ServiceInformation> messageHandler, Integer timeout);
+
+    ProtocolVersionsResponse getProtocolVersions() throws ServiceException, ServiceTimeoutException;
+
+    ProtocolVersionsResponse getProtocolVersions(Integer timeout) throws ServiceException, ServiceTimeoutException;
+
+    void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler);
+
+    void getProtocolVersions(MessageHandler<ProtocolVersionsResponse> messageHandler, Integer timeout);
 }
