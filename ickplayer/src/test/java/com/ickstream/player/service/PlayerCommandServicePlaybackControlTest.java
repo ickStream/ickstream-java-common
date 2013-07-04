@@ -5,8 +5,8 @@
 
 package com.ickstream.player.service;
 
+import com.ickstream.player.model.PlaybackQueue;
 import com.ickstream.player.model.PlayerStatus;
-import com.ickstream.player.model.Playlist;
 import com.ickstream.protocol.service.player.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -20,9 +20,9 @@ public class PlayerCommandServicePlaybackControlTest {
         PlayerStatusResponse returnedStatus = service.getPlayerStatus();
 
         Assert.assertEquals(returnedStatus.getPlaying(), status.getPlaying());
-        Assert.assertEquals(returnedStatus.getPlaylistPos(), status.getPlaylistPos());
+        Assert.assertEquals(returnedStatus.getPlaybackQueuePos(), status.getPlaybackQueuePos());
         Assert.assertEquals(returnedStatus.getSeekPos(), status.getSeekPos());
-        Assert.assertEquals(returnedStatus.getTrack(), status.getPlaylist().getItems().get(status.getPlaylistPos()));
+        Assert.assertEquals(returnedStatus.getTrack(), status.getPlaybackQueue().getItems().get(status.getPlaybackQueuePos()));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class PlayerCommandServicePlaybackControlTest {
         SeekPosition response = service.getSeekPosition();
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistPos(), new Integer(1));
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(1));
         Assert.assertEquals(response.getSeekPos(), 42.3);
     }
 
@@ -82,7 +82,7 @@ public class PlayerCommandServicePlaybackControlTest {
         SeekPosition response = service.getSeekPosition();
 
         Assert.assertNotNull(response);
-        Assert.assertNull(response.getPlaylistPos());
+        Assert.assertNull(response.getPlaybackQueuePos());
         Assert.assertNull(response.getSeekPos());
     }
 
@@ -95,7 +95,7 @@ public class PlayerCommandServicePlaybackControlTest {
         SeekPosition response = service.setSeekPosition(position);
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistPos(), new Integer(0));
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
         Assert.assertEquals(response.getSeekPos(), 40.1);
     }
 
@@ -108,19 +108,19 @@ public class PlayerCommandServicePlaybackControlTest {
         SeekPosition response = service.setSeekPosition(position);
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistPos(), new Integer(1));
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(1));
         Assert.assertEquals(response.getSeekPos(), 12.1);
     }
 
     @Test
-    public void testSetSeekPositionInvalidPlaylistPos() {
+    public void testSetSeekPositionInvalidPlaybackQueuePos() {
         PlayerStatus status = getDefaultPlayerStatus(3);
         PlayerCommandService service = new PlayerCommandService(status);
         SeekPosition position = new SeekPosition(3, 40.1);
 
         try {
             service.setSeekPosition(position);
-            Assert.assertTrue(false, "Invalid playlist position not detected");
+            Assert.assertTrue(false, "Invalid playback queue position not detected");
         } catch (IllegalArgumentException e) {
         }
     }
@@ -134,10 +134,10 @@ public class PlayerCommandServicePlaybackControlTest {
         TrackResponse response = service.getTrack(0);
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistId(), status.getPlaylist().getId());
-        Assert.assertEquals(response.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(response.getPlaylistPos(), new Integer(0));
-        Assert.assertEquals(response.getTrack().getId(), status.getPlaylist().getItems().get(0).getId());
+        Assert.assertEquals(response.getPlaylistId(), status.getPlaybackQueue().getId());
+        Assert.assertEquals(response.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
+        Assert.assertEquals(response.getTrack().getId(), status.getPlaybackQueue().getItems().get(0).getId());
     }
 
     @Test
@@ -148,10 +148,10 @@ public class PlayerCommandServicePlaybackControlTest {
         TrackResponse response = service.getTrack(null);
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistId(), status.getPlaylist().getId());
-        Assert.assertEquals(response.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertEquals(response.getPlaylistPos(), status.getPlaylistPos());
-        Assert.assertEquals(response.getTrack().getId(), status.getPlaylist().getItems().get(status.getPlaylistPos()).getId());
+        Assert.assertEquals(response.getPlaylistId(), status.getPlaybackQueue().getId());
+        Assert.assertEquals(response.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(response.getPlaybackQueuePos(), status.getPlaybackQueuePos());
+        Assert.assertEquals(response.getTrack().getId(), status.getPlaybackQueue().getItems().get(status.getPlaybackQueuePos()).getId());
     }
 
     @Test
@@ -162,9 +162,9 @@ public class PlayerCommandServicePlaybackControlTest {
         TrackResponse response = service.getTrack(null);
 
         Assert.assertNotNull(response);
-        Assert.assertEquals(response.getPlaylistId(), status.getPlaylist().getId());
-        Assert.assertEquals(response.getPlaylistName(), status.getPlaylist().getName());
-        Assert.assertNull(response.getPlaylistPos());
+        Assert.assertEquals(response.getPlaylistId(), status.getPlaybackQueue().getId());
+        Assert.assertEquals(response.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertNull(response.getPlaybackQueuePos());
         Assert.assertNull(response.getTrack());
     }
 
@@ -173,10 +173,10 @@ public class PlayerCommandServicePlaybackControlTest {
         PlayerStatus status = getDefaultPlayerStatus(3);
         PlayerCommandService service = new PlayerCommandService(status);
 
-        Integer playlistPos = service.setTrack(0);
+        Integer playbackQueuePos = service.setTrack(0);
 
-        Assert.assertEquals(playlistPos, new Integer(0));
-        Assert.assertEquals(status.getPlaylistPos(), playlistPos);
+        Assert.assertEquals(playbackQueuePos, new Integer(0));
+        Assert.assertEquals(status.getPlaybackQueuePos(), playbackQueuePos);
         Assert.assertEquals(status.getSeekPos(), 0.0);
     }
 
@@ -185,10 +185,10 @@ public class PlayerCommandServicePlaybackControlTest {
         PlayerStatus status = getDefaultPlayerStatus(3);
         PlayerCommandService service = new PlayerCommandService(status);
 
-        Integer playlistPos = service.setTrack(1);
+        Integer playbackQueuePos = service.setTrack(1);
 
-        Assert.assertEquals(playlistPos, new Integer(1));
-        Assert.assertEquals(status.getPlaylistPos(), playlistPos);
+        Assert.assertEquals(playbackQueuePos, new Integer(1));
+        Assert.assertEquals(status.getPlaybackQueuePos(), playbackQueuePos);
         Assert.assertEquals(status.getSeekPos(), 0.0);
     }
 
@@ -207,152 +207,152 @@ public class PlayerCommandServicePlaybackControlTest {
     @Test
     public void testSetTrackMetadata() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(0).setText("Track1");
-        status.getPlaylist().getItems().get(0).setImage("http://example.com/oldtrack1.png");
+        status.getPlaybackQueue().getItems().get(0).setText("Track1");
+        status.getPlaybackQueue().getItems().get(0).setImage("http://example.com/oldtrack1.png");
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
-        request.setPlaylistPos(0);
+        request.setPlaybackQueuePos(0);
         request.setReplace(true);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track1");
         item.setText("My First Track");
         item.setImage("http://example.com/track1.png");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), item.getText());
         Assert.assertEquals(result.getImage(), item.getImage());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getText(), item.getText());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getImage(), item.getImage());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getText(), item.getText());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getImage(), item.getImage());
     }
 
     @Test
     public void testSetTrackMetadataReplaceWithNull() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(0).setText("Track1");
-        status.getPlaylist().getItems().get(0).setImage("http://example.com/oldtrack1.png");
+        status.getPlaybackQueue().getItems().get(0).setText("Track1");
+        status.getPlaybackQueue().getItems().get(0).setImage("http://example.com/oldtrack1.png");
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
-        request.setPlaylistPos(0);
+        request.setPlaybackQueuePos(0);
         request.setReplace(true);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track1");
         item.setText("My First Track");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), item.getText());
         Assert.assertNull(result.getImage());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getText(), item.getText());
-        Assert.assertNull(status.getPlaylist().getItems().get(0).getImage());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getText(), item.getText());
+        Assert.assertNull(status.getPlaybackQueue().getItems().get(0).getImage());
     }
 
     @Test
     public void testSetTrackMetadataMerge() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(0).setText("Track1");
-        status.getPlaylist().getItems().get(0).setImage("http://example.com/oldtrack1.png");
+        status.getPlaybackQueue().getItems().get(0).setText("Track1");
+        status.getPlaybackQueue().getItems().get(0).setImage("http://example.com/oldtrack1.png");
 
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
-        request.setPlaylistPos(0);
+        request.setPlaybackQueuePos(0);
         request.setReplace(false);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track1");
         item.setText("My First Track");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), item.getText());
         Assert.assertEquals(result.getImage(), "http://example.com/oldtrack1.png");
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getText(), item.getText());
-        Assert.assertEquals(status.getPlaylist().getItems().get(0).getImage(), "http://example.com/oldtrack1.png");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getText(), item.getText());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getImage(), "http://example.com/oldtrack1.png");
     }
 
     @Test
-    public void testSetTrackMetadataWithoutPlaylistPos() {
+    public void testSetTrackMetadataWithoutPlaybackQueuePos() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(1).setText("Track2");
-        status.getPlaylist().getItems().get(1).setImage("http://example.com/oldtrack2.png");
+        status.getPlaybackQueue().getItems().get(1).setText("Track2");
+        status.getPlaybackQueue().getItems().get(1).setImage("http://example.com/oldtrack2.png");
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
         request.setReplace(true);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track2");
         item.setText("My Second Track");
         item.setImage("http://example.com/track2.png");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), item.getText());
         Assert.assertEquals(result.getImage(), item.getImage());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getText(), item.getText());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getImage(), item.getImage());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getText(), item.getText());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getImage(), item.getImage());
     }
 
     @Test
-    public void testSetTrackMetadataReplaceWithNullWithoutPlaylistPos() {
+    public void testSetTrackMetadataReplaceWithNullWithoutPlaybackQueuePos() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(1).setText("Track2");
-        status.getPlaylist().getItems().get(1).setImage("http://example.com/oldtrack2.png");
+        status.getPlaybackQueue().getItems().get(1).setText("Track2");
+        status.getPlaybackQueue().getItems().get(1).setImage("http://example.com/oldtrack2.png");
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
         request.setReplace(true);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track2");
         item.setText("My Second Track");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), item.getText());
         Assert.assertNull(result.getImage());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getText(), item.getText());
-        Assert.assertNull(status.getPlaylist().getItems().get(1).getImage());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getText(), item.getText());
+        Assert.assertNull(status.getPlaybackQueue().getItems().get(1).getImage());
     }
 
     @Test
-    public void testSetTrackMetadataMergeWithoutPlaylistPos() {
+    public void testSetTrackMetadataMergeWithoutPlaybackQueuePos() {
         PlayerStatus status = getDefaultPlayerStatus(3);
-        status.getPlaylist().getItems().get(1).setText("Track2");
-        status.getPlaylist().getItems().get(1).setImage("http://example.com/oldtrack2.png");
+        status.getPlaybackQueue().getItems().get(1).setText("Track2");
+        status.getPlaybackQueue().getItems().get(1).setImage("http://example.com/oldtrack2.png");
 
         PlayerCommandService service = new PlayerCommandService(status);
         TrackMetadataRequest request = new TrackMetadataRequest();
         request.setReplace(false);
-        PlaylistItem item = new PlaylistItem();
+        PlaybackQueueItem item = new PlaybackQueueItem();
         item.setId("track2");
         item.setImage("http://example.com/track2.png");
         request.setTrack(item);
 
-        PlaylistItem result = service.setTrackMetadata(request);
+        PlaybackQueueItem result = service.setTrackMetadata(request);
 
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getId(), item.getId());
         Assert.assertEquals(result.getText(), "Track2");
         Assert.assertEquals(result.getImage(), item.getImage());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getId(), item.getId());
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getText(), "Track2");
-        Assert.assertEquals(status.getPlaylist().getItems().get(1).getImage(), item.getImage());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), item.getId());
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getText(), "Track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getImage(), item.getImage());
     }
 
     @Test
@@ -500,30 +500,30 @@ public class PlayerCommandServicePlaybackControlTest {
         Assert.assertEquals(response.getMuted(), status.getMuted());
     }
 
-    private Playlist getDefaultPlaylist(int numOfTracks) {
-        Playlist playlist = new Playlist();
-        playlist.setId("playlist1");
-        playlist.setName("Playlist1Name");
+    private PlaybackQueue getDefaultPlaylist(int numOfTracks) {
+        PlaybackQueue playbackQueue = new PlaybackQueue();
+        playbackQueue.setId("playlist1");
+        playbackQueue.setName("Playlist1Name");
         for (int i = 0; i < numOfTracks; i++) {
-            PlaylistItem item = new PlaylistItem();
+            PlaybackQueueItem item = new PlaybackQueueItem();
             item.setId("track" + (i + 1));
-            playlist.getItems().add(item);
+            playbackQueue.getItems().add(item);
         }
-        return playlist;
+        return playbackQueue;
     }
 
     private PlayerStatus getDefaultPlayerStatus(int numOfTracks) {
-        PlayerStatus status = new PlayerStatus(new Playlist());
+        PlayerStatus status = new PlayerStatus(new PlaybackQueue());
         status.setPlaying(false);
         status.setVolumeLevel(0.42);
         status.setMuted(false);
-        status.setPlaylist(getDefaultPlaylist(numOfTracks));
+        status.setPlaybackQueue(getDefaultPlaylist(numOfTracks));
         if (numOfTracks > 1) {
             status.setSeekPos(42.3);
-            status.setPlaylistPos(1);
+            status.setPlaybackQueuePos(1);
         } else {
             status.setSeekPos(null);
-            status.setPlaylistPos(null);
+            status.setPlaybackQueuePos(null);
         }
         return status;
     }

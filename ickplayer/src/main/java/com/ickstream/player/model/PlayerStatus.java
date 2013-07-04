@@ -6,8 +6,8 @@
 package com.ickstream.player.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.ickstream.protocol.service.player.PlaylistItem;
-import com.ickstream.protocol.service.player.RepeatMode;
+import com.ickstream.protocol.service.player.PlaybackQueueItem;
+import com.ickstream.protocol.service.player.PlaybackQueueMode;
 
 public class PlayerStatus {
     private Long changedTimestamp = System.currentTimeMillis();
@@ -15,24 +15,24 @@ public class PlayerStatus {
     private Double volumeLevel = 0.1;
     private Boolean muted = Boolean.FALSE;
     private Double seekPos;
-    private Integer playlistPos;
-    private RepeatMode repeatMode = RepeatMode.REPEAT_OFF;
+    private Integer playbackQueuePos;
+    private PlaybackQueueMode playbackQueueMode = PlaybackQueueMode.QUEUE;
     @JsonIgnore
-    private Playlist playlist;
+    private PlaybackQueue playbackQueue;
 
     @JsonIgnore
     private PlayerStatusStorage storage;
 
     public PlayerStatus() {
-        this(new Playlist());
+        this(new PlaybackQueue());
     }
 
-    public PlayerStatus(Playlist playlist) {
-        this.playlist = playlist;
+    public PlayerStatus(PlaybackQueue playbackQueue) {
+        this.playbackQueue = playbackQueue;
     }
 
-    public PlayerStatus(Playlist playlist, PlayerStatusStorage storage) {
-        this(playlist);
+    public PlayerStatus(PlaybackQueue playbackQueue, PlayerStatusStorage storage) {
+        this(playbackQueue);
         this.storage = storage;
     }
 
@@ -82,46 +82,46 @@ public class PlayerStatus {
         this.seekPos = seekPos;
     }
 
-    public Integer getPlaylistPos() {
-        return playlistPos;
+    public Integer getPlaybackQueuePos() {
+        return playbackQueuePos;
     }
 
-    public void setPlaylistPos(Integer playlistPos) {
-        if ((playlistPos == null && this.playlistPos != null) || (playlistPos != null && !playlistPos.equals(this.playlistPos))) {
-            this.playlistPos = playlistPos;
+    public void setPlaybackQueuePos(Integer playbackQueuePos) {
+        if ((playbackQueuePos == null && this.playbackQueuePos != null) || (playbackQueuePos != null && !playbackQueuePos.equals(this.playbackQueuePos))) {
+            this.playbackQueuePos = playbackQueuePos;
             updateTimestamp();
         }
     }
 
-    public Playlist getPlaylist() {
-        return playlist;
+    public PlaybackQueue getPlaybackQueue() {
+        return playbackQueue;
     }
 
-    public void setPlaylist(Playlist playlist) {
-        if (playlist != null) {
-            this.playlist = playlist;
+    public void setPlaybackQueue(PlaybackQueue playbackQueue) {
+        if (playbackQueue != null) {
+            this.playbackQueue = playbackQueue;
         } else {
-            this.playlist = new Playlist();
+            this.playbackQueue = new PlaybackQueue();
         }
         updateTimestamp();
     }
 
-    public RepeatMode getRepeatMode() {
-        return repeatMode;
+    public PlaybackQueueMode getPlaybackQueueMode() {
+        return playbackQueueMode;
     }
 
-    public void setRepeatMode(RepeatMode repeatMode) {
-        if(!this.repeatMode.equals(repeatMode)) {
-            this.repeatMode = repeatMode;
+    public void setPlaybackQueueMode(PlaybackQueueMode playbackQueueMode) {
+        if (!this.playbackQueueMode.equals(playbackQueueMode)) {
+            this.playbackQueueMode = playbackQueueMode;
             updateTimestamp();
         }
     }
 
     @JsonIgnore
-    public PlaylistItem getCurrentPlaylistItem() {
-        if (getPlaylistPos() != null) {
-            if (getPlaylistPos() < getPlaylist().getItems().size()) {
-                return getPlaylist().getItems().get(getPlaylistPos());
+    public PlaybackQueueItem getCurrentPlaylistItem() {
+        if (getPlaybackQueuePos() != null) {
+            if (getPlaybackQueuePos() < getPlaybackQueue().getItems().size()) {
+                return getPlaybackQueue().getItems().get(getPlaybackQueuePos());
             }
         }
         return null;

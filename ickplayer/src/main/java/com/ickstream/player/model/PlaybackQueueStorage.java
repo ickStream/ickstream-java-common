@@ -5,6 +5,6 @@
 
 package com.ickstream.player.model;
 
-public interface PlaylistStorage {
-    void store(Playlist playlist);
+public interface PlaybackQueueStorage {
+    void store(PlaybackQueue playbackQueue);
 }

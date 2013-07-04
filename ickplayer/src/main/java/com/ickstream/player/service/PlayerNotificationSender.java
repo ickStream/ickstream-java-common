@@ -8,8 +8,8 @@ package com.ickstream.player.service;
 import com.ickstream.common.jsonrpc.JsonHelper;
 import com.ickstream.common.jsonrpc.JsonRpcRequest;
 import com.ickstream.common.jsonrpc.MessageSender;
+import com.ickstream.protocol.service.player.PlaybackQueueChangedNotification;
 import com.ickstream.protocol.service.player.PlayerStatusResponse;
-import com.ickstream.protocol.service.player.PlaylistChangedNotification;
 
 public class PlayerNotificationSender {
     private MessageSender messageSender;
@@ -26,9 +26,9 @@ public class PlayerNotificationSender {
         messageSender.sendMessage(jsonHelper.objectToString(notification));
     }
 
-    public void playlistChanged(PlaylistChangedNotification playlistChanged) {
+    public void playbackQueueChanged(PlaybackQueueChangedNotification playlistChanged) {
         JsonRpcRequest notification = new JsonRpcRequest();
-        notification.setMethod("playlistChanged");
+        notification.setMethod("playbackQueueChanged");
         notification.setParams(jsonHelper.objectToJson(playlistChanged));
         messageSender.sendMessage(jsonHelper.objectToString(notification));
     }

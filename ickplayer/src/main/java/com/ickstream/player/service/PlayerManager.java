@@ -8,6 +8,12 @@ package com.ickstream.player.service;
 public interface PlayerManager {
     void setAccessToken(String accessToken);
 
+    Boolean hasAccessToken();
+
+    void setCloudCoreUrl(String cloudCoreUrl);
+
+    String getCloudCoreUrl();
+
     void setName(String playerName);
 
     String getName();

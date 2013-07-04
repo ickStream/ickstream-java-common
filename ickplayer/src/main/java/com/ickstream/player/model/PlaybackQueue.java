@@ -6,24 +6,24 @@
 package com.ickstream.player.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.ickstream.protocol.service.player.PlaylistItem;
+import com.ickstream.protocol.service.player.PlaybackQueueItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Playlist {
+public class PlaybackQueue {
     private Long changedTimestamp = System.currentTimeMillis();
     private String id;
     private String name;
-    private List<PlaylistItem> items = new ArrayList<PlaylistItem>();
+    private List<PlaybackQueueItem> items = new ArrayList<PlaybackQueueItem>();
 
     @JsonIgnore
-    private PlaylistStorage storage;
+    private PlaybackQueueStorage storage;
 
-    public Playlist() {
+    public PlaybackQueue() {
     }
 
-    public Playlist(PlaylistStorage storage) {
+    public PlaybackQueue(PlaybackQueueStorage storage) {
         this.storage = storage;
     }
 
@@ -56,11 +56,11 @@ public class Playlist {
         updateTimestamp();
     }
 
-    public List<PlaylistItem> getItems() {
+    public List<PlaybackQueueItem> getItems() {
         return items;
     }
 
-    public void setItems(List<PlaylistItem> items) {
+    public void setItems(List<PlaybackQueueItem> items) {
         this.items = items;
         updateTimestamp();
     }
@@ -69,11 +69,11 @@ public class Playlist {
         return changedTimestamp;
     }
 
-    public PlaylistStorage getStorage() {
+    public PlaybackQueueStorage getStorage() {
         return storage;
     }
 
-    public void setStorage(PlaylistStorage storage) {
+    public void setStorage(PlaybackQueueStorage storage) {
         this.storage = storage;
     }
 }
