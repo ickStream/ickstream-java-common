@@ -13,12 +13,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 public class JsonHelper {
-    private ObjectMapper mapper;
+    private static ObjectMapper mapper;
 
-    public JsonHelper() {
+    {
         mapper = new ObjectMapper();
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    public JsonHelper() {
     }
 
     public <T> T jsonToObject(JsonNode json, Class<T> objectClass) {
