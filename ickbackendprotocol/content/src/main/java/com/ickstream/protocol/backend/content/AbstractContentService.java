@@ -30,6 +30,8 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     @Inject
     BusinessLogger businessLogger;
 
+    private static final Client CLIENT = Client.create();
+
     private List<ContentHandlerEntry> contentHandlers = new ArrayList<ContentHandlerEntry>();
     private List<ContentItemHandlerEntry> contentItemHandlers = new ArrayList<ContentItemHandlerEntry>();
     private List<ManagementItemHandlerEntry> managementItemHandlers = new ArrayList<ManagementItemHandlerEntry>();
@@ -66,7 +68,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 }
             }
             if (userService != null) {
-                Client client = Client.create();
+                Client client = CLIENT;
                 try {
                     AccountInformation result = getAccountInformation(client, userService);
                     businessLogger.logSuccessful(businessCall);
@@ -536,7 +538,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public Boolean addItem(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                Client client = Client.create();
+                Client client = CLIENT;
                 return addItem(client, userService, contextId, itemId);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
@@ -555,7 +557,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public Boolean removeItem(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                Client client = Client.create();
+                Client client = CLIENT;
                 return removeItem(client, userService, contextId, itemId);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
@@ -580,7 +582,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public ContentItem getItem(UserServiceResponse userService, Map<String, String> parameters) {
             try {
-                Client client = Client.create();
+                Client client = CLIENT;
                 return getItem(client, userService, parameters);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
@@ -610,7 +612,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             result.setOffset(offset);
 
             try {
-                Client client = Client.create();
+                Client client = CLIENT;
                 result = findItems(client, userService, parameters, offset, count, result);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
