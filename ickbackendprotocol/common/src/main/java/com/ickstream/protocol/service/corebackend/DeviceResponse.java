@@ -5,7 +5,9 @@
 
 package com.ickstream.protocol.service.corebackend;
 
-public class DeviceResponse {
+import java.io.Serializable;
+
+public class DeviceResponse implements Serializable {
     private String id;
     private String name;
     private String userId;

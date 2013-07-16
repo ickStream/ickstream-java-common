@@ -7,12 +7,15 @@ package com.ickstream.protocol.service.corebackend;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.backend.common.BackendRequestContext;
+import com.ickstream.protocol.backend.common.CacheManager;
 import com.ickstream.protocol.backend.common.InjectHelper;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
 import com.ickstream.protocol.service.ProtocolVersionsResponse;
 import com.ickstream.protocol.service.ServiceInformation;
+import net.sf.ehcache.Cache;
+import net.sf.ehcache.Element;
 import org.apache.http.client.HttpClient;
 
 import java.util.HashMap;
@@ -50,7 +53,7 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
 
     @Override
     public ProtocolVersionsResponse getProtocolVersions() {
-        return new ProtocolVersionsResponse("1.0","1.0");
+        return new ProtocolVersionsResponse("1.0", "1.0");
     }
 
     @Override
@@ -60,10 +63,22 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
 
     @Override
     public UserServiceResponse getUserServiceByDevice(String deviceId) {
+        Cache cache = InjectHelper.instance(CacheManager.class).get(UserServiceResponse.class);
+        if (cache != null) {
+            Element cachedResult = cache.get(deviceId);
+            if (cachedResult != null && !cachedResult.isExpired()) {
+                UserServiceResponse userService = (UserServiceResponse) cachedResult.getValue();
+                if (userService != null) {
+                    return userService;
+                }
+            }
+        }
         try {
             Map<String, String> request = new HashMap<String, String>();
             request.put("deviceId", deviceId);
-            return sendRequest("getUserServiceByDevice", request, UserServiceResponse.class, (Integer) null);
+            UserServiceResponse response = sendRequest("getUserServiceByDevice", request, UserServiceResponse.class, (Integer) null);
+            if (cache != null && response != null) cache.put(new Element(deviceId, response));
+            return response;
         } catch (JsonRpcException e) {
             throw new RuntimeException(getServiceException(e));
         } catch (JsonRpcTimeoutException e) {
@@ -127,11 +142,23 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
 
     @Override
     public DeviceResponse getDeviceByToken(String deviceToken) {
+        Cache cache = InjectHelper.instance(CacheManager.class).get(DeviceResponse.class);
+        if (cache != null) {
+            Element cachedResult = cache.get(deviceToken);
+            if (cachedResult != null && !cachedResult.isExpired()) {
+                DeviceResponse deviceResponse = (DeviceResponse) cachedResult.getValue();
+                if (deviceResponse != null) {
+                    InjectHelper.instance(BackendRequestContext.class).setDevice(deviceResponse);
+                    return deviceResponse;
+                }
+            }
+        }
         try {
             Map<String, String> request = new HashMap<String, String>();
             request.put("deviceToken", deviceToken);
             DeviceResponse device = sendRequest("getDeviceByToken", request, DeviceResponse.class, (Integer) null);
             InjectHelper.instance(BackendRequestContext.class).setDevice(device);
+            if (cache != null && device != null) cache.put(new Element(deviceToken, device));
             return device;
         } catch (JsonRpcException e) {
             throw new RuntimeException(getServiceException(e));

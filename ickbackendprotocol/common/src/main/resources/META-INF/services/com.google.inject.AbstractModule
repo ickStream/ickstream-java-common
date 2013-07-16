@@ -1,2 +1,4 @@
+com.ickstream.protocol.backend.common.UriResolverModule
+com.ickstream.protocol.backend.common.ClientModule
 com.ickstream.protocol.backend.common.RequestContextModule
 com.ickstream.protocol.backend.common.BackendRequestContextModule

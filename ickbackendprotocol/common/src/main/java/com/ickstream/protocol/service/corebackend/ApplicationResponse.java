@@ -5,10 +5,11 @@
 
 package com.ickstream.protocol.service.corebackend;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ApplicationResponse {
+public class ApplicationResponse implements Serializable {
     private String id;
     private String name;
     private String contact;

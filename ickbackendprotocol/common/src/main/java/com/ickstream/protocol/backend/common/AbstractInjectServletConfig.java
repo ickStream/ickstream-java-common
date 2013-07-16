@@ -21,7 +21,11 @@ public abstract class AbstractInjectServletConfig extends GuiceServletContextLis
         modules.add(createInjectModule());
         Module module = createBusinessLoggingModule();
         if (module != null) {
-            modules.add(createBusinessLoggingModule());
+            modules.add(module);
+        }
+        module = createCacheManagerModule();
+        if (module != null) {
+            modules.add(module);
         }
         modules.addAll(createAdditionalInjectModules());
         Injector injector = Guice.createInjector(modules);
@@ -33,6 +37,10 @@ public abstract class AbstractInjectServletConfig extends GuiceServletContextLis
 
     protected Module createBusinessLoggingModule() {
         return null;
+    }
+
+    protected Module createCacheManagerModule() {
+        return new NoCacheManagerModule();
     }
 
     protected List<Module> createAdditionalInjectModules() {

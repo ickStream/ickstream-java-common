@@ -16,7 +16,6 @@ import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
 import com.ickstream.protocol.service.corebackend.UserResponse;
 import com.ickstream.protocol.service.corebackend.UserServiceResponse;
-import com.sun.jersey.api.client.Client;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -43,7 +42,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         return null;
     }
 
-    protected AccountInformation getAccountInformation(Client client, UserServiceResponse userService) throws IOException {
+    protected AccountInformation getAccountInformation(UserServiceResponse userService) throws IOException {
         return null;
     }
 
@@ -66,9 +65,8 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 }
             }
             if (userService != null) {
-                Client client = Client.create();
                 try {
-                    AccountInformation result = getAccountInformation(client, userService);
+                    AccountInformation result = getAccountInformation(userService);
                     businessLogger.logSuccessful(businessCall);
                     return result;
                 } catch (UnsupportedEncodingException e) {
@@ -287,7 +285,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                                             parameters.put(entry.getParameters().get(i - 1), attributeValue);
                                         }
                                     }
-                                    ContentItem result = entry.getHandler().getItem(userService, parameters);
+                                    ContentItem result = entry.getHandler().getItemOrCatchErrors(userService, parameters);
                                     businessLogger.logSuccessful(businessCall);
                                     return result;
                                 }
@@ -418,7 +416,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     m.reset();
                     if (m.find()) {
                         String id = m.group(1);
-                        return entry.getHandler().addItem(userService, contextId, id);
+                        return entry.getHandler().addItemOrCatchErrors(userService, contextId, id);
                     }
                 }
             }
@@ -434,7 +432,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     m.reset();
                     if (m.find()) {
                         String id = m.group(1);
-                        return entry.getHandler().removeItem(userService, contextId, id);
+                        return entry.getHandler().removeItemOrCatchErrors(userService, contextId, id);
                     }
                 }
             }
@@ -492,13 +490,13 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     public static interface ContentItemHandler {
-        ContentItem getItem(UserServiceResponse userService, Map<String, String> parameters);
+        ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters);
     }
 
     public static interface ManagementItemHandler {
-        Boolean addItem(UserServiceResponse userService, String contextId, String itemId);
+        Boolean addItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId);
 
-        Boolean removeItem(UserServiceResponse userService, String contextId, String itemId);
+        Boolean removeItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId);
     }
 
     public static abstract class BusinessCallHandler {
@@ -534,10 +532,9 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     public static abstract class AbstractManagementItemHandler extends BusinessCallHandler implements ManagementItemHandler {
         @Override
-        public Boolean addItem(UserServiceResponse userService, String contextId, String itemId) {
+        public Boolean addItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                Client client = Client.create();
-                return addItem(client, userService, contextId, itemId);
+                return addItem(userService, contextId, itemId);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -553,10 +550,9 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
 
         @Override
-        public Boolean removeItem(UserServiceResponse userService, String contextId, String itemId) {
+        public Boolean removeItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                Client client = Client.create();
-                return removeItem(client, userService, contextId, itemId);
+                return removeItem(userService, contextId, itemId);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -571,17 +567,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return false;
         }
 
-        protected abstract Boolean addItem(Client client, UserServiceResponse userService, String contextId, String itemId) throws IOException;
+        protected abstract Boolean addItem(UserServiceResponse userService, String contextId, String itemId) throws IOException;
 
-        protected abstract Boolean removeItem(Client client, UserServiceResponse userService, String contextId, String itemId) throws IOException;
+        protected abstract Boolean removeItem(UserServiceResponse userService, String contextId, String itemId) throws IOException;
     }
 
     public static abstract class AbstractContentItemHandler extends BusinessCallHandler implements ContentItemHandler {
         @Override
-        public ContentItem getItem(UserServiceResponse userService, Map<String, String> parameters) {
+        public ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters) {
             try {
-                Client client = Client.create();
-                return getItem(client, userService, parameters);
+                return getItem(userService, parameters);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -596,7 +591,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return null;
         }
 
-        protected abstract ContentItem getItem(Client client, UserServiceResponse userService, Map<String, String> parameters) throws IOException;
+        protected abstract ContentItem getItem(UserServiceResponse userService, Map<String, String> parameters) throws IOException;
     }
 
     public static abstract class AbstractContentHandler extends BusinessCallHandler implements ContentHandler {
@@ -610,8 +605,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             result.setOffset(offset);
 
             try {
-                Client client = Client.create();
-                result = findItems(client, userService, parameters, offset, count, result);
+                result = findItems(userService, parameters, offset, count, result);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -626,7 +620,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return result;
         }
 
-        protected abstract ContentResponse findItems(Client client, UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
+        protected abstract ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
 
         protected Long getExpirationTimestamp(Long expirationPeriod) {
             return System.currentTimeMillis() / 1000 + expirationPeriod;

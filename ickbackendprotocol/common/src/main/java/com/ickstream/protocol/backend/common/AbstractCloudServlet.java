@@ -5,9 +5,6 @@
 
 package com.ickstream.protocol.backend.common;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.inject.Singleton;
 import com.ickstream.common.jsonrpc.HttpJsonRpcService;
 
@@ -36,9 +33,6 @@ public abstract class AbstractCloudServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
             CloudService service = InjectHelper.instance(implementationClass);
             String deviceId = req.getRemoteUser();
             if (deviceId != null && remoteInterface != null) {

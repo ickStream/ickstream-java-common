@@ -5,7 +5,9 @@
 
 package com.ickstream.protocol.service.corebackend;
 
-public class ServiceResponse {
+import java.io.Serializable;
+
+public class ServiceResponse implements Serializable {
     private String id;
     private String name;
     private String url;
