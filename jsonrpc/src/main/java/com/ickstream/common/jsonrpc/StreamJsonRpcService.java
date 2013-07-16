@@ -5,11 +5,7 @@
 
 package com.ickstream.common.jsonrpc;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
@@ -22,7 +18,7 @@ import java.util.*;
 public class StreamJsonRpcService {
     private Object serviceImplementation;
     private Class serviceInterface;
-    private ObjectMapper mapper;
+    private JsonHelper jsonHelper = new JsonHelper();
     private static final Map<String, List<Method>> methodCache = new HashMap<String, List<Method>>();
     private Boolean returnOnVoid;
     private Boolean ignoreResponses;
@@ -39,9 +35,6 @@ public class StreamJsonRpcService {
     public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid, Boolean ignoreResponses) {
         this.serviceImplementation = serviceImplementation;
         this.serviceInterface = serviceInterface;
-        mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.returnOnVoid = returnOnVoid;
         this.ignoreResponses = ignoreResponses;
     }
@@ -54,17 +47,15 @@ public class StreamJsonRpcService {
         String id = null;
         String version = null;
 
-        JsonRpcRequest request = null;
-        try {
-            request = mapper.readValue(input, JsonRpcRequest.class);
-        } catch (IOException e) {
+        JsonRpcRequest request = request = jsonHelper.streamToObject(input, JsonRpcRequest.class);
+        if (request == null) {
             JsonRpcResponse response = new JsonRpcResponse("2.0", null);
             response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_JSON, "Invalid JSON"));
             if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                messageLogger.onOutgoingMessage(null, jsonHelper.objectToString(response));
             }
             try {
-                mapper.writeValue(ops, response);
+                jsonHelper.objectToStream(ops, response);
             } catch (IOException e2) {
                 e2.printStackTrace();
                 throw new RuntimeException(e2);
@@ -75,7 +66,7 @@ public class StreamJsonRpcService {
         JsonNode result = null;
 
         if (messageLogger != null) {
-            messageLogger.onIncomingMessage(null, mapper.valueToTree(request).toString());
+            messageLogger.onIncomingMessage(null, jsonHelper.objectToString(request));
         }
         if (StringUtils.isEmpty(request.getJsonrpc()) || StringUtils.isEmpty(request.getMethod())) {
             if (ignoreResponses && StringUtils.isEmpty(request.getMethod())) {
@@ -88,10 +79,10 @@ public class StreamJsonRpcService {
             );
             response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_REQUEST, "Invalid Request"));
             if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                messageLogger.onOutgoingMessage(null, jsonHelper.objectToString(response));
             }
             try {
-                mapper.writeValue(ops, response);
+                jsonHelper.objectToStream(ops, response);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -114,10 +105,10 @@ public class StreamJsonRpcService {
             JsonRpcResponse response = new JsonRpcResponse(version, id);
             response.setError(new JsonRpcResponse.Error(JsonRpcError.METHOD_NOT_FOUND, "Method not found"));
             if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                messageLogger.onOutgoingMessage(null, jsonHelper.objectToString(response));
             }
             try {
-                mapper.writeValue(ops, response);
+                jsonHelper.objectToStream(ops, response);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -213,9 +204,7 @@ public class StreamJsonRpcService {
                 }
                 JsonRpcResult resultName = matchedMethod.getAnnotation(JsonRpcResult.class);
                 if (resultName != null && resultName.value() != null && resultName.value().length() > 0) {
-                    ObjectNode node = mapper.createObjectNode();
-                    node.put(resultName.value(), result);
-                    result = node;
+                    result = jsonHelper.createObject(resultName.value(), result);
                 }
 
             } catch (Throwable e) {
@@ -268,11 +257,11 @@ public class StreamJsonRpcService {
 
         if (response != null) {
             if (messageLogger != null) {
-                messageLogger.onOutgoingMessage(null, mapper.valueToTree(response).toString());
+                messageLogger.onOutgoingMessage(null, jsonHelper.objectToString(response));
             }
             // write it
             try {
-                mapper.writeValue(ops, response);
+                jsonHelper.objectToStream(ops, response);
             } catch (IOException e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -299,7 +288,7 @@ public class StreamJsonRpcService {
                 if (paramsNode != null) {
                     params.add(paramsNode);
                 } else {
-                    params.add(mapper.createObjectNode());
+                    params.add(jsonHelper.createObject());
                 }
             } else {
                 params.add(null);
@@ -316,15 +305,14 @@ public class StreamJsonRpcService {
 
         for (int i = 0; i < parameterTypes.length; i++) {
             if (params.get(i) != null) {
-                convertedParams[i] = mapper.readValue(
-                        params.get(i).traverse(), mapper.getTypeFactory().constructType(parameterTypes[i]));
+                convertedParams[i] = jsonHelper.jsonToObject(params.get(i), parameterTypes[i]);
             } else {
                 convertedParams[i] = null;
             }
         }
 
         Object result = method.invoke(serviceImplementation, convertedParams);
-        return (method.getGenericReturnType() != null) ? mapper.valueToTree(result) : null;
+        return (method.getGenericReturnType() != null) ? jsonHelper.objectToJson(result) : null;
     }
 
     private List<Method> getMethods(String name) {
