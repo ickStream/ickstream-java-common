@@ -10,6 +10,7 @@ public class ServiceResponse {
     private String name;
     private String type;
     private String url;
+    private String addServiceUrl;
 
     public String getId() {
         return id;
@@ -41,5 +42,13 @@ public class ServiceResponse {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getAddServiceUrl() {
+        return addServiceUrl;
+    }
+
+    public void setAddServiceUrl(String addServiceUrl) {
+        this.addServiceUrl = addServiceUrl;
     }
 }
