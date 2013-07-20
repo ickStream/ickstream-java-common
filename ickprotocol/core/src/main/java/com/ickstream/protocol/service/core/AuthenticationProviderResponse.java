@@ -10,6 +10,7 @@ public class AuthenticationProviderResponse {
     private String name;
     private String icon;
     private String url;
+    private String addIdentityUrl;
 
     public String getId() {
         return id;
@@ -41,5 +42,13 @@ public class AuthenticationProviderResponse {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getAddIdentityUrl() {
+        return addIdentityUrl;
+    }
+
+    public void setAddIdentityUrl(String addIdentityUrl) {
+        this.addIdentityUrl = addIdentityUrl;
     }
 }
