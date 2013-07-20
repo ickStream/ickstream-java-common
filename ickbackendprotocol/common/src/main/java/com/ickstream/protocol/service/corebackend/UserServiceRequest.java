@@ -6,6 +6,7 @@
 package com.ickstream.protocol.service.corebackend;
 
 public class UserServiceRequest {
+    private String userId;
     private String deviceId;
     private String identity;
     private String accessToken;
@@ -16,17 +17,35 @@ public class UserServiceRequest {
     public UserServiceRequest() {
     }
 
-    public UserServiceRequest(String deviceId) {
+    public UserServiceRequest(String userId, String deviceId) {
+        this.userId = userId;
         this.deviceId = deviceId;
     }
 
-    public UserServiceRequest(String deviceId, UserServiceResponse response) {
-        this(deviceId);
+    public UserServiceRequest(UserServiceResponse response) {
+        this.userId = response.getUserId();
         this.identity = response.getIdentity();
         this.accessToken = response.getAccessToken();
         this.accessTokenSecret = response.getAccessTokenSecret();
         this.refreshToken = response.getRefreshToken();
         this.customData = response.getCustomData();
+    }
+
+    public UserServiceRequest(String deviceId, UserServiceResponse response) {
+        this(response.getUserId(), deviceId);
+        this.identity = response.getIdentity();
+        this.accessToken = response.getAccessToken();
+        this.accessTokenSecret = response.getAccessTokenSecret();
+        this.refreshToken = response.getRefreshToken();
+        this.customData = response.getCustomData();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getDeviceId() {

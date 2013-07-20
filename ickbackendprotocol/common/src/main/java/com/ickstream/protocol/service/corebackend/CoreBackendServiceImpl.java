@@ -57,6 +57,40 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     @Override
+    public AuthenticationProviderResponse getAuthenticationProvider() {
+        BackendRequestContext requestContext = InjectHelper.instance(BackendRequestContext.class);
+        if (requestContext.getAuthenticationProvider() != null) {
+            return requestContext.getAuthenticationProvider();
+        }
+        try {
+            AuthenticationProviderResponse provider = sendRequest("getAuthenticationProvider", null, AuthenticationProviderResponse.class, (Integer) null);
+            requestContext.setAuthenticationProvider(provider);
+            return provider;
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public ApplicationResponse getApplication() {
+        BackendRequestContext requestContext = InjectHelper.instance(BackendRequestContext.class);
+        if (requestContext.getApplication() != null) {
+            return requestContext.getApplication();
+        }
+        try {
+            ApplicationResponse application = sendRequest("getApplication", null, ApplicationResponse.class, (Integer) null);
+            requestContext.setApplication(application);
+            return application;
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
     public ApplicationResponse getApplicationById(@JsonRpcParam(name = "applicationId") String applicationId) {
         throw new RuntimeException(new UnauthorizedException(JsonRpcError.UNAUTHORIZED, "Not implemented"));
     }
@@ -202,9 +236,62 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     @Override
-    public ServiceResponse getService() {
+    public UserResponse getUserByIdentity(String type, String identity) {
         try {
-            return sendRequest("getService", null, ServiceResponse.class, (Integer) null);
+            Map<String, String> request = new HashMap<String, String>();
+            request.put("type", type);
+            request.put("identity", identity);
+            return sendRequest("getUserByIdentity", request, UserResponse.class, (Integer) null);
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public UserResponse addIdentityToUser(String userCode, String type, String identity) {
+        try {
+            Map<String, String> request = new HashMap<String, String>();
+            request.put("userCode", userCode);
+            request.put("type", type);
+            request.put("identity", identity);
+            UserResponse userResponse = sendRequest("addIdentityToUser", request, UserResponse.class, (Integer) null);
+            return userResponse;
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public String createAuthorizationCodeForIdentity(String type, String identity, String accessToken, String accessTokenSecret, String redirectUri) {
+        try {
+            Map<String, String> request = new HashMap<String, String>();
+            request.put("type", type);
+            request.put("identity", identity);
+            request.put("accessToken", accessToken);
+            request.put("accessTokenSecret", accessTokenSecret);
+            request.put("redirectUri", redirectUri);
+            return sendRequest("createAuthorizationCodeForIdentity", request, String.class, (Integer) null);
+        } catch (JsonRpcException e) {
+            throw new RuntimeException(getServiceException(e));
+        } catch (JsonRpcTimeoutException e) {
+            throw new RuntimeException(new ServiceTimeoutException(e));
+        }
+    }
+
+    @Override
+    public ServiceResponse getService() {
+        BackendRequestContext requestContext = InjectHelper.instance(BackendRequestContext.class);
+        if (requestContext.getService() != null) {
+            return requestContext.getService();
+        }
+        try {
+            ServiceResponse service = sendRequest("getService", null, ServiceResponse.class, (Integer) null);
+            InjectHelper.instance(BackendRequestContext.class).setService(service);
+            return service;
         } catch (JsonRpcException e) {
             throw new RuntimeException(getServiceException(e));
         } catch (JsonRpcTimeoutException e) {
