@@ -24,7 +24,9 @@ public abstract class AbstractInjectModule extends ServletModule {
         }
         if (authorizationFilter != null) {
             filter("/jsonrpc").through(authorizationFilter);
+            filter("/cache").through(authorizationFilter);
         }
         serve("/jsonrpc").with(cloudServiceClass);
+        serve("/cache").with(CacheManagerServlet.class);
     }
 }

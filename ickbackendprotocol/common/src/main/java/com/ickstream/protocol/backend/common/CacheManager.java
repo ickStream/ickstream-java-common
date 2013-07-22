@@ -32,4 +32,8 @@ public class CacheManager {
         }
         return cache;
     }
+
+    public void clearAll() {
+        getCacheManager().clearAll();
+    }
 }
