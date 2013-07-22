@@ -36,6 +36,9 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     private List<ProtocolDescriptionContext> contexts = new ArrayList<ProtocolDescriptionContext>();
     private List<ManagementProtocolDescriptionContext> managementContexts = new ArrayList<ManagementProtocolDescriptionContext>();
 
+    private static final Pattern PARAMETER_PATTERN = Pattern.compile("\\{(.*?)\\}");
+    private static final Map<String, Pattern> patternCache = new HashMap<String, Pattern>();
+
     protected abstract CoreBackendService getCoreBackendService();
 
     protected List<ImageReference> getImages(String contextId) {
@@ -44,6 +47,15 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected AccountInformation getAccountInformation(UserServiceResponse userService) throws IOException {
         return null;
+    }
+
+    private synchronized Pattern getPattern(String patternString) {
+        Pattern pattern = patternCache.get(patternString);
+        if (pattern == null) {
+            pattern = Pattern.compile(patternString);
+            patternCache.put(patternString, pattern);
+        }
+        return pattern;
     }
 
     @Override
@@ -128,15 +140,14 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     protected void addItemHandler(String contextId, String attribute, String expression, ContentItemHandler handler) {
-        String pattern = expression.replaceAll("\\{.*?\\}", "(.*?)");
+        String pattern = PARAMETER_PATTERN.matcher(expression).replaceAll("(.*?)");
         ContentItemHandlerEntry entry = new ContentItemHandlerEntry();
         entry.setContextId(contextId);
         entry.setAttribute(attribute);
         entry.setHandler(handler);
         entry.setPattern(pattern);
 
-        Pattern p = Pattern.compile("\\{(.*?)\\}");
-        Matcher m = p.matcher(expression);
+        Matcher m = PARAMETER_PATTERN.matcher(expression);
         while (m.find()) {
             entry.getParameters().add(m.group(1));
         }
@@ -276,7 +287,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         if (contextId == null || contextId.equals(entry.getContextId())) {
                             if (parameters.containsKey(entry.getAttribute())) {
-                                Matcher m = Pattern.compile(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
+                                Matcher m = getPattern(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
                                 if (m.matches()) {
                                     m.reset();
                                     if (m.find()) {
@@ -411,7 +422,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     protected Boolean addItem(UserServiceResponse userService, String contextId, Map<String, String> parameters) {
         for (ManagementItemHandlerEntry entry : managementItemHandlers) {
             if (parameters.containsKey(entry.getAttribute())) {
-                Matcher m = Pattern.compile(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
+                Matcher m = getPattern(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
                 if (m.matches()) {
                     m.reset();
                     if (m.find()) {
@@ -427,7 +438,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     protected Boolean removeItem(UserServiceResponse userService, String contextId, Map<String, String> parameters) {
         for (ManagementItemHandlerEntry entry : managementItemHandlers) {
             if (parameters.containsKey(entry.getAttribute())) {
-                Matcher m = Pattern.compile(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
+                Matcher m = getPattern(entry.getPattern()).matcher(parameters.get(entry.getAttribute()));
                 if (m.matches()) {
                     m.reset();
                     if (m.find()) {
@@ -451,7 +462,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     match = false;
                     break;
                 } else if (param.getValue() != null) {
-                    Matcher m = Pattern.compile(param.getValue()).matcher(parameters.get(param.getParameter()));
+                    Matcher m = getPattern(param.getValue()).matcher(parameters.get(param.getParameter()));
                     if (m.matches()) {
                         m.reset();
                         if (param.getParameters().size() > 0 && m.find()) {
@@ -748,12 +759,11 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             this.parameter = parameter;
             this.value = value;
             if (value != null && value.contains("{")) {
-                Pattern p = Pattern.compile("\\{(.*?)\\}");
-                Matcher m = p.matcher(value);
+                Matcher m = PARAMETER_PATTERN.matcher(value);
                 while (m.find()) {
                     parameters.add(m.group(1));
                 }
-                this.value = value.replaceAll("\\{.*?\\}", "(.*?)");
+                this.value = PARAMETER_PATTERN.matcher(value).replaceAll("(.*?)");
             }
         }
 
