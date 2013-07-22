@@ -20,6 +20,8 @@ public class StreamJsonRpcService {
     private Class serviceInterface;
     private JsonHelper jsonHelper = new JsonHelper();
     private static final Map<String, List<Method>> methodCache = new HashMap<String, List<Method>>();
+    static final Map<String, Method> matchedMethodCache = new HashMap<String, Method>();
+    private static final Map<Method, Annotation[][]> methodParameterAnnotationsCache = new HashMap<Method, Annotation[][]>();
     private Boolean returnOnVoid;
     private Boolean ignoreResponses;
     private MessageLogger messageLogger;
@@ -47,7 +49,7 @@ public class StreamJsonRpcService {
         String id = null;
         String version = null;
 
-        JsonRpcRequest request = request = jsonHelper.streamToObject(input, JsonRpcRequest.class);
+        JsonRpcRequest request = jsonHelper.streamToObject(input, JsonRpcRequest.class);
         if (request == null) {
             JsonRpcResponse response = new JsonRpcResponse("2.0", null);
             response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_JSON, "Invalid JSON"));
@@ -117,80 +119,101 @@ public class StreamJsonRpcService {
         }
 
         Method matchedMethod = null;
-        Method matchingMethodWithOptionalParameters = null;
 
-        for (Method method : methods) {
-            boolean match = true;
-            boolean exactMatch = true;
-            int i = 0;
-            for (Annotation[] annotations : method.getParameterAnnotations()) {
-                boolean foundParameter = false;
-                boolean optionalParameter = false;
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof JsonRpcParam) {
-                        String name = ((JsonRpcParam) annotation).name();
-                        if (paramsNode != null && paramsNode.has(name) && !paramsNode.get(name).isNull()) {
-                            Class cls = method.getParameterTypes()[i];
-                            if (Number.class.isAssignableFrom(cls)) {
-                                if (paramsNode.get(name).isNumber()) {
-                                    foundParameter = true;
-                                }
-                            } else if (String.class.isAssignableFrom(cls)) {
-                                if (paramsNode.get(name).isTextual()) {
-                                    foundParameter = true;
-                                }
-                            } else if (Boolean.class.isAssignableFrom(cls)) {
-                                if (paramsNode.get(name).isBoolean()) {
-                                    foundParameter = true;
-                                }
-                            } else if (Collection.class.isAssignableFrom(cls)) {
-                                if (paramsNode.get(name).isArray()) {
-                                    foundParameter = true;
-                                }
-                            } else {
-                                if (paramsNode.get(name).isObject()) {
-                                    foundParameter = true;
-                                }
-                            }
-
-                        } else {
-                            foundParameter = false;
-                            if (((JsonRpcParam) annotation).optional()) {
-                                optionalParameter = true;
-                            }
-                        }
-                        break;
-                    } else if (annotation instanceof JsonRpcParamStructure) {
-                        foundParameter = false;
-                        optionalParameter = true;
-                    }
-                }
-                if (!foundParameter) {
-                    if (!optionalParameter) {
-                        match = false;
-                        break;
-                    }
-                    exactMatch = false;
-                }
-                i++;
-            }
-            if (exactMatch && match) {
-                if ((matchedMethod == null || method.getParameterTypes().length > matchedMethod.getParameterTypes().length)) {
-                    if ((paramsNode == null && method.getParameterTypes().length == 0) || (method.getParameterTypes().length == paramsNode.size())) {
-                        matchedMethod = method;
-                    } else {
-                        exactMatch = false;
-                    }
-                }
-            }
-            if (!exactMatch && match) {
-                if (matchingMethodWithOptionalParameters == null || method.getParameterTypes().length > matchingMethodWithOptionalParameters.getParameterTypes().length) {
-                    matchingMethodWithOptionalParameters = method;
-                }
+        StringBuilder sb = new StringBuilder(200);
+        sb.append(serviceImplementation.getClass().getName()).append(".").append(methodName).append(":");
+        if (paramsNode != null && !paramsNode.isNull()) {
+            Iterator<String> iterator = paramsNode.fieldNames();
+            while (iterator.hasNext()) {
+                sb.append(iterator.next());
+                sb.append(",");
             }
         }
-        if (matchedMethod == null && matchingMethodWithOptionalParameters != null) {
-            matchedMethod = matchingMethodWithOptionalParameters;
+        String matchedMethodKey = sb.toString();
+        synchronized (matchedMethodCache) {
+            matchedMethod = matchedMethodCache.get(matchedMethodKey);
+        }
+        if (matchedMethod == null) {
+            Method matchingMethodWithOptionalParameters = null;
+            for (Method method : methods) {
+                boolean match = true;
+                boolean exactMatch = true;
+                int i = 0;
+                for (Annotation[] annotations : method.getParameterAnnotations()) {
+                    boolean foundParameter = false;
+                    boolean optionalParameter = false;
+                    for (Annotation annotation : annotations) {
+                        if (annotation instanceof JsonRpcParam) {
+                            String name = ((JsonRpcParam) annotation).name();
+                            if (paramsNode != null && paramsNode.has(name) && !paramsNode.get(name).isNull()) {
+                                Class cls = method.getParameterTypes()[i];
+                                if (Number.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isNumber()) {
+                                        foundParameter = true;
+                                    }
+                                } else if (String.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isTextual()) {
+                                        foundParameter = true;
+                                    }
+                                } else if (Boolean.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isBoolean()) {
+                                        foundParameter = true;
+                                    }
+                                } else if (Collection.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isArray()) {
+                                        foundParameter = true;
+                                    }
+                                } else {
+                                    if (paramsNode.get(name).isObject()) {
+                                        foundParameter = true;
+                                    }
+                                }
+
+                            } else {
+                                foundParameter = false;
+                                if (((JsonRpcParam) annotation).optional()) {
+                                    optionalParameter = true;
+                                }
+                            }
+                            break;
+                        } else if (annotation instanceof JsonRpcParamStructure) {
+                            foundParameter = false;
+                            optionalParameter = true;
+                        }
+                    }
+                    if (!foundParameter) {
+                        if (!optionalParameter) {
+                            match = false;
+                            break;
+                        }
+                        exactMatch = false;
+                    }
+                    i++;
+                }
+                if (exactMatch && match) {
+                    if ((matchedMethod == null || method.getParameterTypes().length > matchedMethod.getParameterTypes().length)) {
+                        if ((paramsNode == null && method.getParameterTypes().length == 0) || (method.getParameterTypes().length == paramsNode.size())) {
+                            matchedMethod = method;
+                        } else {
+                            exactMatch = false;
+                        }
+                    }
+                }
+                if (!exactMatch && match) {
+                    if (matchingMethodWithOptionalParameters == null || method.getParameterTypes().length > matchingMethodWithOptionalParameters.getParameterTypes().length) {
+                        matchingMethodWithOptionalParameters = method;
+                    }
+                }
+            }
+            if (matchedMethod == null && matchingMethodWithOptionalParameters != null) {
+                matchedMethod = matchingMethodWithOptionalParameters;
+            }
+
+            if (matchedMethod != null) {
+                synchronized (matchedMethodCache) {
+                    matchedMethodCache.put(matchedMethodKey, matchedMethod);
+                }
+            }
         }
         Class returnType = null;
         if (matchedMethod != null) {
@@ -270,9 +293,17 @@ public class StreamJsonRpcService {
     }
 
     private List<JsonNode> getInputAgumentsForMethod(Method method, JsonNode paramsNode) {
+        Annotation[][] parameterAnnotations;
+        synchronized (methodParameterAnnotationsCache) {
+            parameterAnnotations = methodParameterAnnotationsCache.get(method);
+            if (parameterAnnotations == null) {
+                parameterAnnotations = method.getParameterAnnotations();
+                methodParameterAnnotationsCache.put(method, parameterAnnotations);
+            }
+        }
         List<JsonNode> params = new ArrayList<JsonNode>();
         int i = 0;
-        for (Annotation[] annotations : method.getParameterAnnotations()) {
+        for (Annotation[] annotations : parameterAnnotations) {
             String name = null;
             boolean structure = false;
             for (Annotation annotation : annotations) {

@@ -12,6 +12,7 @@ import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang.StringUtils;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -421,6 +422,12 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         public List<JsonNode> jsonArrayMethod() throws IOException {
             return Arrays.asList(new ObjectMapper().readTree("{\"attr1\":\"one\"}"), new ObjectMapper().readTree("{\"attr2\":\"two\"}"), new ObjectMapper().readTree("{\"attr3\":\"three\"}"));
         }
+    }
+
+    @BeforeMethod
+    public void resetCache() {
+        // This is only needed because method parameters aren't cached with type information
+        StreamJsonRpcService.matchedMethodCache.clear();
     }
 
     @Test
