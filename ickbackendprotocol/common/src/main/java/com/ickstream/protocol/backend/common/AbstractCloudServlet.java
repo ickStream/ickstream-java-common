@@ -13,12 +13,18 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 @Singleton
 public abstract class AbstractCloudServlet extends HttpServlet {
     Class<? extends CloudService> implementationClass;
     Class remoteInterface;
     Class userRemoteInterface;
+
+    private static final Pattern LOCAL_ADDRESS_PATTERN = Pattern.compile("(^127\\.0\\..*)|" +
+            "(^10\\..*)|" +
+            "(^172\\.1[6-9]\\..*)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\..*)|" +
+            "(^192\\.168\\..*)");
 
     public <I extends CloudService, T extends I> AbstractCloudServlet(Class<T> implementationClass, Class<I> remoteInterface) {
         this.implementationClass = implementationClass;
@@ -45,10 +51,7 @@ public abstract class AbstractCloudServlet extends HttpServlet {
                 }
                 if (remoteAddr != null) {
                     remoteAddr = remoteAddr.split(",")[0].trim();
-                    if (!remoteAddr.matches("(^127\\.0\\..*)|" +
-                            "(^10\\..*)|" +
-                            "(^172\\.1[6-9]\\..*)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\..*)|" +
-                            "(^192\\.168\\..*)")) {
+                    if (!LOCAL_ADDRESS_PATTERN.matcher(remoteAddr).matches()) {
                         context.setDeviceAddress(remoteAddr);
                     }
                 }
@@ -63,10 +66,7 @@ public abstract class AbstractCloudServlet extends HttpServlet {
                 }
                 if (remoteAddr != null) {
                     remoteAddr = remoteAddr.split(",")[0].trim();
-                    if (!remoteAddr.matches("(^127\\.0\\..*)|" +
-                            "(^10\\..*)|" +
-                            "(^172\\.1[6-9]\\..*)|(^172\\.2[0-9]\\.)|(^172\\.3[0-1]\\..*)|" +
-                            "(^192\\.168\\..*)")) {
+                    if (!LOCAL_ADDRESS_PATTERN.matcher(remoteAddr).matches()) {
                         context.setDeviceAddress(remoteAddr);
                     }
                 }

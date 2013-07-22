@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 public abstract class AbstractOAuthAuthorizationFilter implements Filter {
     private FilterConfig config;
     private CoreBackendService coreBackendService;
+    private static final Pattern OAUTH_AUTHORIZATION_PATTERN = Pattern.compile("\\s*(\\w*)\\s+(.*)");
 
     protected abstract CoreBackendService getCoreBackendService();
 
@@ -153,8 +154,8 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
                 }
             }
             if (list.size() == 0 && header != null) {
-                Matcher m = Pattern.compile("\\s*(\\w*)\\s+(.*)").matcher(header);
-                if (m.matches()) {
+                Matcher m = OAUTH_AUTHORIZATION_PATTERN.matcher(header);
+                if (m.find()) {
                     if ("OAuth".equalsIgnoreCase(m.group(1)) || "Bearer".equalsIgnoreCase(m.group(1))) {
                         list.add(new OAuth.Parameter(OAuth.OAUTH_TOKEN, m.group(2)));
                     }
