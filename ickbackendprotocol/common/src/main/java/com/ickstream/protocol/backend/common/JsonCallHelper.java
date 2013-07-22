@@ -8,15 +8,19 @@ package com.ickstream.protocol.backend.common;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.ickstream.common.jsonrpc.JsonHelper;
 import com.ickstream.protocol.service.corebackend.UserServiceResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Map;
 
@@ -46,9 +50,9 @@ public class JsonCallHelper {
     }
 
     public static JsonNode getJsonForPostResource(BusinessCall businessCall, String url, String mediaType, String authorizationHeader, String body, Map<String, String> headers, String context) throws IOException {
-        Invocation.Builder builder = null;
+        HttpPost request;
         try {
-            builder = InjectHelper.instance(Client.class).target(InjectHelper.instance(UriResolver.class).resolve(url)).request();
+            request = new HttpPost(InjectHelper.instance(UriResolver.class).resolve(url));
         } catch (URISyntaxException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
@@ -57,54 +61,51 @@ public class JsonCallHelper {
         }
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
+                request.setHeader(entry.getKey(), entry.getValue());
             }
         }
+        if (authorizationHeader != null) {
+            request.addHeader("Authorization", authorizationHeader);
+        }
         try {
-            String queryResult;
+            HttpResponse response;
             if (body != null) {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
                 if (mediaType != null) {
-                    queryResult = builder.buildPost(Entity.entity(body, mediaType)).invoke(String.class);
+                    request.setEntity(new StringEntity(body, ContentType.create(mediaType, "UTF-8")));
                 } else {
-                    queryResult = builder.buildPost(Entity.text(body)).invoke(String.class);
-                }
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
-                }
-            } else {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
-                queryResult = builder.buildPost(null).invoke(String.class);
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
+                    request.setEntity(new StringEntity(body));
                 }
             }
-            JsonNode jsonResult = new JsonHelper().stringToObject(queryResult, JsonNode.class);
-            if (context != null) {
-                String[] contexts = context.split("\\.");
-                for (String subContext : contexts) {
-                    if (jsonResult.has(subContext)) {
-                        jsonResult = jsonResult.get(subContext);
-                    } else {
-                        return null;
-                    }
-                }
+
+            if (businessCall != null) {
+                businessCall.refreshTimestamp();
             }
-            return jsonResult;
-        } catch (WebApplicationException e) {
+
+            response = InjectHelper.instance(HttpClient.class).execute(request);
+
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
-            if (e.getResponse().getStatus() == Response.Status.UNAUTHORIZED.getStatusCode()) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && response.getEntity() != null) {
+                InputStream stream = response.getEntity().getContent();
+                JsonNode jsonResult = new JsonHelper().streamToObject(stream, JsonNode.class);
+                if (context != null) {
+                    String[] contexts = context.split("\\.");
+                    for (String subContext : contexts) {
+                        if (jsonResult.has(subContext)) {
+                            jsonResult = jsonResult.get(subContext);
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                return jsonResult;
+            } else if (response.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN || response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
                 throw new UnauthorizedAccessException();
             } else {
-                throw new IOException(e);
+                throw new IOException("Http request failed: " + response.getStatusLine().getStatusCode() + (response.getStatusLine().getReasonPhrase() != null ? response.getStatusLine().getReasonPhrase() : ""));
             }
-        } catch (ProcessingException e) {
+        } catch (IOException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
@@ -129,9 +130,9 @@ public class JsonCallHelper {
     }
 
     public static JsonNode getJsonForPutResource(BusinessCall businessCall, String url, String mediaType, String authorizationHeader, String body, Map<String, String> headers, String context) throws IOException {
-        Invocation.Builder builder = null;
+        HttpPut request;
         try {
-            builder = InjectHelper.instance(Client.class).target(InjectHelper.instance(UriResolver.class).resolve(url)).request();
+            request = new HttpPut(InjectHelper.instance(UriResolver.class).resolve(url));
         } catch (URISyntaxException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
@@ -140,57 +141,51 @@ public class JsonCallHelper {
         }
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
+                request.addHeader(entry.getKey(), entry.getValue());
             }
         }
         if (authorizationHeader != null) {
-            builder = builder.header("Authorization", authorizationHeader);
+            request.addHeader("Authorization", authorizationHeader);
         }
         try {
-            String queryResult;
+            HttpResponse response;
             if (body != null) {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
                 if (mediaType != null) {
-                    queryResult = builder.buildPut(Entity.entity(body, mediaType)).invoke(String.class);
+                    request.setEntity(new StringEntity(body, ContentType.create(mediaType)));
                 } else {
-                    queryResult = builder.buildPut(Entity.text(body)).invoke(String.class);
-                }
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
-                }
-            } else {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
-                queryResult = builder.buildPut(null).invoke(String.class);
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
+                    request.setEntity(new StringEntity(body));
                 }
             }
-            JsonNode jsonResult = new JsonHelper().stringToObject(queryResult, JsonNode.class);
-            if (context != null) {
-                String[] contexts = context.split("\\.");
-                for (String subContext : contexts) {
-                    if (jsonResult.has(subContext)) {
-                        jsonResult = jsonResult.get(subContext);
-                    } else {
-                        return null;
-                    }
-                }
+
+            if (businessCall != null) {
+                businessCall.refreshTimestamp();
             }
-            return jsonResult;
-        } catch (WebApplicationException e) {
+
+            response = InjectHelper.instance(HttpClient.class).execute(request);
+
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
-            if (e.getResponse().getStatus() == Response.Status.UNAUTHORIZED.getStatusCode()) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && response.getEntity() != null) {
+                InputStream stream = response.getEntity().getContent();
+                JsonNode jsonResult = new JsonHelper().streamToObject(stream, JsonNode.class);
+                if (context != null) {
+                    String[] contexts = context.split("\\.");
+                    for (String subContext : contexts) {
+                        if (jsonResult.has(subContext)) {
+                            jsonResult = jsonResult.get(subContext);
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                return jsonResult;
+            } else if (response.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN || response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
                 throw new UnauthorizedAccessException();
             } else {
-                throw new IOException(e);
+                throw new IOException("Http request failed: " + response.getStatusLine().getStatusCode() + (response.getStatusLine().getReasonPhrase() != null ? response.getStatusLine().getReasonPhrase() : ""));
             }
-        } catch (ProcessingException e) {
+        } catch (IOException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
@@ -215,9 +210,9 @@ public class JsonCallHelper {
     }
 
     public static JsonNode getJsonForDeleteResource(BusinessCall businessCall, String url, String mediaType, String authorizationHeader, String body, Map<String, String> headers, String context) throws IOException {
-        Invocation.Builder builder = null;
+        HttpDelete request;
         try {
-            builder = InjectHelper.instance(Client.class).target(InjectHelper.instance(UriResolver.class).resolve(url)).request();
+            request = new HttpDelete(InjectHelper.instance(UriResolver.class).resolve(url));
         } catch (URISyntaxException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
@@ -226,54 +221,47 @@ public class JsonCallHelper {
         }
         if (headers != null && headers.size() > 0) {
             for (Map.Entry<String, String> entry : headers.entrySet()) {
-                builder = builder.header(entry.getKey(), entry.getValue());
+                request.addHeader(entry.getKey(), entry.getValue());
             }
         }
         if (authorizationHeader != null) {
-            builder = builder.header("Authorization", authorizationHeader);
+            request.addHeader("Authorization", authorizationHeader);
         }
         try {
-            String queryResult;
+            HttpResponse response;
             if (body != null) {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
-                //TODO: No body ?
-                queryResult = builder.buildDelete().invoke(String.class);
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
-                }
-            } else {
-                if (businessCall != null) {
-                    businessCall.refreshTimestamp();
-                }
-                queryResult = builder.buildDelete().invoke(String.class);
-                if (businessCall != null) {
-                    businessCall.refreshDuration();
-                }
+                // TODO:!!!
             }
-            JsonNode jsonResult = new JsonHelper().stringToObject(queryResult, JsonNode.class);
-            if (context != null) {
-                String[] contexts = context.split("\\.");
-                for (String subContext : contexts) {
-                    if (jsonResult.has(subContext)) {
-                        jsonResult = jsonResult.get(subContext);
-                    } else {
-                        return null;
-                    }
-                }
+
+            if (businessCall != null) {
+                businessCall.refreshTimestamp();
             }
-            return jsonResult;
-        } catch (WebApplicationException e) {
+
+            response = InjectHelper.instance(HttpClient.class).execute(request);
+
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
-            if (e.getResponse().getStatus() == Response.Status.UNAUTHORIZED.getStatusCode()) {
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && response.getEntity() != null) {
+                InputStream stream = response.getEntity().getContent();
+                JsonNode jsonResult = new JsonHelper().streamToObject(stream, JsonNode.class);
+                if (context != null) {
+                    String[] contexts = context.split("\\.");
+                    for (String subContext : contexts) {
+                        if (jsonResult.has(subContext)) {
+                            jsonResult = jsonResult.get(subContext);
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                return jsonResult;
+            } else if (response.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN || response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
                 throw new UnauthorizedAccessException();
             } else {
-                throw new IOException(e);
+                throw new IOException("Http request failed: " + response.getStatusLine().getStatusCode() + (response.getStatusLine().getReasonPhrase() != null ? response.getStatusLine().getReasonPhrase() : ""));
             }
-        } catch (ProcessingException e) {
+        } catch (IOException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
@@ -287,49 +275,50 @@ public class JsonCallHelper {
 
     public static JsonNode getJsonForResource(BusinessCall businessCall, String url, String authorizationHeader, String context) throws IOException {
         try {
-            WebTarget webResource = null;
+            HttpGet request;
             try {
-                webResource = InjectHelper.instance(Client.class).target(InjectHelper.instance(UriResolver.class).resolve(url));
+                request = new HttpGet(InjectHelper.instance(UriResolver.class).resolve(url));
             } catch (URISyntaxException e) {
                 if (businessCall != null) {
                     businessCall.refreshDuration();
                 }
                 throw new IOException(e);
             }
+            if (authorizationHeader != null) {
+                request.addHeader("Authorization", authorizationHeader);
+            }
+
+            HttpResponse response;
+
             if (businessCall != null) {
                 businessCall.refreshTimestamp();
             }
-            String queryResult = null;
-            if (authorizationHeader != null) {
-                queryResult = webResource.request().header("Authorization", authorizationHeader).get(String.class);
-            } else {
-                queryResult = webResource.request().get(String.class);
-            }
+
+            response = InjectHelper.instance(HttpClient.class).execute(request);
+
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
-            JsonNode jsonResult = new JsonHelper().stringToObject(queryResult, JsonNode.class);
-            if (context != null) {
-                String[] contexts = context.split("\\.");
-                for (String subContext : contexts) {
-                    if (jsonResult.has(subContext)) {
-                        jsonResult = jsonResult.get(subContext);
-                    } else {
-                        return null;
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK && response.getEntity() != null) {
+                InputStream stream = response.getEntity().getContent();
+                JsonNode jsonResult = new JsonHelper().streamToObject(stream, JsonNode.class);
+                if (context != null) {
+                    String[] contexts = context.split("\\.");
+                    for (String subContext : contexts) {
+                        if (jsonResult.has(subContext)) {
+                            jsonResult = jsonResult.get(subContext);
+                        } else {
+                            return null;
+                        }
                     }
                 }
-            }
-            return jsonResult;
-        } catch (WebApplicationException e) {
-            if (businessCall != null) {
-                businessCall.refreshDuration();
-            }
-            if (e.getResponse().getStatus() == Response.Status.UNAUTHORIZED.getStatusCode()) {
+                return jsonResult;
+            } else if (response.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN || response.getStatusLine().getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
                 throw new UnauthorizedAccessException();
             } else {
-                throw new IOException(e);
+                throw new IOException("Http request failed: " + response.getStatusLine().getStatusCode() + (response.getStatusLine().getReasonPhrase() != null ? response.getStatusLine().getReasonPhrase() : ""));
             }
-        } catch (ProcessingException e) {
+        } catch (IOException e) {
             if (businessCall != null) {
                 businessCall.refreshDuration();
             }
