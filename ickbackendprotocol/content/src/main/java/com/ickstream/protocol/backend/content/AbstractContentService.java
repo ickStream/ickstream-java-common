@@ -16,6 +16,7 @@ import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
 import com.ickstream.protocol.service.corebackend.UserResponse;
 import com.ickstream.protocol.service.corebackend.UserServiceResponse;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -396,7 +397,13 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     @Override
     public ContentResponse findItems(Integer offset, Integer count, String contextId, Map<String, String> parameters) {
         BusinessCall businessCall = startBusinessCall("findItems");
-        businessCall.addParameters(parameters);
+        for (Map.Entry<String, String> parameter : parameters.entrySet()) {
+            if (parameter.getKey().equalsIgnoreCase("count") || parameter.getKey().equalsIgnoreCase("offset")) {
+                businessCall.addParameter(parameter.getKey(), !StringUtils.isEmpty(parameter.getValue()) ? Integer.valueOf(parameter.getValue()) : null);
+            } else {
+                businessCall.addParameter(parameter.getKey(), parameter.getValue());
+            }
+        }
         try {
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             if (offset == null) {
