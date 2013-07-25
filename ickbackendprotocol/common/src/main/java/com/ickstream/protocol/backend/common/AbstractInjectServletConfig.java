@@ -23,9 +23,6 @@ import java.util.List;
 public abstract class AbstractInjectServletConfig extends GuiceServletContextListener {
     private String serviceId;
 
-    protected AbstractInjectServletConfig() {
-    }
-
     /**
      * Constructor which creates a new instance and configures it with the service identity
      *
