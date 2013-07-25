@@ -2,6 +2,13 @@ package com.ickstream.protocol.backend.common;
 
 import com.ickstream.protocol.service.corebackend.*;
 
+/**
+ * A request context for calls to {@link CoreBackendService}, this is primarily a way for {@link CoreBackendServiceImpl}
+ * to reuse information from previous calls from the same application.
+ * <p/>
+ * A service should NOT rely on that this context exists as it's really an implementation optimization to improve
+ * performance
+ */
 public class BackendRequestContext {
     private DeviceResponse device;
     private UserResponse user;

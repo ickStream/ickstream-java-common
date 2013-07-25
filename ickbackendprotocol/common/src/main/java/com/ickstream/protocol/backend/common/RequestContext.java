@@ -5,6 +5,11 @@
 
 package com.ickstream.protocol.backend.common;
 
+/**
+ * A request context which contains information about the device or user making the current call.
+ * This object can be retrieved using {@link InjectHelper#instance(Class)} and be used in the service to get information
+ * about the device or user making the current call
+ */
 public class RequestContext {
     private String userId;
     private String deviceId;

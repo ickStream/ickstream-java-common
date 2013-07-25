@@ -42,6 +42,13 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected abstract CoreBackendService getCoreBackendService();
 
+    /**
+     * Returns the unique identity of this service
+     *
+     * @return The identity of this service
+     */
+    protected abstract String getServiceId();
+
     protected List<ImageReference> getImages(String contextId) {
         return null;
     }

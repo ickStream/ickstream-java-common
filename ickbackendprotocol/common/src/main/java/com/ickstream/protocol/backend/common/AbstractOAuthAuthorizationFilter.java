@@ -25,14 +25,23 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Abstract filter class which handles authentication and rejects any requests from unauthorized users.
+ */
 public abstract class AbstractOAuthAuthorizationFilter implements Filter {
     private FilterConfig config;
     private CoreBackendService coreBackendService;
     private static final Pattern OAUTH_AUTHORIZATION_PATTERN = Pattern.compile("\\s*(\\w*)\\s+(.*)");
 
+    /**
+     * Returns the {@link CoreBackendService} client implementation this service want to use.
+     * Typically the sub class should use the {@link com.ickstream.protocol.service.corebackend.CoreBackendServiceFactory} class to implement this.
+     *
+     * @return The CoreBackendService client instance that should be used
+     */
     protected abstract CoreBackendService getCoreBackendService();
 
-    public static class OAuthServletRequest extends HttpServletRequestWrapper {
+    protected static class OAuthServletRequest extends HttpServletRequestWrapper {
         private OAuthMessage oauthMessage;
         private CoreBackendService coreBackendService;
         private Boolean authorized;
@@ -44,6 +53,10 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
             super(request);
             this.oauthMessage = oauthMessage;
             this.coreBackendService = coreBackendService;
+        }
+
+        public CoreBackendService getCoreBackendService() {
+            return coreBackendService;
         }
 
         @Override
@@ -60,22 +73,43 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
             };
         }
 
-        protected CoreBackendService getCoreBackendService() {
-            return coreBackendService;
+        /**
+         * Retrieves information about the device based on a device access token.
+         *
+         * @param deviceAccessToken The device access token
+         * @return Information about the device
+         */
+        protected DeviceResponse getDeviceForToken(String deviceAccessToken) {
+            return coreBackendService.getDeviceByToken(deviceAccessToken);
         }
 
-        protected DeviceResponse getDeviceForToken(String accessToken) {
-            return coreBackendService.getDeviceByToken(accessToken);
+        /**
+         * Retrieves information about the user based on a user access token.
+         *
+         * @param userAccessToken The user access token
+         * @return Information about the user
+         */
+        protected UserResponse getUserForToken(String userAccessToken) {
+            return coreBackendService.getUserByToken(userAccessToken);
         }
 
-        protected UserResponse getUserForToken(String accessToken) {
-            return coreBackendService.getUserByToken(accessToken);
-        }
-
-        protected ApplicationResponse getApplicationForToken(String accessToken) {
+        /**
+         * Retrieves information about the application based on an API key
+         *
+         * @param apiKey
+         * @return
+         */
+        protected ApplicationResponse getApplicationForToken(String apiKey) {
             return null;
         }
 
+        /**
+         * Implements {@link HttpServletRequest#isUserInRole(String)} by accessing the {@link CoreBackendService} through
+         * the client provided by the {@link #getCoreBackendService} method
+         *
+         * @param role The role to check
+         * @return true if the authenticated device/user/application has the specified role
+         */
         @Override
         public boolean isUserInRole(String role) {
             if (!role.equals("user")) {
@@ -118,22 +152,46 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
         }
     }
 
-    public void init(FilterConfig filterConfig) throws ServletException {
+    /**
+     * Initialize the filter and instantiate the {@link CoreBackendService} client if not already created by calling
+     * {@link #getCoreBackendService()} method
+     *
+     * @param filterConfig The filter configuration
+     */
+    public void init(FilterConfig filterConfig) {
         this.config = filterConfig;
         if (coreBackendService == null) {
             coreBackendService = getCoreBackendService();
         }
     }
 
-    protected OAuthServletRequest createRequest(HttpServletRequest req, OAuthMessage message, CoreBackendService coreBackendService) {
+    /**
+     * Creates a new {@link OAuthServletRequest} instance
+     *
+     * @param req     The http request
+     * @param message The {@link OAuthMessage} representing the request
+     * @return A newly created {@link OAuthServletRequest} instance
+     */
+    protected OAuthServletRequest createRequest(HttpServletRequest req, OAuthMessage message) {
         return new OAuthServletRequest(req, message, coreBackendService);
     }
 
+    /**
+     * Apply the filter by verifying that the user, device or application specified in the OAuth Authorization header
+     * have the permission to access the requested method. If permissions aren't fulfilled, this methods returns {@link HttpServletResponse#SC_UNAUTHORIZED} without
+     * dispatching the call further in the filter chain.
+     *
+     * @param request     The servlet request
+     * @param response    The servlet response
+     * @param filterChain The filter chain
+     * @throws IOException
+     * @throws ServletException
+     */
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
         OAuthMessage message = new OAuthMessage(req.getMethod(), req.getRequestURL().toString(), getParameters(req), req.getInputStream());
-        HttpServletRequest wrapper = createRequest(req, message, coreBackendService);
+        HttpServletRequest wrapper = createRequest(req, message);
         if (wrapper.isUserInRole("user")) {
             filterChain.doFilter(wrapper, response);
         } else {
@@ -172,6 +230,10 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
         return list;
     }
 
+    /**
+     * Performs some clean-up of internal resources
+     */
     public void destroy() {
+        coreBackendService = null;
     }
 }

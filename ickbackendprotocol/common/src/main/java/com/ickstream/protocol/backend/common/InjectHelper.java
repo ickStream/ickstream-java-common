@@ -15,10 +15,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceLoader;
 
+/**
+ * Injection helper which keeps track of the current injector and provides methods to get instances of
+ * all objects for which injection modules exists
+ */
 public class InjectHelper {
     private static Injector injector = null;
     private static List<AbstractModule> modules = null;
 
+    /**
+     * Get a list the default injection modules used
+     *
+     * @return A list of injection modules
+     */
     public static List<AbstractModule> getModules() {
         if (modules == null) {
             modules = new ArrayList<AbstractModule>();
@@ -30,10 +39,20 @@ public class InjectHelper {
         return modules;
     }
 
+    /**
+     * Set the current injector instance to use
+     *
+     * @param newInjector The injector instance to use
+     */
     public static void setInjector(Injector newInjector) {
         injector = newInjector;
     }
 
+    /**
+     * Inject all member variables in the provided object through its @{@link com.google.inject.Inject} annotations
+     *
+     * @param obj The object to inject member variables in
+     */
     public static void injectMembers(Object obj) {
         if (injector == null) {
             throw new RuntimeException("Injector framework not initialized yet");
@@ -41,6 +60,13 @@ public class InjectHelper {
         injector.injectMembers(obj);
     }
 
+    /**
+     * Get an instance of the specified class and name
+     *
+     * @param T    The class to get an instance for
+     * @param name The name of the instance to get
+     * @return An instance of the requested class
+     */
     public static <T> T instanceWithName(Class<T> T, String name) {
         if (injector == null) {
             throw new RuntimeException("Injector framework not initialized yet");
@@ -48,6 +74,12 @@ public class InjectHelper {
         return (T) injector.getInstance(Key.get(T, Names.named(name)));
     }
 
+    /**
+     * Get an instance of the specified class
+     *
+     * @param T The class to get an instance for
+     * @return An instance of the requested class
+     */
     public static <T> T instance(Class<T> T) {
         if (injector == null) {
             throw new RuntimeException("Injector framework not initialized yet");
