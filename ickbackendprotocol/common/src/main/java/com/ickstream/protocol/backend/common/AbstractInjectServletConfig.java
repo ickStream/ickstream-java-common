@@ -15,17 +15,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class AbstractInjectServletConfig extends GuiceServletContextListener {
+    private String serviceId;
+
+    protected AbstractInjectServletConfig() {
+    }
+
+    protected AbstractInjectServletConfig(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
     @Override
     protected Injector getInjector() {
         List<Module> modules = new ArrayList<Module>();
         modules.add(createInjectModule());
-        Module module = createBusinessLoggingModule();
-        if (module != null) {
-            modules.add(module);
+        if (System.getProperty("ickstream-logging", "true").equalsIgnoreCase("true") &&
+                (serviceId == null || System.getProperty("ickstream-" + serviceId + "-logging", "true").equalsIgnoreCase("true"))) {
+            Module module = createBusinessLoggingModule();
+            if (module != null) {
+                modules.add(module);
+            }
+        } else {
+            modules.add(new NoBusinessLoggerModule());
         }
-        module = createCacheManagerModule();
-        if (module != null) {
-            modules.add(module);
+
+        if (System.getProperty("ickstream-cache", "true").equalsIgnoreCase("true") &&
+                (serviceId == null || System.getProperty("ickstream-" + serviceId + "-cache", "true").equalsIgnoreCase("true"))) {
+            Module module = createCacheManagerModule();
+            if (module != null) {
+                modules.add(module);
+            }
+        } else {
+            modules.add(new NoCacheManagerModule());
         }
         modules.addAll(createAdditionalInjectModules());
         Injector injector = Guice.createInjector(modules);
