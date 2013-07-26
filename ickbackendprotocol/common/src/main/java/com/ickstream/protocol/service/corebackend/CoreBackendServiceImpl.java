@@ -35,7 +35,7 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     public CoreBackendServiceImpl(HttpClient client, String endpoint, IdProvider idProvider, Integer defaultTimeout) {
-        super(new HttpMessageSender(client, endpoint, true), idProvider, defaultTimeout);
+        super(new HttpMessageSender(client, endpoint), idProvider, defaultTimeout);
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
