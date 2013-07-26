@@ -73,6 +73,8 @@ public abstract class AbstractInjectServletConfig extends GuiceServletContextLis
             if (module != null) {
                 modules.add(module);
             }
+        } else if (System.getProperty("ickstream-core-cache", "true").equalsIgnoreCase("true")) {
+            modules.add(new CoreBackendCacheManagerModule());
         } else {
             modules.add(new NoCacheManagerModule());
         }
@@ -108,7 +110,7 @@ public abstract class AbstractInjectServletConfig extends GuiceServletContextLis
      * @return A module that provides a {@link CacheManager} instance
      */
     protected Module createCacheManagerModule() {
-        return new NoCacheManagerModule();
+        return new CoreBackendCacheManagerModule();
     }
 
     /**

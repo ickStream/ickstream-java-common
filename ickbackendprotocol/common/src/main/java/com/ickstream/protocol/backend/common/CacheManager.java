@@ -5,7 +5,10 @@
 
 package com.ickstream.protocol.backend.common;
 
+import com.ickstream.protocol.service.corebackend.DeviceResponse;
+import com.ickstream.protocol.service.corebackend.UserServiceResponse;
 import net.sf.ehcache.Cache;
+import net.sf.ehcache.config.CacheConfiguration;
 
 /**
  * Cache manager that provides caches which can be used to cache information in the service
@@ -22,6 +25,24 @@ public class CacheManager {
     private synchronized net.sf.ehcache.CacheManager getCacheManager() {
         if (cacheManager == null) {
             cacheManager = net.sf.ehcache.CacheManager.create();
+
+            cacheManager.addCache(DeviceResponse.class.getName());
+            Cache cache = cacheManager.getCache(DeviceResponse.class.getName());
+            CacheConfiguration configuration = cache.getCacheConfiguration();
+            configuration.setMaxEntriesLocalHeap(1000);
+            configuration.setEternal(false);
+            configuration.setTimeToIdleSeconds(60);
+            configuration.setTimeToLiveSeconds(60);
+            configuration.setMaxEntriesLocalDisk(0);
+
+            cacheManager.addCache(UserServiceResponse.class.getName());
+            cache = cacheManager.getCache(UserServiceResponse.class.getName());
+            configuration = cache.getCacheConfiguration();
+            configuration.setMaxEntriesLocalHeap(1000);
+            configuration.setEternal(false);
+            configuration.setTimeToIdleSeconds(60);
+            configuration.setTimeToLiveSeconds(60);
+            configuration.setMaxEntriesLocalDisk(0);
         }
         return cacheManager;
     }
@@ -33,7 +54,7 @@ public class CacheManager {
      * @return The {@link Cache} object representing the cache or null if no cache is available for the specified class
      */
     public Cache get(Class cls) {
-        return get(cls.getSimpleName());
+        return get(cls.getName());
     }
 
     /**
