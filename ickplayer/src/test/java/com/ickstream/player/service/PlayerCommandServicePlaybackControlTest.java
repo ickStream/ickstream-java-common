@@ -6,6 +6,7 @@
 package com.ickstream.player.service;
 
 import com.ickstream.player.model.PlaybackQueue;
+import com.ickstream.player.model.PlaybackQueueItemInstance;
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.service.player.*;
 import org.testng.Assert;
@@ -505,7 +506,7 @@ public class PlayerCommandServicePlaybackControlTest {
         playbackQueue.setId("playlist1");
         playbackQueue.setName("Playlist1Name");
         for (int i = 0; i < numOfTracks; i++) {
-            PlaybackQueueItem item = new PlaybackQueueItem();
+            PlaybackQueueItemInstance item = new PlaybackQueueItemInstance();
             item.setId("track" + (i + 1));
             playbackQueue.getItems().add(item);
         }

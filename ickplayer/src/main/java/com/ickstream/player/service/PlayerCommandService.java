@@ -8,6 +8,7 @@ package com.ickstream.player.service;
 import com.ickstream.common.jsonrpc.JsonRpcParam;
 import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
 import com.ickstream.common.jsonrpc.JsonRpcResult;
+import com.ickstream.player.model.PlaybackQueueItemInstance;
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.service.player.*;
 
@@ -25,6 +26,40 @@ public class PlayerCommandService {
     public PlayerCommandService(PlayerManager player, PlayerStatus playerStatus) {
         this.playerStatus = playerStatus;
         this.player = player;
+    }
+
+    public static List<PlaybackQueueItemInstance> createInstanceList(List<PlaybackQueueItem> items) {
+        List<PlaybackQueueItemInstance> instances = new ArrayList<PlaybackQueueItemInstance>(items.size());
+        for (PlaybackQueueItem item : items) {
+            PlaybackQueueItemInstance instance = new PlaybackQueueItemInstance();
+            instance.setId(item.getId());
+            instance.setText(item.getText());
+            instance.setType(item.getType());
+            instance.setItemAttributes(item.getItemAttributes());
+            instance.setStreamingRefs(item.getStreamingRefs());
+            instance.setImage(item.getImage());
+            instances.add(instance);
+        }
+        return instances;
+    }
+
+    public static PlaybackQueueItem createPlaybackQueueItem(PlaybackQueueItemInstance instance) {
+        PlaybackQueueItem item = new PlaybackQueueItem();
+        item.setId(instance.getId());
+        item.setText(instance.getText());
+        item.setType(instance.getType());
+        item.setItemAttributes(instance.getItemAttributes());
+        item.setStreamingRefs(instance.getStreamingRefs());
+        item.setImage(instance.getImage());
+        return item;
+    }
+
+    public static List<PlaybackQueueItem> createPlaybackQueueItemList(List<PlaybackQueueItemInstance> instances) {
+        List<PlaybackQueueItem> items = new ArrayList<PlaybackQueueItem>(instances.size());
+        for (PlaybackQueueItemInstance instance : instances) {
+            items.add(createPlaybackQueueItem(instance));
+        }
+        return items;
     }
 
     public synchronized PlayerConfigurationResponse setPlayerConfiguration(@JsonRpcParamStructure PlayerConfigurationRequest configuration) {
@@ -65,7 +100,7 @@ public class PlayerCommandService {
         }
         response.setSeekPos(playerStatus.getSeekPos());
         if (playerStatus.getPlaybackQueue().getItems().size() > 0) {
-            response.setTrack(playerStatus.getPlaybackQueue().getItems().get(playerStatus.getPlaybackQueuePos()));
+            response.setTrack(createPlaybackQueueItem(playerStatus.getPlaybackQueue().getItems().get(playerStatus.getPlaybackQueuePos())));
         }
         if (player != null && !playerStatus.getMuted()) {
             response.setVolumeLevel(player.getVolume());
@@ -91,19 +126,27 @@ public class PlayerCommandService {
         PlaybackQueueResponse response = new PlaybackQueueResponse();
         response.setPlaylistId(playerStatus.getPlaybackQueue().getId());
         response.setPlaylistName(playerStatus.getPlaybackQueue().getName());
-        response.setOrder(PlaybackQueueOrder.CURRENT);
+        if (request.getOrder() != null) {
+            response.setOrder(request.getOrder());
+        } else {
+            response.setOrder(PlaybackQueueOrder.CURRENT);
+        }
+        List<PlaybackQueueItem> items = createPlaybackQueueItemList(playerStatus.getPlaybackQueue().getItems());
+        if (response.getOrder().equals(PlaybackQueueOrder.ORIGINAL)) {
+            items = createPlaybackQueueItemList(playerStatus.getPlaybackQueue().getOriginallyOrderedItems());
+        }
         Integer offset = request.getOffset() != null ? request.getOffset() : 0;
-        Integer count = request.getCount() != null ? request.getCount() : playerStatus.getPlaybackQueue().getItems().size();
+        Integer count = request.getCount() != null ? request.getCount() : items.size();
         response.setOffset(offset);
         response.setCountAll(playerStatus.getPlaybackQueue().getItems().size());
-        if (offset < playerStatus.getPlaybackQueue().getItems().size()) {
-            if (offset + count > playerStatus.getPlaybackQueue().getItems().size()) {
-                response.setItems(playerStatus.getPlaybackQueue().getItems().subList(offset, playerStatus.getPlaybackQueue().getItems().size()));
+        if (offset < items.size()) {
+            if (offset + count > items.size()) {
+                response.setItems(items.subList(offset, items.size()));
             } else {
-                response.setItems(playerStatus.getPlaybackQueue().getItems().subList(offset, offset + count));
+                response.setItems(items.subList(offset, offset + count));
             }
         } else {
-            response.setItems(playerStatus.getPlaybackQueue().getItems().subList(offset, playerStatus.getPlaybackQueue().getItems().size()));
+            response.setItems(items.subList(offset, items.size()));
         }
         response.setCount(response.getItems().size());
         response.setLastChanged(playerStatus.getPlaybackQueue().getChangedTimestamp());
@@ -111,9 +154,12 @@ public class PlayerCommandService {
     }
 
     public synchronized PlaybackQueueModificationResponse addTracks(@JsonRpcParamStructure PlaybackQueueAddTracksRequest request) {
+        List<PlaybackQueueItemInstance> instances = createInstanceList(request.getItems());
         if (request.getPlaybackQueuePos() != null) {
             // Insert tracks in middle
-            playerStatus.getPlaybackQueue().getItems().addAll(request.getPlaybackQueuePos(), request.getItems());
+            playerStatus.getPlaybackQueue().getItems().addAll(request.getPlaybackQueuePos(), instances);
+            playerStatus.getPlaybackQueue().getOriginallyOrderedItems().addAll(request.getPlaybackQueuePos(), instances);
+
             playerStatus.getPlaybackQueue().updateTimestamp();
             if (playerStatus.getPlaybackQueuePos() != null && playerStatus.getPlaybackQueuePos() >= request.getPlaybackQueuePos()) {
                 playerStatus.setPlaybackQueuePos(playerStatus.getPlaybackQueuePos() + request.getItems().size());
@@ -129,16 +175,18 @@ public class PlayerCommandService {
                 if (rangeLength > 0) {
                     int randomPosition = currentPlaybackQueuePos + (int) (Math.random() * rangeLength) + 1;
                     if (randomPosition < playerStatus.getPlaybackQueue().getItems().size() - 1) {
-                        playerStatus.getPlaybackQueue().getItems().addAll(randomPosition, request.getItems());
+                        playerStatus.getPlaybackQueue().getItems().addAll(randomPosition, instances);
                     } else {
-                        playerStatus.getPlaybackQueue().getItems().addAll(request.getItems());
+                        playerStatus.getPlaybackQueue().getItems().addAll(instances);
                     }
                 } else {
-                    playerStatus.getPlaybackQueue().getItems().addAll(request.getItems());
+                    playerStatus.getPlaybackQueue().getItems().addAll(instances);
                 }
+                playerStatus.getPlaybackQueue().getOriginallyOrderedItems().addAll(instances);
             } else {
                 // Add tracks at end
-                playerStatus.getPlaybackQueue().getItems().addAll(request.getItems());
+                playerStatus.getPlaybackQueue().getItems().addAll(instances);
+                playerStatus.getPlaybackQueue().getOriginallyOrderedItems().addAll(instances);
             }
             playerStatus.getPlaybackQueue().updateTimestamp();
         }
@@ -154,7 +202,8 @@ public class PlayerCommandService {
 
     public synchronized PlaybackQueueModificationResponse removeTracks(@JsonRpcParamStructure PlaybackQueueRemoveTracksRequest request) {
 
-        List<PlaybackQueueItem> modifiedPlaybackQueue = new ArrayList<PlaybackQueueItem>(playerStatus.getPlaybackQueue().getItems());
+        List<PlaybackQueueItemInstance> modifiedPlaybackQueue = new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getItems());
+        List<PlaybackQueueItemInstance> modifiedOriginallyOrderedPlaybackQueue = new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getOriginallyOrderedItems());
         int modifiedPlaybackQueuePos = playerStatus.getPlaybackQueuePos();
         boolean affectsPlayback = false;
         for (PlaybackQueueItemReference itemReference : request.getItems()) {
@@ -167,12 +216,19 @@ public class PlayerCommandService {
                         affectsPlayback = true;
                     }
                     modifiedPlaybackQueue.remove(item);
+                    for (int i = 0; i < modifiedOriginallyOrderedPlaybackQueue.size(); i++) {
+                        // Intentionally using == instead of equals as we want the exact instance
+                        if (modifiedOriginallyOrderedPlaybackQueue.get(i) == item) {
+                            modifiedOriginallyOrderedPlaybackQueue.remove(i);
+                        }
+                    }
+
                 } else {
                     throw new IllegalArgumentException("Track identity and playback queue position doesn't match (trackId=" + itemReference.getId() + ", playbackQueuePos=" + itemReference.getPlaybackQueuePos() + ")");
                 }
             } else {
                 int i = 0;
-                for (Iterator<PlaybackQueueItem> it = modifiedPlaybackQueue.iterator(); it.hasNext(); i++) {
+                for (Iterator<PlaybackQueueItemInstance> it = modifiedPlaybackQueue.iterator(); it.hasNext(); i++) {
                     PlaybackQueueItem item = it.next();
                     if (item.getId().equals(itemReference.getId())) {
                         if (i < modifiedPlaybackQueuePos) {
@@ -181,11 +237,19 @@ public class PlayerCommandService {
                             affectsPlayback = true;
                         }
                         it.remove();
+                        for (int j = 0; j < modifiedOriginallyOrderedPlaybackQueue.size(); j++) {
+                            // Intentionally using == instead of equals as we want the exact instance
+                            if (modifiedOriginallyOrderedPlaybackQueue.get(j) == item) {
+                                modifiedOriginallyOrderedPlaybackQueue.remove(j);
+                            }
+                        }
                     }
                 }
             }
         }
         playerStatus.getPlaybackQueue().setItems(modifiedPlaybackQueue);
+        playerStatus.getPlaybackQueue().setOriginallyOrderedItems(modifiedOriginallyOrderedPlaybackQueue);
+
         if (modifiedPlaybackQueuePos >= modifiedPlaybackQueue.size()) {
             if (modifiedPlaybackQueuePos > 0) {
                 modifiedPlaybackQueuePos--;
@@ -217,7 +281,7 @@ public class PlayerCommandService {
 
     public synchronized PlaybackQueueModificationResponse moveTracks(@JsonRpcParamStructure PlaybackQueueMoveTracksRequest request) {
         Integer modifiedPlaybackQueuePos = playerStatus.getPlaybackQueuePos();
-        List<PlaybackQueueItem> modifiedPlaylist = new ArrayList<PlaybackQueueItem>(playerStatus.getPlaybackQueue().getItems());
+        List<PlaybackQueueItemInstance> modifiedPlaylist = new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getItems());
         Integer wantedPlaybackQueuePos = request.getPlaybackQueuePos() != null ? request.getPlaybackQueuePos() : playerStatus.getPlaybackQueue().getItems().size();
         for (PlaybackQueueItemReference playbackQueueItemReference : request.getItems()) {
             if (playbackQueueItemReference.getPlaybackQueuePos() == null) {
@@ -230,7 +294,7 @@ public class PlayerCommandService {
             if (wantedPlaybackQueuePos <= modifiedPlaybackQueuePos && playbackQueueItemReference.getPlaybackQueuePos() < modifiedPlaybackQueuePos ||
                     wantedPlaybackQueuePos > modifiedPlaybackQueuePos && playbackQueueItemReference.getPlaybackQueuePos() > modifiedPlaybackQueuePos) {
 
-                PlaybackQueueItem item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
+                PlaybackQueueItemInstance item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
                 if (!item.getId().equals(playbackQueueItemReference.getId())) {
                     throw new IllegalArgumentException("Playback queue position " + playbackQueueItemReference.getPlaybackQueuePos() + " does not match " + playbackQueueItemReference.getId());
                 }
@@ -249,7 +313,7 @@ public class PlayerCommandService {
 
                 // Move that increase playback queue position
             } else if (wantedPlaybackQueuePos <= modifiedPlaybackQueuePos && playbackQueueItemReference.getPlaybackQueuePos() > modifiedPlaybackQueuePos) {
-                PlaybackQueueItem item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
+                PlaybackQueueItemInstance item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
                 if (!item.getId().equals(playbackQueueItemReference.getId())) {
                     throw new IllegalArgumentException("Playback queue position " + playbackQueueItemReference.getPlaybackQueuePos() + " does not match " + playbackQueueItemReference.getId());
                 }
@@ -259,7 +323,7 @@ public class PlayerCommandService {
 
                 // Move that decrease playback queue position
             } else if (wantedPlaybackQueuePos > modifiedPlaybackQueuePos && playbackQueueItemReference.getPlaybackQueuePos() < modifiedPlaybackQueuePos) {
-                PlaybackQueueItem item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
+                PlaybackQueueItemInstance item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
                 if (!item.getId().equals(playbackQueueItemReference.getId())) {
                     throw new IllegalArgumentException("Playback queue position " + playbackQueueItemReference.getPlaybackQueuePos() + " does not match " + playbackQueueItemReference.getId());
                 }
@@ -276,7 +340,7 @@ public class PlayerCommandService {
 
                 // Move of currently playing track
             } else if (playbackQueueItemReference.getPlaybackQueuePos().equals(modifiedPlaybackQueuePos)) {
-                PlaybackQueueItem item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
+                PlaybackQueueItemInstance item = modifiedPlaylist.remove(playbackQueueItemReference.getPlaybackQueuePos().intValue());
                 if (!item.getId().equals(playbackQueueItemReference.getId())) {
                     throw new IllegalArgumentException("Playback queue position " + playbackQueueItemReference.getPlaybackQueuePos() + " does not match " + playbackQueueItemReference.getId());
                 }
@@ -298,6 +362,9 @@ public class PlayerCommandService {
             }
         }
         playerStatus.getPlaybackQueue().setItems(modifiedPlaylist);
+        if (!(playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
+            playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(modifiedPlaylist));
+        }
         playerStatus.getPlaybackQueue().updateTimestamp();
         playerStatus.setPlaybackQueuePos(modifiedPlaybackQueuePos);
         return new PlaybackQueueModificationResponse(true, modifiedPlaybackQueuePos);
@@ -306,7 +373,9 @@ public class PlayerCommandService {
     public synchronized PlaybackQueueModificationResponse setTracks(@JsonRpcParamStructure PlaybackQueueSetTracksRequest request) {
         playerStatus.getPlaybackQueue().setId(request.getPlaylistId());
         playerStatus.getPlaybackQueue().setName(request.getPlaylistName());
-        playerStatus.getPlaybackQueue().setItems(request.getItems());
+        List<PlaybackQueueItemInstance> instances = createInstanceList(request.getItems());
+        playerStatus.getPlaybackQueue().setItems(instances);
+        playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(instances));
 
         Integer playbackQueuePos = request.getPlaybackQueuePos() != null ? request.getPlaybackQueuePos() : 0;
         if (request.getItems().size() > 0) {
@@ -369,10 +438,10 @@ public class PlayerCommandService {
         response.setPlaylistName(playerStatus.getPlaybackQueue().getName());
         if (playbackQueuePos != null && playbackQueuePos < playerStatus.getPlaybackQueue().getItems().size()) {
             response.setPlaybackQueuePos(playbackQueuePos);
-            response.setTrack(playerStatus.getPlaybackQueue().getItems().get(playbackQueuePos));
+            response.setTrack(createPlaybackQueueItem(playerStatus.getPlaybackQueue().getItems().get(playbackQueuePos)));
         } else if (playbackQueuePos == null && playerStatus.getPlaybackQueuePos() != null) {
             response.setPlaybackQueuePos(playerStatus.getPlaybackQueuePos());
-            response.setTrack(playerStatus.getPlaybackQueue().getItems().get(playerStatus.getPlaybackQueuePos()));
+            response.setTrack(createPlaybackQueueItem(playerStatus.getPlaybackQueue().getItems().get(playerStatus.getPlaybackQueuePos())));
         }
         return response;
     }
@@ -400,12 +469,16 @@ public class PlayerCommandService {
     public synchronized PlaybackQueueItem setTrackMetadata(@JsonRpcParamStructure TrackMetadataRequest request) {
         if (request.getPlaybackQueuePos() != null) {
             if (request.getPlaybackQueuePos() < playerStatus.getPlaybackQueue().getItems().size()) {
-                if (request.getTrack().getId().equals(playerStatus.getPlaybackQueue().getItems().get(request.getPlaybackQueuePos()).getId())) {
+                PlaybackQueueItemInstance item = playerStatus.getPlaybackQueue().getItems().get(request.getPlaybackQueuePos());
+                if (request.getTrack().getId().equals(item.getId())) {
                     if (request.getReplace()) {
-                        playerStatus.getPlaybackQueue().getItems().set(request.getPlaybackQueuePos(), request.getTrack());
+                        item.setType(request.getTrack().getType());
+                        item.setImage(request.getTrack().getImage());
+                        item.setText(request.getTrack().getText());
+                        item.setItemAttributes(request.getTrack().getItemAttributes());
+                        item.setStreamingRefs(request.getTrack().getStreamingRefs());
                         playerStatus.getPlaybackQueue().updateTimestamp();
                     } else {
-                        PlaybackQueueItem item = playerStatus.getPlaybackQueue().getItems().get(request.getPlaybackQueuePos());
                         if (request.getTrack().getImage() != null) {
                             item.setImage(request.getTrack().getImage());
                             playerStatus.getPlaybackQueue().updateTimestamp();
@@ -443,10 +516,14 @@ public class PlayerCommandService {
         } else {
             PlaybackQueueItem response = null;
             for (int playbackQueuePos = 0; playbackQueuePos < playerStatus.getPlaybackQueue().getItems().size(); playbackQueuePos++) {
-                PlaybackQueueItem item = playerStatus.getPlaybackQueue().getItems().get(playbackQueuePos);
+                PlaybackQueueItemInstance item = playerStatus.getPlaybackQueue().getItems().get(playbackQueuePos);
                 if (request.getTrack().getId().equals(item.getId())) {
                     if (request.getReplace()) {
-                        playerStatus.getPlaybackQueue().getItems().set(playbackQueuePos, request.getTrack());
+                        item.setType(request.getTrack().getType());
+                        item.setImage(request.getTrack().getImage());
+                        item.setText(request.getTrack().getText());
+                        item.setItemAttributes(request.getTrack().getItemAttributes());
+                        item.setStreamingRefs(request.getTrack().getStreamingRefs());
                         playerStatus.getPlaybackQueue().updateTimestamp();
                         response = request.getTrack();
                     } else {
@@ -538,6 +615,10 @@ public class PlayerCommandService {
     }
 
     public synchronized PlaybackQueueModeResponse setPlaybackQueueMode(@JsonRpcParamStructure PlaybackQueueModeRequest request) {
+        if ((playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) &&
+                !(request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
+            playerStatus.getPlaybackQueue().setItems(new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getOriginallyOrderedItems()));
+        }
         playerStatus.setPlaybackQueueMode(request.getPlaybackQueueMode());
         if (player != null) {
             player.sendPlayerStatusChangedNotification();
@@ -546,9 +627,9 @@ public class PlayerCommandService {
     }
 
     public synchronized PlaybackQueueModificationResponse shuffleTracks() {
-        List<PlaybackQueueItem> playbackQueueItems = playerStatus.getPlaybackQueue().getItems();
+        List<PlaybackQueueItemInstance> playbackQueueItems = playerStatus.getPlaybackQueue().getItems();
         if (playbackQueueItems.size() > 1) {
-            PlaybackQueueItem currentItem = null;
+            PlaybackQueueItemInstance currentItem = null;
             if (playerStatus.getPlaybackQueuePos() != null && playerStatus.getPlaybackQueuePos() < playbackQueueItems.size()) {
                 currentItem = playbackQueueItems.remove(playerStatus.getPlaybackQueuePos().intValue());
             }

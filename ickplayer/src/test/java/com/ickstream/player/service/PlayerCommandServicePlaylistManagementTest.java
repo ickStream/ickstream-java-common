@@ -6,11 +6,13 @@
 package com.ickstream.player.service;
 
 import com.ickstream.player.model.PlaybackQueue;
+import com.ickstream.player.model.PlaybackQueueItemInstance;
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.service.player.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -77,6 +79,50 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(0).getId());
         Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(1).getId());
+        Assert.assertEquals(playbackQueue.getItems().get(2).getId(), status.getPlaybackQueue().getItems().get(2).getId());
+    }
+
+    @Test
+    public void testGetPlaybackQueueCurrent() {
+        PlayerStatus status = getDefaultPlayerStatus(3);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        PlayerCommandService service = new PlayerCommandService(status);
+
+        service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+
+        PlaybackQueueRequest sublist = new PlaybackQueueRequest();
+        sublist.setOrder(PlaybackQueueOrder.CURRENT);
+
+        PlaybackQueueResponse playbackQueue = service.getPlaybackQueue(sublist);
+
+        Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
+        Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
+        Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
+        Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId());
+        Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId());
+        Assert.assertEquals(playbackQueue.getItems().get(2).getId(), status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId());
+    }
+
+    @Test
+    public void testGetPlaybackQueueOriginal() {
+        PlayerStatus status = getDefaultPlayerStatus(3);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        PlayerCommandService service = new PlayerCommandService(status);
+
+        service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+
+        PlaybackQueueRequest sublist = new PlaybackQueueRequest();
+        sublist.setOrder(PlaybackQueueOrder.ORIGINAL);
+
+        PlaybackQueueResponse playbackQueue = service.getPlaybackQueue(sublist);
+
+        Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
+        Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.ORIGINAL);
+        Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
+        Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(1).getId());
+        Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(0).getId());
         Assert.assertEquals(playbackQueue.getItems().get(2).getId(), status.getPlaybackQueue().getItems().get(2).getId());
     }
 
@@ -191,6 +237,44 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(5), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(6), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(5), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(6), added2);
+    }
+
+    @Test
+    public void testAddTracksToEndShuffleActive() {
+        boolean scenario1 = false;
+        boolean scenario2 = false;
+        for (int i = 0; i < 50; i++) {
+            PlayerStatus status = getDefaultPlayerStatus(5);
+            status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+            Integer oldPos = status.getPlaybackQueuePos();
+            PlaybackQueueItem added1 = new PlaybackQueueItem();
+            added1.setId("added1");
+            PlaybackQueueItem added2 = new PlaybackQueueItem();
+            added2.setId("added1");
+            PlayerCommandService service = new PlayerCommandService(status);
+            PlaybackQueueAddTracksRequest request = new PlaybackQueueAddTracksRequest();
+            request.getItems().add(added1);
+            request.getItems().add(added2);
+
+            PlaybackQueueModificationResponse response = service.addTracks(request);
+
+            Assert.assertEquals(response.getResult(), Boolean.TRUE);
+            Assert.assertEquals(response.getPlaybackQueuePos(), oldPos);
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(5), added1);
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(6), added2);
+            Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
+            if (!status.getPlaybackQueue().getItems().get(5).equals(added1)) {
+                scenario1 = true;
+            } else {
+                scenario2 = true;
+            }
+        }
+        Assert.assertTrue(scenario1);
+        Assert.assertTrue(scenario2);
     }
 
     @Test
@@ -214,6 +298,36 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(0), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added2);
+    }
+
+    @Test
+    public void testAddTracksToBeginningShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        Integer oldPos = status.getPlaybackQueuePos();
+        PlaybackQueueItem added1 = new PlaybackQueueItem();
+        added1.setId("added1");
+        PlaybackQueueItem added2 = new PlaybackQueueItem();
+        added2.setId("added1");
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueAddTracksRequest request = new PlaybackQueueAddTracksRequest();
+        request.getItems().add(added1);
+        request.getItems().add(added2);
+        request.setPlaybackQueuePos(0);
+
+        PlaybackQueueModificationResponse response = service.addTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(oldPos + 2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added2);
     }
 
     @Test
@@ -237,6 +351,36 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2), added2);
+    }
+
+    @Test
+    public void testAddTracksToMiddleBeforeCurrentShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        Integer oldPos = status.getPlaybackQueuePos();
+        PlaybackQueueItem added1 = new PlaybackQueueItem();
+        added1.setId("added1");
+        PlaybackQueueItem added2 = new PlaybackQueueItem();
+        added2.setId("added1");
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueAddTracksRequest request = new PlaybackQueueAddTracksRequest();
+        request.getItems().add(added1);
+        request.getItems().add(added2);
+        request.setPlaybackQueuePos(1);
+
+        PlaybackQueueModificationResponse response = service.addTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(oldPos + 2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2), added2);
     }
 
     @Test
@@ -260,6 +404,36 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3), added2);
+    }
+
+    @Test
+    public void testAddTracksToMiddleAfterCurrentShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        Integer oldPos = status.getPlaybackQueuePos();
+        PlaybackQueueItem added1 = new PlaybackQueueItem();
+        added1.setId("added1");
+        PlaybackQueueItem added2 = new PlaybackQueueItem();
+        added2.setId("added1");
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueAddTracksRequest request = new PlaybackQueueAddTracksRequest();
+        request.getItems().add(added1);
+        request.getItems().add(added2);
+        request.setPlaybackQueuePos(2);
+
+        PlaybackQueueModificationResponse response = service.addTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), oldPos);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 7);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3), added2);
     }
 
     @Test
@@ -282,6 +456,34 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), oldPos);
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+    }
+
+    @Test
+    public void testRemoveTracksFromEndShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        Integer oldPos = status.getPlaybackQueuePos();
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track5");
+        removed1.setPlaybackQueuePos(4);
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track4");
+        removed2.setPlaybackQueuePos(3);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), oldPos);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(0)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(1)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(2)));
     }
 
     @Test
@@ -304,6 +506,34 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(2));
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+    }
+
+    @Test
+    public void testRemoveTracksFromEndCurrentShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(4);
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track5");
+        removed1.setPlaybackQueuePos(4);
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track4");
+        removed2.setPlaybackQueuePos(3);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(0)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(1)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(2)));
     }
 
     @Test
@@ -338,6 +568,43 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(0));
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 0);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 0);
+    }
+
+    @Test
+    public void testRemoveTracksFromEndCurrentLastShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(4);
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track5");
+        removed1.setPlaybackQueuePos(4);
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track4");
+        removed2.setPlaybackQueuePos(3);
+        PlaybackQueueItemReference removed3 = new PlaybackQueueItemReference();
+        removed3.setId("track3");
+        removed3.setPlaybackQueuePos(2);
+        PlaybackQueueItemReference removed4 = new PlaybackQueueItemReference();
+        removed4.setId("track2");
+        removed4.setPlaybackQueuePos(1);
+        PlaybackQueueItemReference removed5 = new PlaybackQueueItemReference();
+        removed5.setId("track1");
+        removed5.setPlaybackQueuePos(0);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+        request.getItems().add(removed3);
+        request.getItems().add(removed4);
+        request.getItems().add(removed5);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 0);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 0);
     }
 
     @Test
@@ -360,6 +627,34 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+    }
+
+    @Test
+    public void testRemoveTracksFromBeginningShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track2");
+        removed1.setPlaybackQueuePos(1);
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track1");
+        removed2.setPlaybackQueuePos(0);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(0)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(1)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(2)));
     }
 
     @Test
@@ -381,14 +676,42 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+    }
+
+    @Test
+    public void testRemoveTracksFromMiddleBeforeAndAfterCurrentShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track1");
+        removed1.setPlaybackQueuePos(0);
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track3");
+        removed2.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(0)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(1)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(2)));
     }
 
     @Test
     public void testRemoveTracksWithoutPos() {
         PlayerStatus status = getDefaultPlayerStatus(5);
-        PlaybackQueueItem duplicateItem = new PlaybackQueueItem();
+        PlaybackQueueItemInstance duplicateItem = new PlaybackQueueItemInstance();
         duplicateItem.setId("track1");
         status.getPlaybackQueue().getItems().add(duplicateItem);
+        status.getPlaybackQueue().getOriginallyOrderedItems().add(duplicateItem);
 
         PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
         removed1.setId("track1");
@@ -404,6 +727,36 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(response.getResult(), Boolean.TRUE);
         Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+    }
+
+    @Test
+    public void testRemoveTracksWithoutPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        PlaybackQueueItemInstance duplicateItem = new PlaybackQueueItemInstance();
+        duplicateItem.setId("track1");
+        status.getPlaybackQueue().getItems().add(duplicateItem);
+        status.getPlaybackQueue().getOriginallyOrderedItems().add(duplicateItem);
+
+        PlaybackQueueItemReference removed1 = new PlaybackQueueItemReference();
+        removed1.setId("track1");
+        PlaybackQueueItemReference removed2 = new PlaybackQueueItemReference();
+        removed2.setId("track3");
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueRemoveTracksRequest request = new PlaybackQueueRemoveTracksRequest();
+        request.getItems().add(removed1);
+        request.getItems().add(removed2);
+
+        PlaybackQueueModificationResponse response = service.removeTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 3);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 3);
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(0)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(1)));
+        Assert.assertTrue(status.getPlaybackQueue().getOriginallyOrderedItems().contains(status.getPlaybackQueue().getItems().get(2)));
     }
 
     @Test
@@ -449,6 +802,38 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 2);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(0), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getId(), request.getPlaylistId());
+        Assert.assertEquals(status.getPlaybackQueue().getName(), request.getPlaylistName());
+    }
+
+    @Test
+    public void testSetTracksWithPlaylistShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        PlaybackQueueItem added1 = new PlaybackQueueItem();
+        added1.setId("mytrack1");
+        PlaybackQueueItem added2 = new PlaybackQueueItem();
+        added2.setId("mytrack2");
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueSetTracksRequest request = new PlaybackQueueSetTracksRequest();
+        request.setPlaylistId("newplaylist1");
+        request.setPlaylistId("NewPlaylist1");
+        request.getItems().add(added1);
+        request.getItems().add(added2);
+
+        PlaybackQueueModificationResponse response = service.setTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), new Integer(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 2);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added2);
         Assert.assertEquals(status.getPlaybackQueue().getId(), request.getPlaylistId());
         Assert.assertEquals(status.getPlaybackQueue().getName(), request.getPlaylistName());
     }
@@ -472,6 +857,9 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 2);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(0), added1);
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(1), added2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 2);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0), added1);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1), added2);
         Assert.assertNull(status.getPlaybackQueue().getId());
         Assert.assertNull(status.getPlaybackQueue().getName());
     }
@@ -495,6 +883,7 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertNull(status.getSeekPos());
         Assert.assertNull(status.getPlaybackQueuePos());
         Assert.assertEquals(status.getPlaybackQueue().getItems().size(), 0);
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().size(), 0);
         Assert.assertEquals(status.getPlaybackQueue().getId(), request.getPlaylistId());
         Assert.assertEquals(status.getPlaybackQueue().getName(), request.getPlaylistName());
     }
@@ -541,6 +930,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksAllBeforeCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(2);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -565,6 +989,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksAllAfterCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(4);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -589,6 +1048,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksAllAfterCurrentPosToEndShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(null);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track4", 3)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(2));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -613,6 +1107,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track1");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksBeforeToAfterCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(4);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -637,6 +1166,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track1");
+    }
+
+    @Test
+    public void testMoveTracksBeforeToAfterCurrentPosToEndShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(null);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -661,6 +1225,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track2");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveTracksAfterToBeforeCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(1);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -685,6 +1284,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track2");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToBeforeCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(1);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -709,6 +1343,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToAfterCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(4);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -733,6 +1402,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track3");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToEndSpecificShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(5);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -757,6 +1461,41 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track3");
+    }
+
+    @Test
+    public void testMoveTracksCurrentToEndShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(null);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track3", 2)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -782,6 +1521,42 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track1");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBeforeToAfterCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(3);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track2", 1),
+                new PlaybackQueueItemReference("track1", 0)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(0));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(0));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -807,6 +1582,42 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track2");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track3");
+    }
+
+    @Test
+    public void testMoveMultipleTracksAfterToBeforeCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(1);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track4", 3),
+                new PlaybackQueueItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(4));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -832,6 +1643,42 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBothBeforeAndAfterToBeforeCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(2);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track1", 0),
+                new PlaybackQueueItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(3));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
     }
 
     @Test
@@ -857,6 +1704,146 @@ public class PlayerCommandServicePlaylistManagementTest {
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track1");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
         Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track4");
+    }
+
+    @Test
+    public void testMoveMultipleTracksBothBeforeAndAfterToAfterCurrentPosShuffleActive() {
+        PlayerStatus status = getDefaultPlayerStatus(5);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+        status.setPlaybackQueuePos(2);
+        PlayerCommandService service = new PlayerCommandService(status);
+        PlaybackQueueMoveTracksRequest request = new PlaybackQueueMoveTracksRequest();
+        request.setPlaybackQueuePos(3);
+        List<PlaybackQueueItemReference> movedTracks = Arrays.asList(
+                new PlaybackQueueItemReference("track1", 0),
+                new PlaybackQueueItemReference("track5", 4)
+        );
+        request.setItems(movedTracks);
+
+        PlaybackQueueModificationResponse response = service.moveTracks(request);
+
+        Assert.assertEquals(response.getResult(), Boolean.TRUE);
+        Assert.assertEquals(response.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track5");
+        Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+        Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+    }
+
+    @Test
+    public void testSetPlaybackQueueModeQueueToQueueShuffle() {
+        boolean shuffled = false;
+        for (int i = 0; i < 50; i++) {
+            PlayerStatus status = getDefaultPlayerStatus(5);
+
+            PlayerCommandService service = new PlayerCommandService(status);
+
+            service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_SHUFFLE));
+
+            Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_SHUFFLE);
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+            if (!status.getPlaybackQueue().getItems().get(0).getId().equals("track1") ||
+                    !status.getPlaybackQueue().getItems().get(1).getId().equals("track2") ||
+                    !status.getPlaybackQueue().getItems().get(2).getId().equals("track3") ||
+                    !status.getPlaybackQueue().getItems().get(3).getId().equals("track4") ||
+                    !status.getPlaybackQueue().getItems().get(4).getId().equals("track5")) {
+                shuffled = true;
+            }
+        }
+        Assert.assertFalse(shuffled);
+    }
+
+    @Test
+    public void testSetPlaybackQueueModeQueueToQueueRepeatShuffle() {
+        boolean shuffled = false;
+        for (int i = 0; i < 50; i++) {
+            PlayerStatus status = getDefaultPlayerStatus(5);
+
+            PlayerCommandService service = new PlayerCommandService(status);
+
+            service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE));
+
+            Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE);
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(0).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(1).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getOriginallyOrderedItems().get(4).getId(), "track5");
+            if (!status.getPlaybackQueue().getItems().get(0).getId().equals("track1") ||
+                    !status.getPlaybackQueue().getItems().get(1).getId().equals("track2") ||
+                    !status.getPlaybackQueue().getItems().get(2).getId().equals("track3") ||
+                    !status.getPlaybackQueue().getItems().get(3).getId().equals("track4") ||
+                    !status.getPlaybackQueue().getItems().get(4).getId().equals("track5")) {
+                shuffled = true;
+            }
+        }
+        Assert.assertFalse(shuffled);
+    }
+
+    @Test
+    public void testSetPlaybackQueueModeQueueShuffleToQueue() {
+        for (int i = 0; i < 50; i++) {
+            PlayerStatus status = getDefaultPlayerStatus(5);
+            status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+            PlayerCommandService service = new PlayerCommandService(status);
+
+            service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+
+            service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE));
+
+            Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE);
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        }
+    }
+
+    @Test
+    public void testSetPlaybackQueueModeQueueRepeatShuffleToQueue() {
+        for (int i = 0; i < 50; i++) {
+            PlayerStatus status = getDefaultPlayerStatus(5);
+            status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE);
+            PlayerCommandService service = new PlayerCommandService(status);
+
+            service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+
+            service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE));
+
+            Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE);
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(3).getId(), "track4");
+            Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
+        }
     }
 
     private PlaybackQueue getDefaultPlaylist(int numOfTracks) {
@@ -864,10 +1851,11 @@ public class PlayerCommandServicePlaylistManagementTest {
         playbackQueue.setId("playlist1");
         playbackQueue.setName("Playlist1Name");
         for (int i = 0; i < numOfTracks; i++) {
-            PlaybackQueueItem item = new PlaybackQueueItem();
+            PlaybackQueueItemInstance item = new PlaybackQueueItemInstance();
             item.setId("track" + (i + 1));
             playbackQueue.getItems().add(item);
         }
+        playbackQueue.setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(playbackQueue.getItems()));
         return playbackQueue;
     }
 
@@ -877,6 +1865,7 @@ public class PlayerCommandServicePlaylistManagementTest {
         status.setSeekPos(42.3);
         status.setPlaybackQueue(getDefaultPlaylist(numOfTracks));
         status.setPlaybackQueuePos(1);
+        status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE);
         return status;
     }
 }
