@@ -247,8 +247,8 @@ public class PlayerCommandService {
                 }
             }
         }
-        playerStatus.getPlaybackQueue().setItems(modifiedPlaybackQueue);
         playerStatus.getPlaybackQueue().setOriginallyOrderedItems(modifiedOriginallyOrderedPlaybackQueue);
+        playerStatus.getPlaybackQueue().setItems(modifiedPlaybackQueue);
 
         if (modifiedPlaybackQueuePos >= modifiedPlaybackQueue.size()) {
             if (modifiedPlaybackQueuePos > 0) {
@@ -361,10 +361,11 @@ public class PlayerCommandService {
                 }
             }
         }
-        playerStatus.getPlaybackQueue().setItems(modifiedPlaylist);
         if (!(playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
             playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(modifiedPlaylist));
         }
+        playerStatus.getPlaybackQueue().setItems(modifiedPlaylist);
+
         playerStatus.getPlaybackQueue().updateTimestamp();
         playerStatus.setPlaybackQueuePos(modifiedPlaybackQueuePos);
         return new PlaybackQueueModificationResponse(true, modifiedPlaybackQueuePos);
@@ -374,8 +375,8 @@ public class PlayerCommandService {
         playerStatus.getPlaybackQueue().setId(request.getPlaylistId());
         playerStatus.getPlaybackQueue().setName(request.getPlaylistName());
         List<PlaybackQueueItemInstance> instances = createInstanceList(request.getItems());
-        playerStatus.getPlaybackQueue().setItems(instances);
         playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(instances));
+        playerStatus.getPlaybackQueue().setItems(instances);
 
         Integer playbackQueuePos = request.getPlaybackQueuePos() != null ? request.getPlaybackQueuePos() : 0;
         if (request.getItems().size() > 0) {
