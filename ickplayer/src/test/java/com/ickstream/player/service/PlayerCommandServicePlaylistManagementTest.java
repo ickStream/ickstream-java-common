@@ -73,6 +73,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
         Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(0).getId());
         Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(1).getId());
@@ -91,6 +92,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
         Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
         Assert.assertEquals(playbackQueue.getItems().size(), 0);
     }
@@ -108,6 +110,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertNull(playbackQueue.getPlaylistId());
         Assert.assertNull(playbackQueue.getPlaylistName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size());
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(0).getId());
         Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(1).getId());
@@ -126,6 +129,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
         Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size() - 1);
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(1).getId());
         Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(2).getId());
@@ -143,6 +147,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
         Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), status.getPlaybackQueue().getItems().size() - 1);
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(0).getId());
         Assert.assertEquals(playbackQueue.getItems().get(1).getId(), status.getPlaybackQueue().getItems().get(1).getId());
@@ -161,6 +166,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
         Assert.assertEquals(playbackQueue.getPlaylistId(), status.getPlaybackQueue().getId());
         Assert.assertEquals(playbackQueue.getPlaylistName(), status.getPlaybackQueue().getName());
+        Assert.assertEquals(playbackQueue.getOrder(), PlaybackQueueOrder.CURRENT);
         Assert.assertEquals(playbackQueue.getItems().size(), 1);
         Assert.assertEquals(playbackQueue.getItems().get(0).getId(), status.getPlaybackQueue().getItems().get(1).getId());
     }

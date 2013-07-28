@@ -91,6 +91,7 @@ public class PlayerCommandService {
         PlaybackQueueResponse response = new PlaybackQueueResponse();
         response.setPlaylistId(playerStatus.getPlaybackQueue().getId());
         response.setPlaylistName(playerStatus.getPlaybackQueue().getName());
+        response.setOrder(PlaybackQueueOrder.CURRENT);
         Integer offset = request.getOffset() != null ? request.getOffset() : 0;
         Integer count = request.getCount() != null ? request.getCount() : playerStatus.getPlaybackQueue().getItems().size();
         response.setOffset(offset);
