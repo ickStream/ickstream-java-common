@@ -13,6 +13,7 @@ public class PlaybackQueueResponse extends ChunkedResponse {
     private Long lastChanged;
     private String playlistId;
     private String playlistName;
+    private PlaybackQueueOrder order;
     private List<PlaybackQueueItem> items;
 
     public String getPlaylistId() {
@@ -45,5 +46,13 @@ public class PlaybackQueueResponse extends ChunkedResponse {
 
     public void setItems(List<PlaybackQueueItem> items) {
         this.items = items;
+    }
+
+    public PlaybackQueueOrder getOrder() {
+        return order;
+    }
+
+    public void setOrder(PlaybackQueueOrder order) {
+        this.order = order;
     }
 }

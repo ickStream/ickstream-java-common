@@ -8,7 +8,7 @@ package com.ickstream.protocol.service.player;
 import com.ickstream.protocol.common.ChunkedRequest;
 
 public class PlaybackQueueRequest extends ChunkedRequest {
-    private Boolean originalOrder;
+    private PlaybackQueueOrder order;
 
     public PlaybackQueueRequest() {
     }
@@ -17,16 +17,16 @@ public class PlaybackQueueRequest extends ChunkedRequest {
         super(offset, count);
     }
 
-    public PlaybackQueueRequest(Integer offset, Integer count, Boolean originalOrder) {
+    public PlaybackQueueRequest(Integer offset, Integer count, PlaybackQueueOrder originalOrder) {
         super(offset, count);
-        this.originalOrder = originalOrder;
+        this.order = order;
     }
 
-    public Boolean getOriginalOrder() {
-        return originalOrder;
+    public PlaybackQueueOrder getOrder() {
+        return order;
     }
 
-    public void setOriginalOrder(Boolean originalOrder) {
-        this.originalOrder = originalOrder;
+    public void setOrder(PlaybackQueueOrder order) {
+        this.order = order;
     }
 }
