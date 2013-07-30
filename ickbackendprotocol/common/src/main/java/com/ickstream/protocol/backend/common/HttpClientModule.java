@@ -30,6 +30,19 @@ public class HttpClientModule extends AbstractModule {
     @Provides
     @Singleton
     public HttpClient createHttpClient() {
-        return new DefaultHttpClient(new PoolingClientConnectionManager());
+        PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+        try {
+            Integer defaultMaxPerRoute = Integer.valueOf(System.getProperty("ickstream-http-connections-max-per-route", "1000"));
+            cm.setDefaultMaxPerRoute(defaultMaxPerRoute);
+        } catch (NumberFormatException e) {
+            System.err.println("ickstream-http-connections-max-per-route must be a number");
+        }
+        try {
+            Integer maxTotal = Integer.valueOf(System.getProperty("ickstream-http-connections-max-total", "2000"));
+            cm.setMaxTotal(maxTotal);
+        } catch (NumberFormatException e) {
+            System.err.println("ickstream-http-connections-max-total must be a number");
+        }
+        return new DefaultHttpClient(cm);
     }
 }
