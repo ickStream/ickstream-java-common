@@ -616,12 +616,18 @@ public class PlayerCommandService {
     }
 
     public synchronized PlaybackQueueModeResponse setPlaybackQueueMode(@JsonRpcParamStructure PlaybackQueueModeRequest request) {
+        boolean shuffle = false;
         if ((playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) &&
                 !(request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
             playerStatus.getPlaybackQueue().setItems(new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getOriginallyOrderedItems()));
+        } else if ((request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) ||
+                (request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE))) {
+            shuffle = true;
         }
         playerStatus.setPlaybackQueueMode(request.getPlaybackQueueMode());
-        if (player != null) {
+        if (shuffle) {
+            shuffleTracks();
+        } else if (player != null) {
             player.sendPlayerStatusChangedNotification();
         }
         return new PlaybackQueueModeResponse(playerStatus.getPlaybackQueueMode());
@@ -637,6 +643,9 @@ public class PlayerCommandService {
             Collections.shuffle(playbackQueueItems);
             if (currentItem != null) {
                 playbackQueueItems.add(0, currentItem);
+            }
+            if (!playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) {
+                playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(playbackQueueItems));
             }
             playerStatus.getPlaybackQueue().setItems(playbackQueueItems);
             playerStatus.setPlaybackQueuePos(0);
