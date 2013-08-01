@@ -1857,9 +1857,11 @@ public class PlayerCommandServicePlaylistManagementTest {
         for (int i = 0; i < 50; i++) {
             PlayerStatus status = getDefaultPlayerStatus(5);
             status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_SHUFFLE);
+            status.setPlaybackQueuePos(1);
             PlayerCommandService service = new PlayerCommandService(status);
 
             service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+            Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(0));
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
@@ -1868,6 +1870,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
             service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE));
 
+            Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
             Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE);
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");
@@ -1882,9 +1885,11 @@ public class PlayerCommandServicePlaylistManagementTest {
         for (int i = 0; i < 50; i++) {
             PlayerStatus status = getDefaultPlayerStatus(5);
             status.setPlaybackQueueMode(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE);
+            status.setPlaybackQueuePos(1);
             PlayerCommandService service = new PlayerCommandService(status);
 
             service.moveTracks(new PlaybackQueueMoveTracksRequest(2, Arrays.asList(new PlaybackQueueItemReference("track1", 0))));
+            Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(0));
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track2");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track1");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(2).getId(), "track3");
@@ -1893,6 +1898,7 @@ public class PlayerCommandServicePlaylistManagementTest {
 
             service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE));
 
+            Assert.assertEquals(status.getPlaybackQueuePos(), Integer.valueOf(1));
             Assert.assertEquals(status.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE);
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(0).getId(), "track1");
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(1).getId(), "track2");

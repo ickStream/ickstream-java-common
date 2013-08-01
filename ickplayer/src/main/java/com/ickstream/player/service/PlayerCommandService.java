@@ -619,7 +619,18 @@ public class PlayerCommandService {
         boolean shuffle = false;
         if ((playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) &&
                 !(request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
+            Integer currentPos = playerStatus.getPlaybackQueuePos();
+            PlaybackQueueItemInstance currentTrack = null;
+            if (currentPos != null) {
+                currentTrack = playerStatus.getPlaybackQueue().getItems().get(currentPos);
+            }
             playerStatus.getPlaybackQueue().setItems(new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getOriginallyOrderedItems()));
+            if (currentTrack != null) {
+                int newPos = playerStatus.getPlaybackQueue().getItems().indexOf(currentTrack);
+                if (newPos >= 0) {
+                    playerStatus.setPlaybackQueuePos(newPos);
+                }
+            }
         } else if ((request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) ||
                 (request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE))) {
             shuffle = true;
