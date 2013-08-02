@@ -5,6 +5,9 @@
 
 package com.ickstream.protocol.common.exception;
 
+/**
+ * Exception thrown when the service returns an error
+ */
 public class ServiceException extends Exception {
     private int code;
 

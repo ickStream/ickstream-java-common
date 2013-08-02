@@ -16,30 +16,73 @@ import com.ickstream.protocol.service.PersonalizedService;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Abstract class that implements client access to content services implementing the Content Access protocol
+ * <p/>
+ * See the official API documentation for details regarding individual methods and parameters.
+ */
 public abstract class ContentService extends AbstractService implements PersonalizedService {
     private String id;
 
+    /**
+     * Creates a new instance for the specified service identity using the specified message sender
+     *
+     * @param id            The identity of the service this client should communicate with
+     * @param messageSender The message sender implementation which should be used when sending message to the service
+     */
     public ContentService(String id, MessageSender messageSender) {
         this(id, messageSender, (Integer) null);
     }
 
+    /**
+     * Creates a new instance for the specified service identity using the specified message sender
+     *
+     * @param id            The identity of the service this client should communicate with
+     * @param messageSender The message sender implementation which should be used when sending message to the service
+     * @param idProvider    The identity provider to use to generate JSON-RPC request identities
+     */
     public ContentService(String id, MessageSender messageSender, IdProvider idProvider) {
         this(id, messageSender, idProvider, null);
     }
 
+    /**
+     * Creates a new instance for the specified service identity using the specified message sender
+     *
+     * @param id             The identity of the service this client should communicate with
+     * @param messageSender  The message sender implementation which should be used when sending message to the service
+     * @param defaultTimeout The default timeout when not explicitly specified in a method call
+     */
     public ContentService(String id, MessageSender messageSender, Integer defaultTimeout) {
         this(id, messageSender, null, defaultTimeout);
     }
 
+    /**
+     * Creates a new instance for the specified service identity using the specified message sender
+     *
+     * @param id             The identity of the service this client should communicate with
+     * @param messageSender  The message sender implementation which should be used when sending message to the service
+     * @param idProvider     The identity provider to use to generate JSON-RPC request identities
+     * @param defaultTimeout The default timeout when not explicitly specified in a method call
+     */
     public ContentService(String id, MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
         super(messageSender, idProvider, defaultTimeout);
         this.id = id;
     }
 
+    /**
+     * Get the identity of the service this client communicates with
+     *
+     * @return The identity of the service
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Set the message logger to use to log messages produced by this client
+     *
+     * @param messageLogger A message logger implementation
+     */
     public abstract void setMessageLogger(MessageLogger messageLogger);
 
     @Override

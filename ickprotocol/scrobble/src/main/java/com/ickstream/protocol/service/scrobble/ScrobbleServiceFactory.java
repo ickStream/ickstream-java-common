@@ -13,7 +13,19 @@ import com.ickstream.protocol.service.core.FindServicesRequest;
 import com.ickstream.protocol.service.core.FindServicesResponse;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+/**
+ * Factory which should be used to get client classes for {@link ScrobbleService}
+ */
 public class ScrobbleServiceFactory extends CoreServiceFactory {
+    /**
+     * Get a Scrobble service client and configure it to use the specified url, access token and message logger.
+     * The service URL will be detected by calling Cloud Core service.
+     *
+     * @param cloudCoreUrl  The endpoint URL of the Cloud Core service to use
+     * @param accessToken   The OAuth access token to use for authorization
+     * @param messageLogger The message logger implementation to use for logging messages
+     * @return A client for Scrobble service
+     */
     public static ScrobbleService getScrobbleService(String cloudCoreUrl, String accessToken, MessageLogger messageLogger) {
         try {
             FindServicesResponse response = getCoreService(cloudCoreUrl, accessToken, messageLogger).findServices(new FindServicesRequest("scrobble"));
@@ -31,6 +43,14 @@ public class ScrobbleServiceFactory extends CoreServiceFactory {
         return null;
     }
 
+    /**
+     * Get a Scrobble service client and configure it to use the specified url and access token
+     * The service URL will be detected by calling Cloud Core service.
+     *
+     * @param cloudCoreUrl The endpoint URL of the Cloud Core service to use
+     * @param accessToken  The OAuth access token to use for authorization
+     * @return A client for Scrobble service
+     */
     public static ScrobbleService getScrobbleService(String cloudCoreUrl, String accessToken) {
         return getScrobbleService(cloudCoreUrl, accessToken, null);
     }

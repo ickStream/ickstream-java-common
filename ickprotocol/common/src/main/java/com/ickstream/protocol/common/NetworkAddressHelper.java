@@ -12,7 +12,15 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
 
+/**
+ * Utility class which provides methods to lookup information about the local network hardware and configuration
+ */
 public class NetworkAddressHelper {
+    /**
+     * Get the IP address of the local network card
+     *
+     * @return The IP address or "127.0.0.1" if no IP address could be detected
+     */
     public static String getNetworkAddress() {
         InetAddress currentInetAddress = getInetAddress();
         if (currentInetAddress != null) {
@@ -58,6 +66,11 @@ public class NetworkAddressHelper {
         return null;
     }
 
+    /**
+     * Get the hardware address of the local network card
+     *
+     * @return The hardware address of the local network card or null if no hardware address could be retrieved
+     */
     public static String getNetworkHardwareAddress() {
         InetAddress currentInetAddress = getInetAddress();
         if (currentInetAddress != null) {

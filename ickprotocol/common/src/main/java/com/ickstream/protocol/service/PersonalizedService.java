@@ -9,6 +9,11 @@ import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 
+/**
+ * Represents a service which have configuration tied to an external user account
+ * <p/>
+ * See the official API documentation for details regarding individual methods and parameters.
+ */
 public interface PersonalizedService extends Service {
     AccountInformation getAccountInformation() throws ServiceException, ServiceTimeoutException;
 
