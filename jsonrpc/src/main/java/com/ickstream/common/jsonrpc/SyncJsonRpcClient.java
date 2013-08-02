@@ -10,21 +10,56 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Synchronous client class for JSON-RPC requests. This class can be used independent of communication protocol
+ * as the actual sending is done with a separate {@link MessageSender} implementation. If an asynchronous behavior
+ * is wanted, use the {@link AsyncJsonRpcClient} class instead.
+ */
 public class SyncJsonRpcClient extends AsyncJsonRpcClient {
     private Integer defaultTimeout = null;
 
+    /**
+     * Creates a new instance which uses the specified message sender class to send messages.
+     * The created instance will use the identity provider provided by {@link AsyncJsonRpcClient} to generate unique
+     * identities for the JSON-RPC messages
+     *
+     * @param messageSender The message sender implementation which should be used to send messages
+     */
     public SyncJsonRpcClient(MessageSender messageSender) {
         super(messageSender);
     }
 
+    /**
+     * Creates a new instance which uses th specified message sender and identity provider implementations
+     *
+     * @param messageSender The message sender implementation which should be used to send messages
+     * @param idProvider    The identity provider implementation which should be use to generate JSON-RPC identities
+     */
     public SyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider) {
         super(messageSender, idProvider);
     }
 
+    /**
+     * Creates a new instance which uses the specified message sender implementation and provides a default timeout
+     * for all calls.
+     * The created instance will use the identity provider provided by {@link AsyncJsonRpcClient} to generate unique
+     * identities for the JSON-RPC messages
+     *
+     * @param messageSender  The message sender implementation which should be used to send messages
+     * @param defaultTimeout The default timeout which should be used in calls unless a specific timeout has been specified
+     */
     public SyncJsonRpcClient(MessageSender messageSender, Integer defaultTimeout) {
         this(messageSender, null, defaultTimeout);
     }
 
+    /**
+     * Creates a new instance which uses th specified message sender and identity provider implementations, it also
+     * allows you to specify a default timeout for all calls
+     *
+     * @param messageSender  The message sender implementation which should be used to send messages
+     * @param idProvider     The identity provider implementation which should be use to generate JSON-RPC identities
+     * @param defaultTimeout The default timeout which should be used in calls unless a specific timeout has been specified
+     */
     public SyncJsonRpcClient(MessageSender messageSender, IdProvider idProvider, Integer defaultTimeout) {
         super(messageSender, idProvider, defaultTimeout);
         this.defaultTimeout = null;
@@ -63,6 +98,18 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         }
     }
 
+    /**
+     * Send a JSON-RPC request using the specified method and parameters.
+     * A timeout can be specified and this will be triggered if no response have been recevied within this time.
+     *
+     * @param method               The method to call
+     * @param params               The parameters to the method, this must be possible to serialize to JSON with the {@link JsonHelper} class
+     * @param messageResponseClass The type of the response, must have a default constructor and must be possible to instantiate from JSON using {@link JsonHelper}
+     * @param timeout              The timeout in millisecond, if not specified the default timeout will be used
+     * @return The JSON-RPC response
+     * @throws JsonRpcTimeoutException if the operation timeout
+     * @throws JsonRpcException        if the operation fails due to a JSON-RPC error received form the remote side
+     */
     public <T> T sendRequest(String method, Object params, Class<T> messageResponseClass, Integer timeout) throws JsonRpcException, JsonRpcTimeoutException {
         List<T> results = new ArrayList<T>();
         List<JsonRpcResponse.Error> errors = new ArrayList<JsonRpcResponse.Error>();
@@ -98,6 +145,16 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         }
     }
 
+    /**
+     * Send a JSON-RPC request using the specified method and parameters.
+     *
+     * @param method               The method to call
+     * @param params               The parameters to the method, this must be possible to serialize to JSON with the {@link JsonHelper} class
+     * @param messageResponseClass The type of the response, must have a default constructor and must be possible to instantiate from JSON using {@link JsonHelper}
+     * @return The JSON-RPC response
+     * @throws JsonRpcTimeoutException if the operation timeout
+     * @throws JsonRpcException        if the operation fails due to a JSON-RPC error received form the remote side
+     */
     public <T> T sendRequest(String method, Object params, Class<T> messageResponseClass) throws JsonRpcException, JsonRpcTimeoutException {
         return sendRequest(method, params, messageResponseClass, (Integer) null);
     }

@@ -5,10 +5,18 @@
 
 package com.ickstream.common.jsonrpc;
 
+/**
+ * A JSON-RPC identity provider which generates unique identities within this identity provider instance
+ * Please note that since JSON-RPC identities needs to be unique for the same communication channel, it's often easier
+ * to use {@link GlobalIdProvider} than {@link InstanceIdProvider}.
+ */
 public class InstanceIdProvider implements IdProvider {
     private int id = 0;
     private final Object syncObject = new Object();
 
+    /**
+     * See {@link com.ickstream.common.jsonrpc.IdProvider#getNextId()}
+     */
     @Override
     public Object getNextId() {
         synchronized (syncObject) {

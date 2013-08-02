@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
+/**
+ * Message sender implementation that sends JSON-RPC message to the specified HTTP endpoint using HTTP POST messages
+ */
 public class HttpMessageSender implements MessageSender {
     private String endpoint;
     private String accessToken;
@@ -25,18 +28,52 @@ public class HttpMessageSender implements MessageSender {
     private MessageLogger messageLogger;
     private Boolean asynchronous = false;
 
+    /**
+     * Creates a new message sender instance
+     * The created instance will ignore responses unless {@link #setResponseHandler(JsonRpcResponseHandler)} is called to
+     * specify a response handler.
+     *
+     * @param httpClient The {@link HttpClient} instance to use
+     * @param endpoint   The HTTP endpoint url to send the message to
+     */
     public HttpMessageSender(HttpClient httpClient, String endpoint) {
         this(httpClient, endpoint, false);
     }
 
+    /**
+     * Creates a new message sender instance
+     *
+     * @param httpClient      The {@link HttpClient} instance to use
+     * @param endpoint        The HTTP endpoint url to send the message to
+     * @param accessToken     The OAuth access token to use for authorization
+     * @param responseHandler The response handler to use for handling responses
+     */
     public HttpMessageSender(HttpClient httpClient, String endpoint, String accessToken, JsonRpcResponseHandler responseHandler) {
         this(httpClient, endpoint, false, accessToken, responseHandler);
     }
 
+    /**
+     * Creates a new message sender instance
+     * The created instance will ignore responses unless {@link #setResponseHandler(JsonRpcResponseHandler)} is called to
+     * specify a response handler.
+     *
+     * @param httpClient   The {@link HttpClient} instance to use
+     * @param endpoint     The HTTP endpoint url to send the message to
+     * @param asynchronous If true, the message will be sent in a new thread, this is typically useful if this message sender is used with {@link AsyncJsonRpcClient}
+     */
     public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous) {
         this(httpClient, endpoint, asynchronous, null, null);
     }
 
+    /**
+     * Creates a new message sender instance
+     *
+     * @param httpClient      The {@link HttpClient} instance to use
+     * @param endpoint        The HTTP endpoint url to send the message to
+     * @param asynchronous    If true, the message will be sent in a new thread, this is typically useful if this message sender is used with {@link AsyncJsonRpcClient}
+     * @param accessToken     The OAuth access token to use for authorization
+     * @param responseHandler The response handler to use for handling responses
+     */
     public HttpMessageSender(HttpClient httpClient, String endpoint, Boolean asynchronous, String accessToken, JsonRpcResponseHandler responseHandler) {
         this.httpClient = httpClient;
         this.endpoint = endpoint;
@@ -45,14 +82,30 @@ public class HttpMessageSender implements MessageSender {
         this.asynchronous = asynchronous;
     }
 
+    /**
+     * Set the OAuth access token to use for authorization
+     *
+     * @param accessToken An OAuth access token
+     */
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Set the response handler to use when processing responses on message sent by this message sender
+     *
+     * @param responseHandler A response handler
+     */
     public void setResponseHandler(JsonRpcResponseHandler responseHandler) {
         this.responseHandler = responseHandler;
     }
 
+    /**
+     * Set the message logger implementation that should be used to log message sent and responses received using this
+     * message sender
+     *
+     * @param messageLogger A message logger implementation
+     */
     public void setMessageLogger(MessageLogger messageLogger) {
         this.messageLogger = messageLogger;
     }
@@ -69,6 +122,11 @@ public class HttpMessageSender implements MessageSender {
         }
     }
 
+    /**
+     * Send the specified message using HTTP POST
+     *
+     * @param message The message to send
+     */
     @Override
     public void sendMessage(String message) {
         final JsonRpcRequest request = jsonHelper.stringToObject(message, JsonRpcRequest.class);

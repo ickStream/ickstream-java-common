@@ -15,6 +15,19 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 
+/**
+ * Implementation of a JSON-RPC service, the purpose is to abstract JSON-RPC transport protocol and parsing from the
+ * service implementation.
+ * <p/>
+ * The communication is handled over {@link InputStream} and {@link OutputStream}.
+ * <p/>
+ * The implemetation will expose all public methods in the service interface specified
+ * as a JSON-RPC service and use the {@link JsonRpcParam}, {@link JsonRpcParamStructure} annotations to detect which
+ * method parameters that are required and fill them with data from the incomming JSON-RPC requests.
+ * <p/>
+ * The implementation will also use {@link JsonRpcResult} and {@link JsonRpcErrors} annotations to detect how to create
+ * and represent the response or errors from the called method.
+ */
 public class StreamJsonRpcService {
     private Object serviceImplementation;
     private Class serviceInterface;
@@ -26,14 +39,48 @@ public class StreamJsonRpcService {
     private Boolean ignoreResponses;
     private MessageLogger messageLogger;
 
+    /**
+     * Creates a new instance which expose the specified service interface and implements it using the specified
+     * service implementation.
+     * <p/>
+     * The instance will not return any response for method with a void return value.
+     * The instance will ignore JSON-RPC response messages, this is typically what a service should do since it answers
+     * on JSON-RPC requests and doesn't send any JSON-RPC requests by itself.
+     *
+     * @param serviceImplementation The service implementation that implements the service interface
+     * @param serviceInterface      The service interface to expose
+     * @param <T>                   The service interface to expose
+     */
     public <T> StreamJsonRpcService(T serviceImplementation, Class<T> serviceInterface) {
         this(serviceImplementation, serviceInterface, false, true);
     }
 
+    /**
+     * Creates a new instance which expose the specified service interface and implements it using the specified
+     * service implementation.
+     * <p/>
+     * The instance will ignore JSON-RPC response messages, this is typically what a service should do since it answers
+     * on JSON-RPC requests and doesn't send any JSON-RPC requests by itself.
+     *
+     * @param serviceImplementation The service implementation that implements the service interface
+     * @param serviceInterface      The service interface to expose
+     * @param returnOnVoid          true if void methods should return a JSON-RPC response, else false
+     * @param <T>                   The service interface to expose
+     */
     public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid) {
         this(serviceImplementation, serviceInterface, returnOnVoid, true);
     }
 
+    /**
+     * Creates a new instance which expose the specified service interface and implements it using the specified
+     * service implementation
+     *
+     * @param serviceImplementation The service implementation that implements the service interface
+     * @param serviceInterface      The service interface to expose
+     * @param returnOnVoid          true if void methods should return a JSON-RPC response, else false
+     * @param ignoreResponses       true if response message should be completely ignored
+     * @param <T>                   The service interface to expose
+     */
     public <I, T extends I> StreamJsonRpcService(T serviceImplementation, Class<I> serviceInterface, Boolean returnOnVoid, Boolean ignoreResponses) {
         this.serviceImplementation = serviceImplementation;
         this.serviceInterface = serviceInterface;
@@ -41,10 +88,22 @@ public class StreamJsonRpcService {
         this.ignoreResponses = ignoreResponses;
     }
 
+    /**
+     * Set the message logger implementation to use to log incoming and outgoing messages handled by this service
+     *
+     * @param messageLogger The message logger implementation
+     */
     public void setMessageLogger(MessageLogger messageLogger) {
         this.messageLogger = messageLogger;
     }
 
+    /**
+     * Process a JSON-RPC request received on an input stream and write the result (if any) to the specified output
+     * stream
+     *
+     * @param input The input stream that contains the JSON-RPC request
+     * @param ops   The output stream where the JSON-RPC response should be written
+     */
     protected void handle(InputStream input, OutputStream ops) {
         String id = null;
         String version = null;
