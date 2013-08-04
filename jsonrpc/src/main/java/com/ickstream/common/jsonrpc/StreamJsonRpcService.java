@@ -156,7 +156,7 @@ public class StreamJsonRpcService {
         id = request.getId();
         JsonNode paramsNode = request.getParams();
 
-        List<Method> methods = getMethods(methodName);
+        List<Method> methods = getMethods(methodName, serviceInterface, true);
 
         if (methods.size() == 0) {
             if (id == null) {
@@ -164,7 +164,11 @@ public class StreamJsonRpcService {
                 return;
             }
             JsonRpcResponse response = new JsonRpcResponse(version, id);
-            response.setError(new JsonRpcResponse.Error(JsonRpcError.METHOD_NOT_FOUND, "Method not found"));
+            if (getMethods(methodName, serviceImplementation.getClass(), false).size() == 0) {
+                response.setError(new JsonRpcResponse.Error(JsonRpcError.METHOD_NOT_FOUND, "Method not found"));
+            } else {
+                response.setError(new JsonRpcResponse.Error(JsonRpcError.UNAUTHORIZED, "Unauthroized access"));
+            }
             if (messageLogger != null) {
                 messageLogger.onOutgoingMessage(null, jsonHelper.objectToString(response));
             }
@@ -405,18 +409,28 @@ public class StreamJsonRpcService {
         return (method.getGenericReturnType() != null) ? jsonHelper.objectToJson(result) : null;
     }
 
-    private List<Method> getMethods(String name) {
-        synchronized (methodCache) {
-            String cacheKey = serviceImplementation.getClass().getName() + "." + name;
-            List<Method> methods = methodCache.get(cacheKey);
-            if (methods == null) {
-                methods = new ArrayList<Method>();
-                for (Method method : serviceInterface.getMethods()) {
-                    if (method.getName().equals(name)) {
-                        methods.add(method);
+    private List<Method> getMethods(String name, Class serviceInterface, Boolean cached) {
+        if (cached) {
+            synchronized (methodCache) {
+                String cacheKey = serviceImplementation.getClass().getName() + "." + name;
+                List<Method> methods = methodCache.get(cacheKey);
+                if (methods == null) {
+                    methods = new ArrayList<Method>();
+                    for (Method method : serviceInterface.getMethods()) {
+                        if (method.getName().equals(name)) {
+                            methods.add(method);
+                        }
                     }
+                    methodCache.put(cacheKey, methods);
                 }
-                methodCache.put(cacheKey, methods);
+                return methods;
+            }
+        } else {
+            List<Method> methods = new ArrayList<Method>();
+            for (Method method : serviceInterface.getMethods()) {
+                if (method.getName().equals(name)) {
+                    methods.add(method);
+                }
             }
             return methods;
         }

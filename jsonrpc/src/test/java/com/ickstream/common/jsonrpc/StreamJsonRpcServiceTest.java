@@ -254,9 +254,9 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     public static class SimpleParameterMethodsImpl implements SimpleParameterMethods {
-        public String testMethodUnknown() {
+        public String testMethodUnauthorized() {
             // This should not be exposed as it's not part of the interface
-            return "testMethodUnkown";
+            return "testMethodUnauthorized";
         }
 
         @Override
@@ -530,6 +530,17 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
 
         Assert.assertEquals("-32601", getParamFromJson(outputString.toString(), "error.code"));
+    }
+
+    @Test
+    public void testWithoutParametersUnauthorizedMethod() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleParameterMethodsImpl(), SimpleParameterMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodUnauthorized", null)), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("-32000", getParamFromJson(outputString.toString(), "error.code"));
     }
 
     @Test
