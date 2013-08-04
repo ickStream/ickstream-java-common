@@ -412,7 +412,7 @@ public class StreamJsonRpcService {
     private List<Method> getMethods(String name, Class serviceInterface, Boolean cached) {
         if (cached) {
             synchronized (methodCache) {
-                String cacheKey = serviceImplementation.getClass().getName() + "." + name;
+                String cacheKey = serviceImplementation.getClass().getName() + "." + serviceInterface.getClass().getName() + "." + name;
                 List<Method> methods = methodCache.get(cacheKey);
                 if (methods == null) {
                     methods = new ArrayList<Method>();
