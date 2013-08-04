@@ -11,6 +11,9 @@ public class ImageReference {
     private Integer width;
     private Integer height;
 
+    public ImageReference() {
+    }
+
     public ImageReference(String url, ImageType type) {
         this.url = url;
         this.type = type.getName();
