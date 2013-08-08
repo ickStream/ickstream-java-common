@@ -412,4 +412,27 @@ public class CoreService extends AbstractService implements Service {
     public void createUserCode(MessageHandler<String> messageHandler, Integer timeout) {
         sendRequest("createUserCode", null, String.class, messageHandler, timeout);
     }
+
+    public FindAccountChangesResponse findAccountChanges(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+        return findAccountChanges(request, (Integer) null);
+    }
+
+    public FindAccountChangesResponse findAccountChanges(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("findAccountChanges", request, FindAccountChangesResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void findAccountChanges(ChunkedRequest request, MessageHandler<FindAccountChangesResponse> messageHandler) {
+        findAccountChanges(request, messageHandler, (Integer) null);
+    }
+
+    public void findAccountChanges(ChunkedRequest request, MessageHandler<FindAccountChangesResponse> messageHandler, Integer timeout) {
+        sendRequest("findAccountChanges", request, FindAccountChangesResponse.class, messageHandler, timeout);
+    }
+
 }
