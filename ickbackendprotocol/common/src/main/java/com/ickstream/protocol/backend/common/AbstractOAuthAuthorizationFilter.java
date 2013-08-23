@@ -5,7 +5,6 @@
 
 package com.ickstream.protocol.backend.common;
 
-import com.ickstream.protocol.service.corebackend.ApplicationResponse;
 import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
 import com.ickstream.protocol.service.corebackend.UserResponse;
@@ -47,7 +46,7 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
         private Boolean authorized;
         private String deviceId;
         private String userId;
-        private String applicationId;
+        private String otherId;
 
         public OAuthServletRequest(HttpServletRequest request, OAuthMessage oauthMessage, CoreBackendService coreBackendService) {
             super(request);
@@ -68,7 +67,7 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
         public Principal getUserPrincipal() {
             return new Principal() {
                 public String getName() {
-                    return userId != null ? userId : applicationId;
+                    return userId != null ? userId : otherId;
                 }
             };
         }
@@ -94,12 +93,14 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
         }
 
         /**
-         * Retrieves information about the application based on an API key
+         * Retrieves other identity based on an authorization token
+         * By default this method returns null, so it must be overridden in sub classes if
+         * to enable usage of additional types of authorization tokens
          *
-         * @param apiKey
-         * @return
+         * @param accessToken The authorization token
+         * @return An object identity or null if the token couldn't be resolved to an authorized object
          */
-        protected ApplicationResponse getApplicationForToken(String apiKey) {
+        protected String getOtherForToken(String accessToken) {
             return null;
         }
 
@@ -132,9 +133,9 @@ public abstract class AbstractOAuthAuthorizationFilter implements Filter {
                                 userId = user.getId();
                                 authorized = true;
                             } else {
-                                ApplicationResponse application = getApplicationForToken(accessToken);
-                                if (application != null && application.getActive() != null && application.getActive()) {
-                                    applicationId = application.getId();
+                                String otherId = getOtherForToken(accessToken);
+                                if (otherId != null) {
+                                    this.otherId = otherId;
                                     authorized = true;
                                 }
                             }
