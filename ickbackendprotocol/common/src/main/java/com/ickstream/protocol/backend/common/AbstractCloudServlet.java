@@ -91,9 +91,9 @@ public abstract class AbstractCloudServlet extends HttpServlet {
                 }
                 context.setContextUrl(req.getScheme() + "://" + req.getServerName() + (req.getServerPort() != 80 ? ":" + req.getServerPort() : "") + req.getContextPath());
                 new HttpJsonRpcService(service, remoteInterface).handle(req, resp);
-            } else if (userRemoteInterface != null) {
+            } else if (req.getUserPrincipal() != null && userRemoteInterface != null) {
                 RequestContext context = InjectHelper.instance(RequestContext.class);
-                context.setUserId(req.getUserPrincipal() != null ? req.getUserPrincipal().getName() : null);
+                context.setUserId(req.getUserPrincipal().getName());
                 String remoteAddr = req.getHeader("X-Forwarded-For");
                 if (remoteAddr == null) {
                     remoteAddr = req.getRemoteAddr();
