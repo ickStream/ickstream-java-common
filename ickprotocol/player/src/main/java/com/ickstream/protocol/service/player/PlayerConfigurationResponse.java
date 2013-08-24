@@ -27,10 +27,12 @@ public class PlayerConfigurationResponse {
         this.playerModel = playerModel;
     }
 
+    @Deprecated
     public String getHardwareId() {
         return hardwareId;
     }
 
+    @Deprecated
     public void setHardwareId(String hardwareId) {
         this.hardwareId = hardwareId;
     }

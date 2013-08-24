@@ -19,6 +19,7 @@ import org.apache.http.client.HttpClient;
  * See the official API documentation for details regarding individual methods and parameters.
  */
 public class CoreService extends AbstractService implements Service {
+    private String endpoint;
 
     /**
      * Creates a new instance using the specified HttpClient and endpoint URL
@@ -62,6 +63,7 @@ public class CoreService extends AbstractService implements Service {
      */
     public CoreService(HttpClient client, String endpoint, IdProvider idProvider, Integer defaultTimeout) {
         super(new HttpMessageSender(client, endpoint, true), idProvider, defaultTimeout);
+        this.endpoint = endpoint;
         ((HttpMessageSender) getMessageSender()).setResponseHandler(this);
     }
 
@@ -81,6 +83,15 @@ public class CoreService extends AbstractService implements Service {
      */
     public void setAccessToken(String accessToken) {
         ((HttpMessageSender) getMessageSender()).setAccessToken(accessToken);
+    }
+
+    /**
+     * Get the endpoint used by this object
+     *
+     * @return The endpoint used
+     */
+    public String getEndpoint() {
+        return endpoint;
     }
 
     public FindDevicesResponse findDevices(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
@@ -215,10 +226,12 @@ public class CoreService extends AbstractService implements Service {
         sendRequest("addDevice", request, AddDeviceResponse.class, messageHandler, timeout);
     }
 
+    @Deprecated
     public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request) throws ServiceException, ServiceTimeoutException {
         return addDeviceWithHardwareId(request, (Integer) null);
     }
 
+    @Deprecated
     public AddDeviceResponse addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class, timeout);
@@ -229,10 +242,12 @@ public class CoreService extends AbstractService implements Service {
         }
     }
 
+    @Deprecated
     public void addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, MessageHandler<AddDeviceResponse> messageHandler) {
         addDeviceWithHardwareId(request, messageHandler, (Integer) null);
     }
 
+    @Deprecated
     public void addDeviceWithHardwareId(AddDeviceWithHardwareIdRequest request, MessageHandler<AddDeviceResponse> messageHandler, Integer timeout) {
         sendRequest("addDeviceWithHardwareId", request, AddDeviceResponse.class, messageHandler, timeout);
     }
@@ -411,6 +426,28 @@ public class CoreService extends AbstractService implements Service {
 
     public void createUserCode(MessageHandler<String> messageHandler, Integer timeout) {
         sendRequest("createUserCode", null, String.class, messageHandler, timeout);
+    }
+
+    public String createDeviceRegistrationToken(CreateDeviceRegistrationTokenRequest request) throws ServiceException, ServiceTimeoutException {
+        return createDeviceRegistrationToken(request, (Integer) null);
+    }
+
+    public String createDeviceRegistrationToken(CreateDeviceRegistrationTokenRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("createDeviceRegistrationToken", request, String.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void createDeviceRegistrationToken(CreateDeviceRegistrationTokenRequest request, MessageHandler<String> messageHandler) {
+        createDeviceRegistrationToken(request, messageHandler, (Integer) null);
+    }
+
+    public void createDeviceRegistrationToken(CreateDeviceRegistrationTokenRequest request, MessageHandler<String> messageHandler, Integer timeout) {
+        sendRequest("createDeviceRegistrationToken", request, String.class, messageHandler, timeout);
     }
 
     public FindAccountChangesResponse findAccountChanges(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
