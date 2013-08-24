@@ -25,7 +25,7 @@ import java.util.*;
 public class IckStreamController implements MessageListener {
     private String id;
     private String name;
-    private static final String API_KEY = "987C3A70-A076-4312-8EF9-53E954B65F8B";
+    private String apiKey;
     private IckDiscovery ickDiscovery;
     private MessageLogger messageLogger;
     private DeviceDiscoveryController deviceDiscoveryController;
@@ -71,7 +71,7 @@ public class IckStreamController implements MessageListener {
 
         @Override
         public void onAdded(Device object) {
-            PlayerDeviceController playerDeviceController = new PlayerDeviceController(threadFramework, ickDiscovery, object, messageLogger);
+            PlayerDeviceController playerDeviceController = new PlayerDeviceController(apiKey, threadFramework, ickDiscovery, object, messageLogger);
             playerDeviceController.setCoreService(getCoreService());
             playerDeviceControllers.put(object.getId(), playerDeviceController);
             for (PlayerListener playerListener : playerListeners) {
@@ -165,74 +165,70 @@ public class IckStreamController implements MessageListener {
         }
     }
 
-    public void registerCloud(String model, String name, String userToken) {
-        registerCloud(model, name, userToken, null);
+    public void registerCloud(String id, String name, String userToken) {
+        registerCloud(id, name, userToken, null);
     }
 
-    public void registerCloud(String model, String name, String userToken, String hardwareIdAppPostfix) {
+    public void registerCloud(String id, String name, String userToken, final String hardwareIdAppPostfix) {
         CoreService coreService = getCoreService();
         if (coreService == null) {
             return;
         }
         coreService.setAccessToken(userToken);
-        AddDeviceWithHardwareIdRequest request = new AddDeviceWithHardwareIdRequest();
-        request.setModel(model);
-        request.setApplicationId(API_KEY);
+        CreateDeviceRegistrationTokenRequest request = new CreateDeviceRegistrationTokenRequest();
+        request.setId(id);
         request.setName(name);
-        request.setAddress(NetworkAddressHelper.getNetworkAddress());
-        String hardwareId = NetworkAddressHelper.getNetworkHardwareAddress();
-        if (hardwareId != null) {
-            hardwareId = UUID.nameUUIDFromBytes(hardwareId.getBytes()).toString();
-            if (hardwareIdAppPostfix != null) {
-                hardwareId += hardwareIdAppPostfix;
+        request.setApplicationId(apiKey);
+
+        getCoreService().createDeviceRegistrationToken(request, new MessageHandlerAdapter<String>() {
+            @Override
+            public void onMessage(String deviceRegistrationToken) {
+                AddDeviceRequest request = new AddDeviceRequest();
+                String networkAddress = NetworkAddressHelper.getNetworkAddress();
+                String hardwareId = NetworkAddressHelper.getNetworkHardwareAddress();
+                if (hardwareId != null) {
+                    hardwareId = UUID.nameUUIDFromBytes(hardwareId.getBytes()).toString();
+                    if (hardwareIdAppPostfix != null) {
+                        hardwareId += hardwareIdAppPostfix;
+                    }
+                }
+                request.setAddress(networkAddress);
+                request.setHardwareId(hardwareId);
+                request.setApplicationId(apiKey);
+                CoreServiceFactory.getCoreService(deviceRegistrationToken, messageLogger).addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
+                    @Override
+                    public void onMessage(AddDeviceResponse message) {
+                        IckStreamController.this.id = message.getId();
+                        String accessToken = message.getAccessToken();
+                        for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                            ickStreamListener.onCloudRegistered(accessToken);
+                        }
+                    }
+
+                    @Override
+                    public void onError(int code, String message, String data) {
+                        for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                            if (code == JsonRpcError.UNAUTHORIZED) {
+                                ickStreamListener.onUnauthorized();
+                            } else {
+                                ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
+                            }
+                        }
+                    }
+                }, 20000);
             }
-        }
-        request.setHardwareId(hardwareId);
-        if (hardwareId != null) {
-            getCoreService().addDeviceWithHardwareId(request, new MessageHandlerAdapter<AddDeviceResponse>() {
-                @Override
-                public void onMessage(AddDeviceResponse message) {
-                    id = message.getId();
-                    String accessToken = message.getAccessToken();
-                    for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                        ickStreamListener.onCloudRegistered(accessToken);
-                    }
-                }
 
-                @Override
-                public void onError(int code, String message, String data) {
-                    for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                        if (code == JsonRpcError.UNAUTHORIZED) {
-                            ickStreamListener.onUnauthorized();
-                        } else {
-                            ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
-                        }
+            @Override
+            public void onError(int code, String message, String data) {
+                for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                    if (code == JsonRpcError.UNAUTHORIZED) {
+                        ickStreamListener.onUnauthorized();
+                    } else {
+                        ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
                     }
                 }
-            }, 20000);
-        } else {
-            getCoreService().addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
-                @Override
-                public void onMessage(AddDeviceResponse message) {
-                    id = message.getId();
-                    String accessToken = message.getAccessToken();
-                    for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                        ickStreamListener.onCloudRegistered(accessToken);
-                    }
-                }
-
-                @Override
-                public void onError(int code, String message, String data) {
-                    for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                        if (code == JsonRpcError.UNAUTHORIZED) {
-                            ickStreamListener.onUnauthorized();
-                        } else {
-                            ickStreamListener.onError(code, message + (data != null ? "\n" + data : ""));
-                        }
-                    }
-                }
-            }, 20000);
-        }
+            }
+        }, 20000);
     }
 
     public CoreService getCoreService() {
@@ -325,7 +321,8 @@ public class IckStreamController implements MessageListener {
         ickDiscovery.endDiscovery();
     }
 
-    public IckStreamController(ThreadFramework threadFramework, IckDiscovery ickDiscovery, MessageLogger messageLogger) {
+    public IckStreamController(String apiKey, ThreadFramework threadFramework, IckDiscovery ickDiscovery, MessageLogger messageLogger) {
+        this.apiKey = apiKey;
         this.messageLogger = messageLogger;
         this.threadFramework = threadFramework;
         this.ickDiscovery = ickDiscovery;

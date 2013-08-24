@@ -17,7 +17,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class PlayerDeviceController implements Observer, JsonRpcResponseHandler, JsonRpcRequestHandler {
-    private static final String API_KEY = "987C3A70-A076-4312-8EF9-53E954B65F8B";
+    private String apiKey;
     Device device;
     List<MessageHandler<PlaybackQueueResponse>> playbackQueueListeners = new ArrayList<MessageHandler<PlaybackQueueResponse>>();
     List<MessageHandler<PlayerStatusResponse>> playerStatusListeners = new ArrayList<MessageHandler<PlayerStatusResponse>>();
@@ -28,11 +28,12 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
     CoreService coreService;
     ThreadFramework threadFramework;
 
-    public PlayerDeviceController(MessageSender messageSender, Device device, MessageLogger messageLogger) {
-        this((ThreadFramework) null, messageSender, device, messageLogger);
+    public PlayerDeviceController(String apiKey, MessageSender messageSender, Device device, MessageLogger messageLogger) {
+        this(apiKey, (ThreadFramework) null, messageSender, device, messageLogger);
     }
 
-    public PlayerDeviceController(ThreadFramework threadFramework, MessageSender messageSender, Device device, MessageLogger messageLogger) {
+    public PlayerDeviceController(String apiKey, ThreadFramework threadFramework, MessageSender messageSender, Device device, MessageLogger messageLogger) {
+        this.apiKey = apiKey;
         this.threadFramework = threadFramework;
         playerService = new PlayerService(messageSender, device.getId());
         playerService.setMessageLogger(messageLogger);
@@ -91,39 +92,28 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
 
     public void register() {
         if (coreService != null) {
-            AddDeviceWithHardwareIdRequest request = new AddDeviceWithHardwareIdRequest(
+            CreateDeviceRegistrationTokenRequest request = new CreateDeviceRegistrationTokenRequest(
                     device.getId(),
-                    device.getModel() != null ? device.getModel() : "TestModel",
                     device.getName(),
-                    device.getAddress(),
-                    API_KEY,
-                    device.getHardwareId());
+                    apiKey
+            );
 
-            if (device.getHardwareId() != null) {
-                coreService.addDeviceWithHardwareId(request, new MessageHandlerAdapter<AddDeviceResponse>() {
-                    @Override
-                    public void onMessage(AddDeviceResponse message) {
-                        playerService.setPlayerConfiguration(new PlayerConfigurationRequest(message.getName(), message.getAccessToken()), new MessageHandlerAdapter<PlayerConfigurationResponse>() {
-                            @Override
-                            public void onMessage(PlayerConfigurationResponse message) {
-                                device.setCloudState(Device.CloudState.REGISTERED);
-                            }
-                        });
-                    }
-                });
-            } else {
-                coreService.addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
-                    @Override
-                    public void onMessage(AddDeviceResponse message) {
-                        playerService.setPlayerConfiguration(new PlayerConfigurationRequest(message.getName(), message.getAccessToken()), new MessageHandlerAdapter<PlayerConfigurationResponse>() {
-                            @Override
-                            public void onMessage(PlayerConfigurationResponse message) {
-                                device.setCloudState(Device.CloudState.REGISTERED);
-                            }
-                        });
-                    }
-                });
-            }
+            coreService.createDeviceRegistrationToken(request, new MessageHandlerAdapter<String>() {
+                @Override
+                public void onMessage(String message) {
+                    PlayerConfigurationRequest request = new PlayerConfigurationRequest();
+                    request.setDeviceRegistrationToken(message);
+                    request.setCloudCoreUrl(coreService.getEndpoint());
+                    request.setPlayerName(device.getName());
+
+                    playerService.setPlayerConfiguration(request, new MessageHandlerAdapter<PlayerConfigurationResponse>() {
+                        @Override
+                        public void onMessage(PlayerConfigurationResponse message) {
+                            device.setCloudState(Device.CloudState.REGISTERED);
+                        }
+                    });
+                }
+            });
         }
     }
 
