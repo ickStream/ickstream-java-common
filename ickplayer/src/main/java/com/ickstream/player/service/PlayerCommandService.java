@@ -5,16 +5,21 @@
 
 package com.ickstream.player.service;
 
-import com.ickstream.common.jsonrpc.JsonRpcParam;
-import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
-import com.ickstream.common.jsonrpc.JsonRpcResult;
+import com.ickstream.common.jsonrpc.*;
 import com.ickstream.player.model.PlaybackQueueItemInstance;
 import com.ickstream.player.model.PlayerStatus;
+import com.ickstream.protocol.common.NetworkAddressHelper;
+import com.ickstream.protocol.common.exception.ServiceException;
+import com.ickstream.protocol.common.exception.ServiceTimeoutException;
+import com.ickstream.protocol.service.core.AddDeviceRequest;
+import com.ickstream.protocol.service.core.AddDeviceResponse;
+import com.ickstream.protocol.service.core.CoreServiceFactory;
 import com.ickstream.protocol.service.player.*;
 
 import java.util.*;
 
 public class PlayerCommandService {
+    private String apiKey;
     private PlayerStatus playerStatus;
     private PlayerManager player;
     private Timer volumeNotificationTimer;
@@ -23,7 +28,8 @@ public class PlayerCommandService {
         this.playerStatus = playerStatus;
     }
 
-    public PlayerCommandService(PlayerManager player, PlayerStatus playerStatus) {
+    public PlayerCommandService(String apiKey, PlayerManager player, PlayerStatus playerStatus) {
+        this.apiKey = apiKey;
         this.playerStatus = playerStatus;
         this.player = player;
     }
@@ -62,12 +68,23 @@ public class PlayerCommandService {
         return items;
     }
 
-    public synchronized PlayerConfigurationResponse setPlayerConfiguration(@JsonRpcParamStructure PlayerConfigurationRequest configuration) {
+    @JsonRpcErrors({
+            @JsonRpcError(exception = ServiceException.class, code = -32001, message = "Error when registering device"),
+            @JsonRpcError(exception = ServiceTimeoutException.class, code = -32001, message = "Timeout when registering device")
+    })
+    public synchronized PlayerConfigurationResponse setPlayerConfiguration(@JsonRpcParamStructure PlayerConfigurationRequest configuration) throws ServiceException, ServiceTimeoutException {
         if (configuration.getCloudCoreUrl() != null) {
             player.setCloudCoreUrl(configuration.getCloudCoreUrl());
         }
         if (configuration.getAccessToken() != null) {
             player.setAccessToken(configuration.getAccessToken());
+        } else if (configuration.getDeviceRegistrationToken() != null) {
+            AddDeviceRequest request = new AddDeviceRequest();
+            request.setAddress(NetworkAddressHelper.getNetworkAddress());
+            request.setApplicationId(apiKey);
+            request.setHardwareId(player.getHardwareId());
+            AddDeviceResponse response = CoreServiceFactory.getCoreService(player.getCloudCoreUrl(), configuration.getDeviceRegistrationToken()).addDevice(request, 30000);
+            player.setAccessToken(response.getAccessToken());
         }
         if (configuration.getPlayerName() != null) {
             player.setName(configuration.getPlayerName());
