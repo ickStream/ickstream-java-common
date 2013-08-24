@@ -19,10 +19,12 @@ public class PlayerConfigurationResponse {
         this.playerName = playerName;
     }
 
+    @Deprecated
     public String getPlayerModel() {
         return playerModel;
     }
 
+    @Deprecated
     public void setPlayerModel(String playerModel) {
         this.playerModel = playerModel;
     }
