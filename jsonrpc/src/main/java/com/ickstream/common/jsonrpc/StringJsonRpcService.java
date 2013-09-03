@@ -8,6 +8,7 @@ package com.ickstream.common.jsonrpc;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.WriterOutputStream;
 
+import java.io.IOException;
 import java.io.StringWriter;
 
 /**
@@ -51,7 +52,14 @@ public class StringJsonRpcService extends StreamJsonRpcService {
      */
     public String handle(String request) {
         StringWriter writer = new StringWriter();
-        super.handle(IOUtils.toInputStream(request), new WriterOutputStream(writer));
+        try {
+            super.handle(IOUtils.toInputStream(request, "UTF-8"), new WriterOutputStream(writer, "UTF-8"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+            response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_JSON, "Invalid JSON"));
+            return new JsonHelper().objectToString(response);
+        }
         String result = writer.toString();
         if (result != null && result.length() > 0) {
             return result;
