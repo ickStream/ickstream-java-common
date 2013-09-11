@@ -10,7 +10,6 @@ import com.ickstream.protocol.common.data.StreamingReference;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PlaybackQueueItem {
@@ -18,7 +17,7 @@ public class PlaybackQueueItem {
     private String text;
     private String type;
     private String image;
-    private List<StreamingReference> streamingRefs = new ArrayList<StreamingReference>();
+    private List<StreamingReference> streamingRefs;
     private JsonNode itemAttributes;
 
     public PlaybackQueueItem() {

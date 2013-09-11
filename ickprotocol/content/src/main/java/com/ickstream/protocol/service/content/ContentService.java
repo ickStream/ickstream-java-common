@@ -7,6 +7,7 @@ package com.ickstream.protocol.service.content;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
+import com.ickstream.protocol.common.data.StreamingReference;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.AbstractService;
@@ -221,5 +222,27 @@ public abstract class ContentService extends AbstractService implements Personal
         }
         parameters.putAll(params);
         sendRequest("findItems", parameters, ContentResponse.class, messageHandler, timeout);
+    }
+
+    public StreamingReference getItemStreamingRef(GetItemStreamingRefRequest request) throws ServiceException, ServiceTimeoutException {
+        return getItemStreamingRef(request, (Integer) null);
+    }
+
+    public StreamingReference getItemStreamingRef(GetItemStreamingRefRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getItemStreamingRef", request, StreamingReference.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getItemStreamingRef(GetItemStreamingRefRequest request, MessageHandler<StreamingReference> messageHandler) {
+        getItemStreamingRef(request, messageHandler, (Integer) null);
+    }
+
+    public void getItemStreamingRef(GetItemStreamingRefRequest request, MessageHandler<StreamingReference> messageHandler, Integer timeout) {
+        sendRequest("getItemStreamingRef", request, StreamingReference.class, messageHandler, timeout);
     }
 }
