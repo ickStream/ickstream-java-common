@@ -13,7 +13,9 @@ import com.ickstream.protocol.backend.common.InvalidParameterException;
 import com.ickstream.protocol.backend.common.PersonalizedService;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.data.ContentItem;
+import com.ickstream.protocol.common.data.StreamingReference;
 import com.ickstream.protocol.service.content.ContentResponse;
+import com.ickstream.protocol.service.content.GetItemStreamingRefRequest;
 import com.ickstream.protocol.service.content.GetManagementProtocolDescriptionResponse;
 import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 
@@ -25,6 +27,12 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
     public ContentItem getItem(@JsonRpcParam(name = "contextId", optional = true) String contextId, @JsonRpcParamStructure Map<String, String> parameters);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    public StreamingReference getItemStreamingRef(@JsonRpcParam(name = "itemId") String itemId, @JsonRpcParamStructure GetItemStreamingRefRequest request);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),

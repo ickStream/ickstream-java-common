@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
+import com.ickstream.protocol.common.data.StreamingReference;
 import com.ickstream.protocol.service.AccountInformation;
 import com.ickstream.protocol.service.ImageReference;
 import com.ickstream.protocol.service.content.*;
@@ -326,6 +327,47 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
+    public StreamingReference getItemStreamingRef(String itemId, GetItemStreamingRefRequest request) {
+        BusinessCall businessCall = startBusinessCall("getItemStreamingRef");
+        businessCall.addParameter("itemId", itemId);
+        if (request.getPreferredFormats() != null) {
+            businessCall.addParameter("preferredFormats", StringUtils.join(request.getPreferredFormats(), ","));
+        }
+        try {
+            String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
+            DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+            if (device != null) {
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+                if (userService != null) {
+                    for (ContentItemHandlerEntry entry : contentItemHandlers) {
+                        Matcher m = getPattern(entry.getPattern()).matcher(itemId);
+                        if (m.matches()) {
+                            m.reset();
+                            if (m.find()) {
+                                for (int i = 1; i <= m.groupCount(); i++) {
+                                    itemId = m.group(i);
+                                }
+                            }
+                            StreamingReference result = entry.getHandler().getItemStreamingRefOrCatchErrors(userService, itemId, request.getPreferredFormats());
+                            businessLogger.logSuccessful(businessCall);
+                            return result;
+                        }
+                    }
+                    businessLogger.logFailed(businessCall, "Invalid parameters");
+                } else {
+                    businessLogger.logFailed(businessCall, "Service not available for device");
+                }
+            } else {
+                businessLogger.logFailed(businessCall, "Unknown device");
+            }
+            return null;
+        } catch (RuntimeException e) {
+            businessLogger.logFailed(businessCall, e);
+            throw e;
+        }
+    }
+
+    @Override
     public ContentResponse findTopLevelItems(Integer offset, Integer count) {
         BusinessCall businessCall = startBusinessCall("findTopLevelItems");
         businessCall.addParameter("offset", offset);
@@ -516,6 +558,8 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     public static interface ContentItemHandler {
         ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters);
+
+        StreamingReference getItemStreamingRefOrCatchErrors(UserServiceResponse userService, String trackId, List<String> preferredFormats);
     }
 
     public static interface ManagementItemHandler {
@@ -613,6 +657,28 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 e.printStackTrace();
             }
 
+            return null;
+        }
+
+        @Override
+        public StreamingReference getItemStreamingRefOrCatchErrors(UserServiceResponse userService, String itemId, List<String> preferredFormats) {
+            try {
+                return getItemStreamingRef(userService, itemId, preferredFormats);
+            } catch (UnsupportedEncodingException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            } catch (JsonProcessingException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            } catch (IOException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        protected StreamingReference getItemStreamingRef(UserServiceResponse userService, String itemId, List<String> preferredFormats) throws IOException {
             return null;
         }
 
