@@ -245,4 +245,26 @@ public abstract class ContentService extends AbstractService implements Personal
     public void getItemStreamingRef(GetItemStreamingRefRequest request, MessageHandler<StreamingReference> messageHandler, Integer timeout) {
         sendRequest("getItemStreamingRef", request, StreamingReference.class, messageHandler, timeout);
     }
+
+    public ContentResponse getNextDynamicPlaylistTracksRequest(GetNextDynamicPlaylistTracksRequest request) throws ServiceException, ServiceTimeoutException {
+        return getNextDynamicPlaylistTracksRequest(request, (Integer) null);
+    }
+
+    public ContentResponse getNextDynamicPlaylistTracksRequest(GetNextDynamicPlaylistTracksRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getNextDynamicPlaylistTracksRequest", request, ContentResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getNextDynamicPlaylistTracksRequest(GetNextDynamicPlaylistTracksRequest request, MessageHandler<ContentResponse> messageHandler) {
+        getNextDynamicPlaylistTracksRequest(request, messageHandler, (Integer) null);
+    }
+
+    public void getNextDynamicPlaylistTracksRequest(GetNextDynamicPlaylistTracksRequest request, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
+        sendRequest("getNextDynamicPlaylistTracksRequest", request, ContentResponse.class, messageHandler, timeout);
+    }
 }
