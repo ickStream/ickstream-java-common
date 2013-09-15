@@ -7,6 +7,7 @@ package com.ickstream.protocol.backend.content;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
+import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
@@ -34,6 +35,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     private List<ContentHandlerEntry> contentHandlers = new ArrayList<ContentHandlerEntry>();
     private List<ContentItemHandlerEntry> contentItemHandlers = new ArrayList<ContentItemHandlerEntry>();
     private List<ManagementItemHandlerEntry> managementItemHandlers = new ArrayList<ManagementItemHandlerEntry>();
+    private List<DynamicPlaylistHandlerEntry> dynamicPlaylistHandlers = new ArrayList<DynamicPlaylistHandlerEntry>();
     private List<ContentItem> topLevelItems = new ArrayList<ContentItem>();
     private List<ProtocolDescriptionContext> contexts = new ArrayList<ProtocolDescriptionContext>();
     private List<ManagementProtocolDescriptionContext> managementContexts = new ArrayList<ManagementProtocolDescriptionContext>();
@@ -131,6 +133,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         addHandler(handler, contextId, type, null, parameters);
     }
 
+    protected void addDynamicPlaylistHandler(ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
+        addHandler(handler, contextId, type, null, parameters);
+    }
+
     protected void addTopLevelItem(String id, String text, String parentNode, String descendContextId, String descendType) {
         addTopLevelItem(id, text, parentNode, descendContextId, descendType, null);
     }
@@ -205,6 +211,18 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 request.getParameters().add(supportedParameters);
             }
         }
+    }
+
+    protected void addHandler(DynamicPlaylistHandler handler, String type, Collection<ParameterValue> parameters) {
+        DynamicPlaylistHandlerEntry entry = new DynamicPlaylistHandlerEntry();
+        entry.setHandler(handler);
+        entry.setType(type);
+        if (parameters != null) {
+            entry.setParameters(new TreeSet<ParameterValue>(parameters));
+        } else {
+            entry.setParameters(new TreeSet<ParameterValue>());
+        }
+        dynamicPlaylistHandlers.add(entry);
     }
 
     protected abstract BusinessCall createBusinessCall(String serviceId, String deviceId, String deviceModel, String userId, String deviceAddress, String method);
@@ -354,6 +372,91 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                         }
                     }
                     businessLogger.logFailed(businessCall, "Invalid parameters");
+                } else {
+                    businessLogger.logFailed(businessCall, "Service not available for device");
+                }
+            } else {
+                businessLogger.logFailed(businessCall, "Unknown device");
+            }
+            return null;
+        } catch (RuntimeException e) {
+            businessLogger.logFailed(businessCall, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public ContentResponse getNextDynamicPlaylistTracks(@JsonRpcParamStructure GetNextDynamicPlaylistTracksRequest request) {
+        BusinessCall businessCall = startBusinessCall("getNextDynamicPlaylistTracks");
+        businessCall.addParameter("count", request.getCount());
+        businessCall.addParameter("type", request.getSelectionParameters() != null ? request.getSelectionParameters().getType() : null);
+        if (request.getSelectionParameters() != null && request.getSelectionParameters().getData() != null) {
+            Iterator<String> fieldNames = request.getSelectionParameters().getData().fieldNames();
+            while (fieldNames.hasNext()) {
+                String field = fieldNames.next();
+                businessCall.addParameter(field, request.getSelectionParameters().getData().get(field).asText());
+            }
+        }
+
+        try {
+            String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
+            DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+            if (device != null) {
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+                if (userService != null) {
+                    if (request.getSelectionParameters().getType() != null) {
+                        DynamicPlaylistHandlerEntry foundHandler = null;
+                        Map<String, String> adjustedParameters = new HashMap<String, String>();
+                        for (DynamicPlaylistHandlerEntry entry : dynamicPlaylistHandlers) {
+                            if (entry.getType().equals(request.getSelectionParameters().getType())) {
+                                foundHandler = entry;
+                                adjustedParameters.clear();
+                                for (ParameterValue param : foundHandler.getParameters()) {
+                                    if (!param.isOptional() && (request.getSelectionParameters().getData() == null || !request.getSelectionParameters().getData().has(param.getParameter()) || request.getSelectionParameters().getData().get(param.getParameter()).isNull())) {
+                                        foundHandler = null;
+                                        break;
+                                    } else if (param.getValue() != null && request.getSelectionParameters().getData() != null && request.getSelectionParameters().getData().has(param.getParameter()) && !request.getSelectionParameters().getData().get(param.getParameter()).isNull()) {
+                                        Matcher m = getPattern(param.getValue()).matcher(request.getSelectionParameters().getData().get(param.getParameter()).asText());
+                                        if (m.matches()) {
+                                            m.reset();
+                                            if (param.getParameters().size() > 0 && m.find()) {
+                                                for (int i = 1; i <= m.groupCount(); i++) {
+                                                    String attributeValue = m.group(i);
+                                                    adjustedParameters.put(param.getParameters().get(i - 1), attributeValue);
+                                                }
+                                            } else {
+                                                adjustedParameters.put(param.getParameter(), request.getSelectionParameters().getData().get(param.getParameter()).asText());
+                                            }
+                                        } else if (!param.isOptional()) {
+                                            throw new InvalidParameterException(param.getParameter(), request.getSelectionParameters().getData().get(param.getParameter()).asText());
+                                        }
+                                    } else if (param.getValue() != null && !param.isOptional()) {
+                                        foundHandler = null;
+                                        break;
+                                    } else if (param.getValue() == null) {
+                                        adjustedParameters.put(param.getParameter(), request.getSelectionParameters().getData().get(param.getParameter()).asText());
+                                    }
+                                }
+                            }
+                            if (foundHandler != null) {
+                                break;
+                            }
+                        }
+                        if (foundHandler != null) {
+
+                            ContentResponse result = foundHandler.getHandler().getNextDynamicPlaylistTracks(userService, request.getCount(), adjustedParameters, request.getPreviousItems());
+                            result.setCount(result.getItems().size());
+                            businessLogger.logSuccessful(businessCall);
+                            return result;
+                        } else {
+                            businessLogger.logSuccessful(businessCall);
+                            ContentResponse result = new ContentResponse();
+                            result.setCount(0);
+                            return result;
+                        }
+                    } else {
+                        businessLogger.logFailed(businessCall, "Missing parameter: selectionParameters.type");
+                    }
                 } else {
                     businessLogger.logFailed(businessCall, "Service not available for device");
                 }
@@ -556,6 +659,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count);
     }
 
+    public static interface DynamicPlaylistHandler {
+        ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems);
+    }
+
     public static interface ContentItemHandler {
         ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters);
 
@@ -573,7 +680,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
         protected abstract BusinessCall createBusinessCall(String serviceId, String deviceId, String deviceModel, String userId, String deviceAddress, String method);
 
-        protected BusinessCall startBusinessCall(String service, String method) {
+        public BusinessCall startBusinessCall(String service, String method) {
             RequestContext requestContext = InjectHelper.instance(RequestContext.class);
             DeviceResponse device = null;
             if (requestContext.getDeviceId() != null) {
@@ -582,19 +689,19 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return createBusinessCall(service, requestContext.getDeviceId(), device != null ? device.getModel() : null, device != null ? device.getUserId() : requestContext.getUserId(), requestContext.getDeviceAddress(), method);
         }
 
-        protected void logSuccessfulBusinessCall(BusinessCall businessCall) {
+        public void logSuccessfulBusinessCall(BusinessCall businessCall) {
             InjectHelper.instance(BusinessLogger.class).logSuccessful(businessCall);
         }
 
-        protected void logFailedBusinessCall(BusinessCall businessCall, String error) {
+        public void logFailedBusinessCall(BusinessCall businessCall, String error) {
             InjectHelper.instance(BusinessLogger.class).logFailed(businessCall, error);
         }
 
-        protected void logFailedBusinessCall(BusinessCall businessCall, String error, Throwable exception) {
+        public void logFailedBusinessCall(BusinessCall businessCall, String error, Throwable exception) {
             InjectHelper.instance(BusinessLogger.class).logFailed(businessCall, error, exception);
         }
 
-        protected void logFailedBusinessCall(BusinessCall businessCall, Throwable exception) {
+        public void logFailedBusinessCall(BusinessCall businessCall, Throwable exception) {
             InjectHelper.instance(BusinessLogger.class).logFailed(businessCall, exception);
         }
     }
@@ -719,6 +826,38 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     }
 
+    public static abstract class AbstractDynamicPlaylistHandler extends BusinessCallHandler implements DynamicPlaylistHandler {
+        protected Long EXPIRATION_TIMESTAMP_HOUR = 3600l;
+        protected Long EXPIRATION_TIMESTAMP_DAY = 24l * 3600;
+        protected Long EXPIRATION_TIMESTAMP_WEEK = 7l * 24 * 3600;
+
+        @Override
+        public ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems) {
+            ContentResponse result = new ContentResponse();
+
+            try {
+                result = getNextDynamicPlaylistTracks(userService, count, parameters, previousItems, result);
+            } catch (UnsupportedEncodingException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            } catch (JsonProcessingException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            } catch (IOException e) {
+                //TODO: How do we handle errors ?
+                e.printStackTrace();
+            }
+
+            return result;
+        }
+
+        protected abstract ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems, ContentResponse result) throws IOException;
+
+        protected Long getExpirationTimestamp(Long expirationPeriod) {
+            return System.currentTimeMillis() / 1000 + expirationPeriod;
+        }
+    }
+
     private class ManagementItemHandlerEntry {
         private ManagementItemHandler handler;
         private String pattern;
@@ -791,6 +930,36 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
     }
 
+    private class DynamicPlaylistHandlerEntry {
+        private DynamicPlaylistHandler handler;
+        private String type;
+        private Set<ParameterValue> parameters = new TreeSet<ParameterValue>();
+
+        public DynamicPlaylistHandler getHandler() {
+            return handler;
+        }
+
+        public void setHandler(DynamicPlaylistHandler handler) {
+            this.handler = handler;
+        }
+
+        private String getType() {
+            return type;
+        }
+
+        private void setType(String type) {
+            this.type = type;
+        }
+
+        private Set<ParameterValue> getParameters() {
+            return parameters;
+        }
+
+        private void setParameters(Set<ParameterValue> parameters) {
+            this.parameters = parameters;
+        }
+    }
+
     private class ContentHandlerEntry {
         private ContentHandler handler;
         private String pattern;
@@ -833,11 +1002,17 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     public class ParameterValue implements Comparable<ParameterValue> {
         private String parameter;
         private String value;
+        private boolean optional;
         private List<String> parameters = new ArrayList<String>();
 
         public ParameterValue(String parameter, String value) {
+            this(parameter, value, false);
+        }
+
+        public ParameterValue(String parameter, String value, boolean optional) {
             this.parameter = parameter;
             this.value = value;
+            this.optional = optional;
             if (value != null && value.contains("{")) {
                 Matcher m = PARAMETER_PATTERN.matcher(value);
                 while (m.find()) {
@@ -848,7 +1023,15 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
 
         public ParameterValue(String parameter) {
-            this(parameter, null);
+            this(parameter, false);
+        }
+
+        public ParameterValue(String parameter, boolean optional) {
+            this(parameter, null, optional);
+        }
+
+        public boolean isOptional() {
+            return optional;
         }
 
         public String getParameter() {

@@ -14,10 +14,7 @@ import com.ickstream.protocol.backend.common.PersonalizedService;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
-import com.ickstream.protocol.service.content.ContentResponse;
-import com.ickstream.protocol.service.content.GetItemStreamingRefRequest;
-import com.ickstream.protocol.service.content.GetManagementProtocolDescriptionResponse;
-import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.*;
 
 import java.util.Map;
 
@@ -70,4 +67,10 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
     public GetManagementProtocolDescriptionResponse getManagementProtocolDescription(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    public ContentResponse getNextDynamicPlaylistTracks(@JsonRpcParamStructure GetNextDynamicPlaylistTracksRequest request);
 }
