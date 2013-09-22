@@ -5,7 +5,8 @@
 
 package com.ickstream.controller.device;
 
-import com.ickstream.common.ickdiscovery.MessageSender;
+import com.ickstream.common.ickp2p.MessageSender;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.controller.ThreadFramework;
 import com.ickstream.protocol.service.core.*;
@@ -35,7 +36,7 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
     public PlayerDeviceController(String apiKey, ThreadFramework threadFramework, MessageSender messageSender, Device device, MessageLogger messageLogger) {
         this.apiKey = apiKey;
         this.threadFramework = threadFramework;
-        playerService = new PlayerService(messageSender, device.getId());
+        playerService = new PlayerService(ServiceType.CONTROLLER, messageSender, device.getId());
         playerService.setMessageLogger(messageLogger);
         this.device = device;
         device.addObserver(this);

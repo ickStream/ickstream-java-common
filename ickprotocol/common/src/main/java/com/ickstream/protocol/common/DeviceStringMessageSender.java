@@ -5,7 +5,8 @@
 
 package com.ickstream.protocol.common;
 
-import com.ickstream.common.ickdiscovery.ServiceType;
+import com.ickstream.common.ickp2p.IckP2pException;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.common.jsonrpc.MessageSender;
 
@@ -16,19 +17,22 @@ import java.io.UnsupportedEncodingException;
  * should be used when communicating with devices or services on the local network.
  */
 public class DeviceStringMessageSender implements MessageSender {
+    private ServiceType fromServiceType;
     private String deviceId;
     private ServiceType serviceType;
-    private com.ickstream.common.ickdiscovery.MessageSender messageSender;
+    private com.ickstream.common.ickp2p.MessageSender messageSender;
     private MessageLogger messageLogger;
 
     /**
      * Creates a new instance
      *
+     * @param fromServiceType The type of service which makes the call
      * @param deviceId      The device identity to send messages to
      * @param serviceType   The type of device to send messages to
-     * @param messageSender The {@link com.ickstream.common.ickdiscovery.MessageSender} implementation to use for sending messages
+     * @param messageSender The {@link com.ickstream.common.ickp2p.MessageSender} implementation to use for sending messages
      */
-    public DeviceStringMessageSender(String deviceId, ServiceType serviceType, com.ickstream.common.ickdiscovery.MessageSender messageSender) {
+    public DeviceStringMessageSender(ServiceType fromServiceType, String deviceId, ServiceType serviceType, com.ickstream.common.ickp2p.MessageSender messageSender) {
+        this.fromServiceType = fromServiceType;
         this.deviceId = deviceId;
         this.serviceType = serviceType;
         this.messageSender = messageSender;
@@ -54,13 +58,12 @@ public class DeviceStringMessageSender implements MessageSender {
             messageLogger.onOutgoingMessage(deviceId, message);
         }
         try {
-            if (serviceType != null) {
-                messageSender.sendMessage(deviceId, serviceType, message.getBytes("UTF-8"));
-            } else {
-                messageSender.sendMessage(deviceId, message.getBytes("UTF-8"));
-            }
+            messageSender.sendMsg(deviceId, serviceType, fromServiceType, message.getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             // Just ignore, all platforms we support need to support UTF-8
+            e.printStackTrace();
+        } catch (IckP2pException e) {
+            // TODO: Feels like we should handle this somehow
             e.printStackTrace();
         }
     }

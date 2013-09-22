@@ -6,10 +6,7 @@
 package com.ickstream.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ickstream.common.ickdiscovery.DiscoveryResult;
-import com.ickstream.common.ickdiscovery.IckDiscovery;
-import com.ickstream.common.ickdiscovery.MessageListener;
-import com.ickstream.common.ickdiscovery.ServiceType;
+import com.ickstream.common.ickp2p.*;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.controller.device.Device;
 import com.ickstream.controller.device.DeviceDiscoveryController;
@@ -26,7 +23,7 @@ public class IckStreamController implements MessageListener {
     private String id;
     private String name;
     private String apiKey;
-    private IckDiscovery ickDiscovery;
+    private IckP2p ickP2p;
     private MessageLogger messageLogger;
     private DeviceDiscoveryController deviceDiscoveryController;
     private ServiceDiscoveryController serviceDiscoveryController;
@@ -71,7 +68,7 @@ public class IckStreamController implements MessageListener {
 
         @Override
         public void onAdded(Device object) {
-            PlayerDeviceController playerDeviceController = new PlayerDeviceController(apiKey, threadFramework, ickDiscovery, object, messageLogger);
+            PlayerDeviceController playerDeviceController = new PlayerDeviceController(apiKey, threadFramework, ickP2p, object, messageLogger);
             playerDeviceController.setCoreService(getCoreService());
             playerDeviceControllers.put(object.getId(), playerDeviceController);
             for (PlayerListener playerListener : playerListeners) {
@@ -89,7 +86,7 @@ public class IckStreamController implements MessageListener {
         return cloudServiceControllers.remove(object.getId());
     }
 
-    protected LocalServiceController addLocalService(Service object, com.ickstream.common.ickdiscovery.MessageSender messageSender, MessageLogger messageLogger) {
+    protected LocalServiceController addLocalService(Service object, com.ickstream.common.ickp2p.MessageSender messageSender, MessageLogger messageLogger) {
         return new LocalServiceController(object, messageSender, messageLogger);
     }
 
@@ -115,7 +112,7 @@ public class IckStreamController implements MessageListener {
         public void onAdded(Service object) {
             ServiceController controller = null;
             if (object.getUrl() == null) {
-                LocalServiceController localServiceController = addLocalService(object, ickDiscovery, messageLogger);
+                LocalServiceController localServiceController = addLocalService(object, ickP2p, messageLogger);
                 if (localServiceController != null) {
                     localServiceControllers.put(object.getId(), localServiceController);
                     controller = localServiceController;
@@ -255,21 +252,26 @@ public class IckStreamController implements MessageListener {
         deviceDiscoveryController.addDeviceListener(deviceListener);
         serviceDiscoveryController = new ServiceDiscoveryController(threadFramework, getCoreService(), messageLogger);
         serviceDiscoveryController.addServiceListener(serviceListener);
-        ickDiscovery.addMessageListener(IckStreamController.this);
-        ickDiscovery.addDeviceListener(deviceDiscoveryController);
-        ickDiscovery.addDeviceListener(serviceDiscoveryController);
+        ickP2p.addMessageListener(IckStreamController.this);
+        ickP2p.addDiscoveryListener(deviceDiscoveryController);
+        ickP2p.addDiscoveryListener(serviceDiscoveryController);
         String ip = NetworkAddressHelper.getNetworkAddress();
-        System.out.println("initDiscovery(\"" + deviceId + "\",\"" + ip + "\",\"" + deviceName + "\",NULL)");
-        DiscoveryResult result = ickDiscovery.initDiscovery(deviceId, ip, deviceName, null);
-        System.out.println("initDiscovery = " + result);
-        System.out.println("addService(" + ServiceType.CONTROLLER + ")");
-        result = ickDiscovery.addService(ServiceType.CONTROLLER);
-        System.out.println("addService = " + result);
-        for (IckStreamListener ickStreamListener : ickStreamListeners) {
-            ickStreamListener.onNetworkInitialized();
+        try {
+            System.out.println("create(\"" + deviceName + "\",\"" + deviceId + "\",NULL,NULL,NULL,"+ServiceType.CONTROLLER+")");
+            ickP2p.create(deviceName, deviceId, null, null, null, ServiceType.CONTROLLER);
+            System.out.println("addInterface(\"" + ip + "\",NULL");
+            ickP2p.addInterface(ip, null);
+            ickP2p.resume();
+            for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                ickStreamListener.onNetworkInitialized();
+            }
+            refreshDevices();
+            refreshServices();
+        } catch (IckP2pException e) {
+            for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                ickStreamListener.onError(e.getErrorCode(),"ickP2p initialization error: "+e.getErrorCode());
+            }
         }
-        refreshDevices();
-        refreshServices();
     }
 
     protected void refreshServices() {
@@ -281,9 +283,13 @@ public class IckStreamController implements MessageListener {
     }
 
     public void shutdown() {
-        if (ickDiscovery != null) {
-            ickDiscovery.endDiscovery();
-            ickDiscovery = null;
+        if (ickP2p != null) {
+            try {
+                ickP2p.end();
+            } catch (IckP2pException e) {
+                e.printStackTrace();
+            }
+            ickP2p = null;
         }
     }
 
@@ -318,14 +324,18 @@ public class IckStreamController implements MessageListener {
         deviceDiscoveryController.removeDeviceListener(deviceListener);
         serviceDiscoveryController.removeServiceListener(serviceListener);
 
-        ickDiscovery.endDiscovery();
+        try {
+            ickP2p.end();
+        } catch (IckP2pException e) {
+            e.printStackTrace();
+        }
     }
 
-    public IckStreamController(String apiKey, ThreadFramework threadFramework, IckDiscovery ickDiscovery, MessageLogger messageLogger) {
+    public IckStreamController(String apiKey, ThreadFramework threadFramework, IckP2p ickP2p, MessageLogger messageLogger) {
         this.apiKey = apiKey;
         this.messageLogger = messageLogger;
         this.threadFramework = threadFramework;
-        this.ickDiscovery = ickDiscovery;
+        this.ickP2p = ickP2p;
     }
 
     public IckStreamController(MessageLogger messageLogger) {
@@ -349,7 +359,7 @@ public class IckStreamController implements MessageListener {
     }
 
     @Override
-    public void onMessage(String sourceDeviceId, String targetDeviceId, ServiceType targetServiceType, byte[] message) {
+    public void onMessage(String sourceDeviceId, ServiceType sourceServiceType, String targetDeviceId, ServiceType targetServiceType, byte[] message) {
         LocalServiceController localServiceController = localServiceControllers.get(sourceDeviceId);
         if (localServiceController != null) {
             try {

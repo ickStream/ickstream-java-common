@@ -7,9 +7,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ickstream.common.ickprotocol</groupId>
-    <artifactId>ickProtocolParent</artifactId>
+    <artifactId>ickstream-ickprotocol</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>ickProtocolParent</name>
+    <name>ickstream-ickprotocol</name>
     <organization>
         <name>ickStream GmbH</name>
         <url>http://www.ickstream.com</url>

@@ -44,7 +44,7 @@
         </dependency>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocol</artifactId>
+            <artifactId>ickstream-ickprotocol</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

@@ -7,9 +7,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ickstream.common.ickprotocol</groupId>
-    <artifactId>ickProtocolPlaylistsService</artifactId>
+    <artifactId>ickstream-ickprotocol-playlists</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>ickProtocolPlaylistsService</name>
+    <name>ickstream-ickprotocol-playlists</name>
     <organization>
         <name>ickStream GmbH</name>
         <url>http://www.ickstream.com</url>
@@ -39,7 +39,7 @@
     <dependencies>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocolCommon</artifactId>
+            <artifactId>ickstream-ickprotocol-common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -48,8 +48,8 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.ickstream.common.ickdiscovery.java</groupId>
-            <artifactId>ickDiscoveryJavaInterface</artifactId>
+            <groupId>com.ickstream.common.ickp2p.java</groupId>
+            <artifactId>ickstream-ickp2p-java-interface</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

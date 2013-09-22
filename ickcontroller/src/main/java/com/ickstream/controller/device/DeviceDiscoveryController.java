@@ -5,8 +5,9 @@
 
 package com.ickstream.controller.device;
 
-import com.ickstream.common.ickdiscovery.DeviceListener;
-import com.ickstream.common.ickdiscovery.ServiceType;
+import com.ickstream.common.ickp2p.ServiceType;
+import com.ickstream.common.ickp2p.DiscoveryAdapter;
+import com.ickstream.common.ickp2p.DiscoveryEvent;
 import com.ickstream.common.jsonrpc.MessageHandlerAdapter;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.controller.ObjectChangeListener;
@@ -17,7 +18,7 @@ import com.ickstream.protocol.service.core.FindDevicesResponse;
 
 import java.util.*;
 
-public class DeviceDiscoveryController implements DeviceListener {
+public class DeviceDiscoveryController extends DiscoveryAdapter {
     protected final Map<String, Device> devices = new HashMap<String, Device>();
     private final List<ObjectChangeListener<Device>> deviceListeners = new ArrayList<ObjectChangeListener<Device>>();
     private MessageLogger messageLogger;
@@ -61,33 +62,19 @@ public class DeviceDiscoveryController implements DeviceListener {
     }
 
     @Override
-    public void onDeviceAdded(final String deviceId, final String deviceName, final ServiceType type) {
+    public void onConnectedDevice(final DiscoveryEvent event) {
         threadFramework.invoke(new Runnable() {
             @Override
             public void run() {
-                if (type.isType(ServiceType.PLAYER)) {
-                    addUpdateDiscoveredDevices(deviceId, deviceName, EventSource.NETWORK);
+                if (event.getServices().isType(ServiceType.PLAYER)) {
+                    addUpdateDiscoveredDevices(event.getDeviceId(), event.getDeviceName(), EventSource.NETWORK);
                 }
             }
         });
     }
 
     @Override
-    public void onDeviceUpdated(final String deviceId, final String deviceName, final ServiceType type) {
-        threadFramework.invoke(new Runnable() {
-            @Override
-            public void run() {
-                if (type.isType(ServiceType.PLAYER)) {
-                    addUpdateDiscoveredDevices(deviceId, deviceName, EventSource.NETWORK);
-                } else {
-                    removeDiscoveredDevice(deviceId, EventSource.NETWORK);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onDeviceRemoved(final String deviceId) {
+    public void onDisconnectedDevice(final String deviceId) {
         threadFramework.invoke(new Runnable() {
             @Override
             public void run() {

@@ -7,9 +7,9 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ickstream.controller</groupId>
-    <artifactId>ickController</artifactId>
+    <artifactId>ickstream-ickcontroller</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>ickController</name>
+    <name>ickstream-ickcontroller</name>
     <organization>
         <name>ickStream GmbH</name>
         <url>http://www.ickstream.com</url>
@@ -39,17 +39,17 @@
     <dependencies>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocolPlayerService</artifactId>
+            <artifactId>ickstream-ickprotocol-player</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocolCoreService</artifactId>
+            <artifactId>ickstream-ickprotocol-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocolContentService</artifactId>
+            <artifactId>ickstream-ickprotocol-content</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

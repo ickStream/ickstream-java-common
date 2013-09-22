@@ -5,8 +5,8 @@
 
 package com.ickstream.protocol.service.player;
 
-import com.ickstream.common.ickdiscovery.MessageSender;
-import com.ickstream.common.ickdiscovery.ServiceType;
+import com.ickstream.common.ickp2p.MessageSender;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.DeviceStringMessageSender;
 
@@ -24,45 +24,49 @@ public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponse
     /**
      * Create a client for a specific device implementing the Player protocol
      *
-     * @param messageSender The message sender to use when communicating with the device
-     * @param deviceId      The device identity of the device
+     * @param fromServiceType The type of service which will be using this client
+     * @param messageSender   The message sender to use when communicating with the device
+     * @param deviceId        The device identity of the device
      */
-    public PlayerService(MessageSender messageSender, String deviceId) {
-        this(messageSender, deviceId, (Integer) null);
+    public PlayerService(ServiceType fromServiceType, MessageSender messageSender, String deviceId) {
+        this(fromServiceType, messageSender, deviceId, (Integer) null);
     }
 
     /**
      * Create a client for a specific device implementing the Player protocol
      *
-     * @param messageSender The message sender to use when communicating with the device
-     * @param deviceId      The device identity of the device
-     * @param idProvider    The identity provider to use to generate identities for JSON-RPC requests
+     * @param fromServiceType The type of service which will be using this client
+     * @param messageSender   The message sender to use when communicating with the device
+     * @param deviceId        The device identity of the device
+     * @param idProvider      The identity provider to use to generate identities for JSON-RPC requests
      */
-    public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider) {
-        this(messageSender, deviceId, idProvider, null);
+    public PlayerService(ServiceType fromServiceType, MessageSender messageSender, String deviceId, IdProvider idProvider) {
+        this(fromServiceType, messageSender, deviceId, idProvider, null);
     }
 
     /**
      * Create a client for a specific device implementing the Player protocol
      *
-     * @param messageSender  The message sender to use when communicating with the device
-     * @param deviceId       The device identity of the device
-     * @param defaultTimeout The default timeout to use when no explicit timeout has been specified in a method call
+     * @param fromServiceType The type of service which will be using this client
+     * @param messageSender   The message sender to use when communicating with the device
+     * @param deviceId        The device identity of the device
+     * @param defaultTimeout  The default timeout to use when no explicit timeout has been specified in a method call
      */
-    public PlayerService(MessageSender messageSender, String deviceId, Integer defaultTimeout) {
-        this(messageSender, deviceId, null, defaultTimeout);
+    public PlayerService(ServiceType fromServiceType, MessageSender messageSender, String deviceId, Integer defaultTimeout) {
+        this(fromServiceType, messageSender, deviceId, null, defaultTimeout);
     }
 
     /**
      * Create a client for a specific device implementing the Player protocol
      *
-     * @param messageSender  The message sender to use when communicating with the device
-     * @param deviceId       The device identity of the device
-     * @param idProvider     The identity provider to use to generate identities for JSON-RPC requests
-     * @param defaultTimeout The default timeout to use when no explicit timeout has been specified in a method call
+     * @param fromServiceType The type of service which will be using this client
+     * @param messageSender   The message sender to use when communicating with the device
+     * @param deviceId        The device identity of the device
+     * @param idProvider      The identity provider to use to generate identities for JSON-RPC requests
+     * @param defaultTimeout  The default timeout to use when no explicit timeout has been specified in a method call
      */
-    public PlayerService(MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
-        super(new DeviceStringMessageSender(deviceId, ServiceType.PLAYER, messageSender), idProvider, defaultTimeout);
+    public PlayerService(ServiceType fromServiceType, MessageSender messageSender, String deviceId, IdProvider idProvider, Integer defaultTimeout) {
+        super(new DeviceStringMessageSender(fromServiceType, deviceId, ServiceType.PLAYER, messageSender), idProvider, defaultTimeout);
         this.deviceId = deviceId;
     }
 
