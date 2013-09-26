@@ -5,9 +5,9 @@
 
 package com.ickstream.controller.device;
 
-import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.ickp2p.DiscoveryAdapter;
 import com.ickstream.common.ickp2p.DiscoveryEvent;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.MessageHandlerAdapter;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.controller.ObjectChangeListener;
@@ -66,6 +66,9 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
         threadFramework.invoke(new Runnable() {
             @Override
             public void run() {
+                if (messageLogger != null) {
+                    messageLogger.onIncomingMessage(event.getDeviceId(), "{\"method\":\"CONNECTED\"}");
+                }
                 if (event.getServices().isType(ServiceType.PLAYER)) {
                     addUpdateDiscoveredDevices(event.getDeviceId(), event.getDeviceName(), EventSource.NETWORK);
                 }
@@ -75,12 +78,65 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
 
     @Override
     public void onDisconnectedDevice(final String deviceId) {
-        threadFramework.invoke(new Runnable() {
-            @Override
-            public void run() {
-                removeDiscoveredDevice(deviceId, EventSource.NETWORK);
-            }
-        });
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    if (messageLogger != null) {
+                        messageLogger.onIncomingMessage(deviceId, "{\"method\":\"DISCONNECTED\"}");
+                    }
+                    removeDiscoveredDevice(deviceId, EventSource.NETWORK);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onNewDevice(final DiscoveryEvent event) {
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    messageLogger.onIncomingMessage(event.getDeviceId(), "{\"method\":\"NEW\"}");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onRemovedDevice(final String deviceId) {
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    messageLogger.onIncomingMessage(deviceId, "{\"method\":\"REMOVED\"}");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onExpiredDevice(final String deviceId) {
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    messageLogger.onIncomingMessage(deviceId, "{\"method\":\"EXPIRED\"}");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onTerminatedDevice(final String deviceId) {
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    messageLogger.onIncomingMessage(deviceId, "{\"method\":\"TERMINATED\"]");
+                }
+            });
+        }
     }
 
     public void addDeviceListener(ObjectChangeListener<Device> deviceListener) {
