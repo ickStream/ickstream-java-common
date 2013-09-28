@@ -6,7 +6,10 @@
 package com.ickstream.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.ickstream.common.ickp2p.*;
+import com.ickstream.common.ickp2p.IckP2p;
+import com.ickstream.common.ickp2p.IckP2pException;
+import com.ickstream.common.ickp2p.MessageListener;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.controller.device.Device;
 import com.ickstream.controller.device.DeviceDiscoveryController;
@@ -257,7 +260,7 @@ public class IckStreamController implements MessageListener {
         ickP2p.addDiscoveryListener(serviceDiscoveryController);
         String ip = NetworkAddressHelper.getNetworkAddress();
         try {
-            System.out.println("create(\"" + deviceName + "\",\"" + deviceId + "\",NULL,NULL,NULL,"+ServiceType.CONTROLLER+")");
+            System.out.println("create(\"" + deviceName + "\",\"" + deviceId + "\",NULL,NULL,NULL," + ServiceType.CONTROLLER + ")");
             ickP2p.create(deviceName, deviceId, null, null, null, ServiceType.CONTROLLER);
             System.out.println("addInterface(\"" + ip + "\",NULL");
             ickP2p.addInterface(ip, null);
@@ -269,7 +272,7 @@ public class IckStreamController implements MessageListener {
             refreshServices();
         } catch (IckP2pException e) {
             for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                ickStreamListener.onError(e.getErrorCode(),"ickP2p initialization error: "+e.getErrorCode());
+                ickStreamListener.onError(e.getErrorCode(), "ickP2p initialization error: " + e.getErrorCode());
             }
         }
     }
@@ -364,12 +367,16 @@ public class IckStreamController implements MessageListener {
         if (localServiceController != null) {
             try {
                 JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
-                String jsonMessageString = jsonHelper.objectToString(jsonMessage);
-                if (messageLogger != null) {
-                    messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
-                }
-                if (!jsonMessage.has("method")) {
-                    localServiceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                if (jsonMessage != null) {
+                    String jsonMessageString = jsonHelper.objectToString(jsonMessage);
+                    if (messageLogger != null) {
+                        messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
+                    }
+                    if (!jsonMessage.has("method")) {
+                        localServiceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                    }
+                } else {
+                    System.err.println("Unable to parse incoming message from " + sourceDeviceId + "(" + sourceServiceType + "): " + new String(message, "UTF-8"));
                 }
             } catch (UnsupportedEncodingException e) {
                 // Just ignore, all platforms we support should support UTF-8
@@ -380,14 +387,18 @@ public class IckStreamController implements MessageListener {
         if (playerDeviceController != null) {
             try {
                 JsonNode jsonMessage = jsonHelper.stringToObject(new String(message, "UTF-8"), JsonNode.class);
-                String jsonMessageString = jsonHelper.objectToString(jsonMessage);
-                if (messageLogger != null) {
-                    messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
-                }
-                if (jsonMessage.has("method")) {
-                    playerDeviceController.onRequest(jsonHelper.jsonToObject(jsonMessage, JsonRpcRequest.class));
+                if (jsonMessage != null) {
+                    String jsonMessageString = jsonHelper.objectToString(jsonMessage);
+                    if (messageLogger != null) {
+                        messageLogger.onIncomingMessage(sourceDeviceId, jsonMessageString);
+                    }
+                    if (jsonMessage.has("method")) {
+                        playerDeviceController.onRequest(jsonHelper.jsonToObject(jsonMessage, JsonRpcRequest.class));
+                    } else {
+                        playerDeviceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                    }
                 } else {
-                    playerDeviceController.onResponse(jsonHelper.jsonToObject(jsonMessage, JsonRpcResponse.class));
+                    System.err.println("Unable to parse incoming message from " + sourceDeviceId + "(" + sourceServiceType + "): " + new String(message, "UTF-8"));
                 }
             } catch (UnsupportedEncodingException e) {
                 // Just ignore, all platforms we support should support UTF-8
