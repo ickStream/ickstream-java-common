@@ -73,21 +73,65 @@ public class PlayerCommandService {
             @JsonRpcError(exception = ServiceTimeoutException.class, code = -32001, message = "Timeout when registering device")
     })
     public synchronized PlayerConfigurationResponse setPlayerConfiguration(@JsonRpcParamStructure PlayerConfigurationRequest configuration) throws ServiceException, ServiceTimeoutException {
+        boolean sendPlayerStatusChanged = false;
         if (configuration.getCloudCoreUrl() != null) {
-            player.setCloudCoreUrl(configuration.getCloudCoreUrl());
+            if (!player.getCloudCoreUrl().equals(configuration.getCloudCoreUrl())) {
+                if (player.hasAccessToken()) {
+                    sendPlayerStatusChanged = true;
+                }
+                player.setCloudCoreUrl(configuration.getCloudCoreUrl());
+                if (player.hasAccessToken()) {
+                    player.setAccessToken(null);
+                }
+            }
         }
         if (configuration.getAccessToken() != null) {
-            player.setAccessToken(configuration.getAccessToken());
-        } else if (configuration.getDeviceRegistrationToken() != null) {
+            if (configuration.getAccessToken().length() == 0) {
+                if (player.hasAccessToken()) {
+                    player.setAccessToken(null);
+                    sendPlayerStatusChanged = true;
+                }
+            } else {
+                player.setAccessToken(configuration.getAccessToken());
+                sendPlayerStatusChanged = true;
+            }
+        } else if (configuration.getDeviceRegistrationToken() != null && configuration.getDeviceRegistrationToken().length() > 0) {
             AddDeviceRequest request = new AddDeviceRequest();
             request.setAddress(NetworkAddressHelper.getNetworkAddress());
             request.setApplicationId(apiKey);
             request.setHardwareId(player.getHardwareId());
-            AddDeviceResponse response = CoreServiceFactory.getCoreService(player.getCloudCoreUrl(), configuration.getDeviceRegistrationToken()).addDevice(request, 30000);
-            player.setAccessToken(response.getAccessToken());
+            if (player.hasAccessToken()) {
+                player.setAccessToken(null);
+            }
+            // We will send playerStatusChanged when the registration has finished/failed instead of immediately
+            sendPlayerStatusChanged = false;
+            CoreServiceFactory.getCoreService(player.getCloudCoreUrl(), configuration.getDeviceRegistrationToken()).addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
+                @Override
+                public void onMessage(AddDeviceResponse response) {
+                    player.setAccessToken(response.getAccessToken());
+                }
+
+                @Override
+                public void onError(int code, String message, String data) {
+                    System.err.println("Error when registering player: " + code + " " + message + " " + data);
+                }
+
+                @Override
+                public void onFinished() {
+                    player.sendPlayerStatusChangedNotification();
+                }
+            }, 30000);
+        } else if (configuration.getDeviceRegistrationToken() != null) {
+            if (player.hasAccessToken()) {
+                player.setAccessToken(null);
+                sendPlayerStatusChanged = true;
+            }
         }
         if (configuration.getPlayerName() != null) {
             player.setName(configuration.getPlayerName());
+        }
+        if (sendPlayerStatusChanged) {
+            player.sendPlayerStatusChangedNotification();
         }
         return getPlayerConfiguration();
     }
@@ -102,9 +146,7 @@ public class PlayerCommandService {
         response.setPlayerName(player.getName());
         response.setHardwareId(player.getHardwareId());
         response.setPlayerModel(player.getModel());
-        if (player.hasAccessToken()) {
-            response.setCloudCoreUrl(player.getCloudCoreUrl());
-        }
+        response.setCloudCoreUrl(player.getCloudCoreUrl());
         return response;
     }
 
@@ -127,6 +169,11 @@ public class PlayerCommandService {
         response.setLastChanged(playerStatus.getChangedTimestamp());
         response.setMuted(playerStatus.getMuted());
         response.setPlaybackQueueMode(playerStatus.getPlaybackQueueMode());
+        if (player != null && player.hasAccessToken()) {
+            response.setCloudCoreStatus(CloudCoreStatus.REGISTERED);
+        } else {
+            response.setCloudCoreStatus(CloudCoreStatus.UNREGISTERED);
+        }
         return response;
     }
 
