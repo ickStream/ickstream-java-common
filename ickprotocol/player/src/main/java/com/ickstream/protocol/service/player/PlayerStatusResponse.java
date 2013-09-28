@@ -14,6 +14,7 @@ public class PlayerStatusResponse {
     private Boolean muted;
     private PlaybackQueueItem track;
     private PlaybackQueueMode playbackQueueMode;
+    private CloudCoreStatus cloudCoreStatus;
 
     public Long getLastChanged() {
         return lastChanged;
@@ -77,5 +78,13 @@ public class PlayerStatusResponse {
 
     public void setPlaybackQueueMode(PlaybackQueueMode playbackQueueMode) {
         this.playbackQueueMode = playbackQueueMode;
+    }
+
+    public CloudCoreStatus getCloudCoreStatus() {
+        return cloudCoreStatus;
+    }
+
+    public void setCloudCoreStatus(CloudCoreStatus cloudCoreStatus) {
+        this.cloudCoreStatus = cloudCoreStatus;
     }
 }
