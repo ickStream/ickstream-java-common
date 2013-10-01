@@ -92,24 +92,36 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
     }
 
     @Override
-    public void onNewDevice(final DiscoveryEvent event) {
+    public void onInitializedDevice(final DiscoveryEvent event) {
         if (messageLogger != null) {
             threadFramework.invoke(new Runnable() {
                 @Override
                 public void run() {
-                    messageLogger.onIncomingMessage(event.getDeviceId(), "{\"method\":\"NEW\"}");
+                    messageLogger.onIncomingMessage(event.getDeviceId(), "{\"method\":\"INITIALIZED\"}");
                 }
             });
         }
     }
 
     @Override
-    public void onRemovedDevice(final String deviceId) {
+    public void onDiscoveredDevice(final DiscoveryEvent event) {
         if (messageLogger != null) {
             threadFramework.invoke(new Runnable() {
                 @Override
                 public void run() {
-                    messageLogger.onIncomingMessage(deviceId, "{\"method\":\"REMOVED\"}");
+                    messageLogger.onIncomingMessage(event.getDeviceId(), "{\"method\":\"DISCOVERED\"}");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onByeByeDevice(final String deviceId) {
+        if (messageLogger != null) {
+            threadFramework.invoke(new Runnable() {
+                @Override
+                public void run() {
+                    messageLogger.onIncomingMessage(deviceId, "{\"method\":\"BYEBYE\"}");
                 }
             });
         }
