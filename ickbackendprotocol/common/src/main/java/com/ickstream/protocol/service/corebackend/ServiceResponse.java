@@ -6,6 +6,8 @@
 package com.ickstream.protocol.service.corebackend;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceResponse implements Serializable {
     private String id;
@@ -19,6 +21,7 @@ public class ServiceResponse implements Serializable {
     private String customData2;
     private String customData3;
     private String customData4;
+    private Map<String, Map<String, String>> attributes = new HashMap<String, Map<String, String>>();
 
     public String getId() {
         return id;
@@ -106,5 +109,13 @@ public class ServiceResponse implements Serializable {
 
     public void setCustomData4(String customData4) {
         this.customData4 = customData4;
+    }
+
+    public Map<String, Map<String, String>> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, Map<String, String>> attributes) {
+        this.attributes = attributes;
     }
 }
