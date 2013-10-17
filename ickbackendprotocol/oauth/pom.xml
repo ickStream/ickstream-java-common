@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>com.ickstream.common.ickprotocol</groupId>
-            <artifactId>ickProtocolCommon</artifactId>
+            <artifactId>ickstream-ickprotocol-common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
