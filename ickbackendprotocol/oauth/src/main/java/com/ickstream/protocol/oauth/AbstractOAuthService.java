@@ -5,6 +5,7 @@
 
 package com.ickstream.protocol.oauth;
 
+import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
 import com.ickstream.protocol.service.corebackend.*;
 import org.scribe.builder.ServiceBuilder;
@@ -234,7 +235,7 @@ public abstract class AbstractOAuthService extends HttpServlet {
 
     protected String getApiSecret() {
         AuthenticationProviderResponse provider = getCoreBackendService().getAuthenticationProvider();
-        if (provider != null) {
+        if (provider != null && provider.getApiSecret() != null && provider.getApiSecret().trim().length() > 0) {
             return provider.getApiSecret();
         }
         return null;
@@ -242,10 +243,50 @@ public abstract class AbstractOAuthService extends HttpServlet {
 
     protected String getApiKey() {
         AuthenticationProviderResponse provider = getCoreBackendService().getAuthenticationProvider();
-        if (provider != null) {
+        if (provider != null && provider.getApiKey() != null && provider.getApiKey().trim().length() > 0) {
             return provider.getApiKey();
         }
         return null;
+    }
+
+    protected void refreshAccessToken(UserServiceResponse userService) throws UnauthorizedAccessException {
+        if (userService.getRefreshToken() == null) {
+            throw new IllegalArgumentException("user service must have refresh token");
+        }
+        OAuthService oAuthService;
+        if (getScope() != null) {
+            oAuthService = new ServiceBuilder()
+                    .provider(getApiImplementation())
+                    .apiKey(getApiKey())
+                    .apiSecret(getApiSecret())
+                    .scope(getScope())
+                    .callback(getRedirectURL())
+                    .build();
+        } else {
+            oAuthService = new ServiceBuilder()
+                    .provider(getApiImplementation())
+                    .apiKey(getApiKey())
+                    .apiSecret(getApiSecret())
+                    .callback(getRedirectURL())
+                    .build();
+        }
+        if (oAuthService instanceof OAuth20ServiceImpl) {
+            Token token = new Token(userService.getRefreshToken(), null);
+            Token accessToken = ((OAuth20ServiceImpl) oAuthService).refreshAccessToken(token);
+            ApplicationResponse application = getCoreBackendService().getApplication();
+
+            if (accessToken != null && application != null && application.getActive()) {
+                UserServiceRequest updatedUserService = new UserServiceRequest(userService);
+                setUserService(updatedUserService, accessToken);
+                userService.setAccessToken(updatedUserService.getAccessToken());
+                userService.setAccessTokenSecret(updatedUserService.getAccessTokenSecret());
+                userService.setRefreshToken(updatedUserService.getRefreshToken());
+            } else {
+                throw new UnauthorizedAccessException();
+            }
+        } else {
+            throw new RuntimeException("OAuth service must support refresh tokens");
+        }
     }
 
     protected abstract String getScope();
@@ -275,6 +316,9 @@ public abstract class AbstractOAuthService extends HttpServlet {
     protected void setUserService(UserServiceRequest userService, Token accessToken) {
         userService.setAccessToken(accessToken.getToken());
         userService.setAccessTokenSecret(accessToken.getSecret());
+        if (accessToken instanceof TokenWithRefresh) {
+            userService.setRefreshToken(((TokenWithRefresh) accessToken).getRefreshToken());
+        }
 
         getCoreBackendService().setUserService(userService);
     }

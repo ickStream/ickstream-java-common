@@ -5,8 +5,13 @@
 
 package com.ickstream.protocol.oauth;
 
+import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.HttpStatus;
 import org.scribe.builder.api.DefaultApi20;
 import org.scribe.model.*;
+
+import java.io.UnsupportedEncodingException;
 
 public class OAuth20ServiceImpl extends org.scribe.oauth.OAuth20ServiceImpl {
     private DefaultApi20 api;
@@ -48,6 +53,33 @@ public class OAuth20ServiceImpl extends org.scribe.oauth.OAuth20ServiceImpl {
         }
         Response response = request.send();
         return api.getAccessTokenExtractor().extract(response.getBody());
+    }
+
+    public Token refreshAccessToken(Token refreshToken) {
+        OAuthRequest request = new OAuthRequest(api.getAccessTokenVerb(), api.getAccessTokenEndpoint());
+        try {
+            request.addHeader("Authorization", "Basic " + Base64.encodeBase64String((config.getApiKey() + ":" + config.getApiSecret()).getBytes("UTF-8")));
+            if (api.getAccessTokenVerb().equals(Verb.POST) || api.getAccessTokenVerb().equals(Verb.PUT)) {
+                request.addBodyParameter("refresh_token", refreshToken.getToken());
+                if (config.hasScope()) request.addBodyParameter(OAuthConstants.SCOPE, config.getScope());
+                request.addBodyParameter("grant_type", "refresh_token");
+            } else {
+                request.addQuerystringParameter("refresh_token", refreshToken.getToken());
+                if (config.hasScope()) request.addQuerystringParameter(OAuthConstants.SCOPE, config.getScope());
+                request.addQuerystringParameter("grant_type", "refresh_token");
+            }
+            Response response = request.send();
+            if (response.isSuccessful()) {
+                return api.getAccessTokenExtractor().extract(response.getBody());
+            } else if (response.getCode() == HttpStatus.SC_UNAUTHORIZED) {
+                throw new UnauthorizedAccessException();
+            } else {
+                throw new RuntimeException("Failed to refresh token");
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
