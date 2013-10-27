@@ -58,6 +58,7 @@ public class CoreServiceTest {
         GetUserResponse response = service.getUser();
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getName(), "Some User");
+        Assert.assertEquals(response.getCountry(), "SE");
         Assert.assertEquals(response.getId(), "2E560913-F9BB-41A2-BAC4-A6EB272500EC");
         Assert.assertNotNull(response.getIdentities());
         Assert.assertEquals(response.getIdentities().size(), 1);
@@ -68,9 +69,10 @@ public class CoreServiceTest {
     @Test
     public void testSetUserData() throws IOException, ServiceException, ServiceTimeoutException {
         CoreService service = getCoreService("/com/ickstream/protocol/service/core/SetUserData.json");
-        GetUserResponse response = service.setUserData(new SetUserDataRequest("MyNewName"));
+        GetUserResponse response = service.setUserData(new SetUserDataRequest("MyNewName", "SE"));
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getName(), "MyNewName");
+        Assert.assertEquals(response.getCountry(), "SE");
         Assert.assertEquals(response.getId(), "2E560913-F9BB-41A2-BAC4-A6EB272500EC");
         Assert.assertNotNull(response.getIdentities());
         Assert.assertEquals(response.getIdentities().size(), 1);
