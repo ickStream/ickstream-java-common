@@ -6,13 +6,14 @@
 package com.ickstream.common.jsonrpc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 
 /**
  * Transfer object that represents a JSON-RPC response
  */
 public class JsonRpcResponse {
     private String jsonrpc = JsonRpcRequest.VERSION_2_0;
-    private String id;
+    private ValueNode id;
     private JsonNode result;
     private Error error;
 
@@ -121,7 +122,7 @@ public class JsonRpcResponse {
      * @param jsonrpc The JSON-RPC version to use
      * @param id      The request identity for this response
      */
-    public JsonRpcResponse(String jsonrpc, String id) {
+    public JsonRpcResponse(String jsonrpc, ValueNode id) {
         this.jsonrpc = jsonrpc;
         this.id = id;
     }
@@ -149,7 +150,7 @@ public class JsonRpcResponse {
      *
      * @return The JSON-RPC request identity for this response
      */
-    public String getId() {
+    public ValueNode getId() {
         return id;
     }
 
@@ -158,7 +159,7 @@ public class JsonRpcResponse {
      *
      * @param id The JSON-RPC request identity for this response
      */
-    public void setId(String id) {
+    public void setId(ValueNode id) {
         this.id = id;
     }
 

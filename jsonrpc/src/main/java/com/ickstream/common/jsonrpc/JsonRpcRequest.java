@@ -6,13 +6,16 @@
 package com.ickstream.common.jsonrpc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 
 /**
  * Transfer object that represents a JSON-RPC request or notification
  */
 public class JsonRpcRequest {
     private String jsonrpc = VERSION_2_0;
-    private String id;
+    private ValueNode id;
     private String method;
     private JsonNode params;
 
@@ -26,12 +29,43 @@ public class JsonRpcRequest {
 
 
     /**
+     * Creates a new instance using the specified JSON-RPC version
+     *
+     * @param jsonrpc The JSON-RPC version to use
+     */
+    public JsonRpcRequest(String jsonrpc) {
+        this.jsonrpc = jsonrpc;
+    }
+
+    /**
      * Creates a new instance using the specified JSON-RPC version and identity
      *
      * @param jsonrpc The JSON-RPC version to use
      * @param id      The request identity for this request
      */
     public JsonRpcRequest(String jsonrpc, String id) {
+        this.jsonrpc = jsonrpc;
+        this.id = new TextNode(id);
+    }
+
+    /**
+     * Creates a new instance using the specified JSON-RPC version and identity
+     *
+     * @param jsonrpc The JSON-RPC version to use
+     * @param id      The request identity for this request
+     */
+    public JsonRpcRequest(String jsonrpc, int id) {
+        this.jsonrpc = jsonrpc;
+        this.id = new IntNode(id);
+    }
+
+    /**
+     * Creates a new instance using the specified JSON-RPC version and identity
+     *
+     * @param jsonrpc The JSON-RPC version to use
+     * @param id      The request identity for this request
+     */
+    public JsonRpcRequest(String jsonrpc, ValueNode id) {
         this.jsonrpc = jsonrpc;
         this.id = id;
     }
@@ -59,7 +93,7 @@ public class JsonRpcRequest {
      *
      * @return The JSON-RPC request identity for this request
      */
-    public String getId() {
+    public ValueNode getId() {
         return id;
     }
 
@@ -68,7 +102,7 @@ public class JsonRpcRequest {
      *
      * @param id The JSON-RPC request identity for this request
      */
-    public void setId(String id) {
+    public void setId(ValueNode id) {
         this.id = id;
     }
 

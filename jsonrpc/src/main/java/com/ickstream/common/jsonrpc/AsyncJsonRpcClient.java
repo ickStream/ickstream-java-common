@@ -5,6 +5,8 @@
 
 package com.ickstream.common.jsonrpc;
 
+import com.fasterxml.jackson.databind.node.ValueNode;
+
 import java.util.*;
 
 /**
@@ -15,7 +17,7 @@ import java.util.*;
 public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcResponseHandler {
     private MessageSender messageSender;
     private JsonHelper jsonHelper = new JsonHelper();
-    private final Map<Object, MessageHandlerEntry> messageHandlers = new HashMap<Object, MessageHandlerEntry>();
+    private final Map<String, MessageHandlerEntry> messageHandlers = new HashMap<String, MessageHandlerEntry>();
     private final Map<String, List<MessageHandlerEntry>> notificationHandlers = new HashMap<String, List<MessageHandlerEntry>>();
     private Integer defaultTimeout;
     private IdProvider idProvider;
@@ -106,7 +108,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
      * @param params The parameters to the method, this must be possible to serialize to JSON with the {@link JsonHelper} class
      * @return The identity for the request
      */
-    public String sendRequest(String method, Object params) {
+    public ValueNode sendRequest(String method, Object params) {
         return sendRequest(method, params, null, null);
     }
 
@@ -120,7 +122,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
      * @param messageHandler       The message handler that will be called when a timeout occurs or the answer is received
      * @return The identity for the request
      */
-    public String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
+    public ValueNode sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler) {
         return sendRequest(method, params, messageResponseClass, messageHandler, null);
     }
 
@@ -136,22 +138,22 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
      * @param timeout              The timeout in millisecond, if not specified the default timeout will be used
      * @return The identity for the request
      */
-    public String sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
-        Object id;
+    public ValueNode sendRequest(String method, Object params, Class messageResponseClass, MessageHandler messageHandler, Integer timeout) {
+        final ValueNode id;
         synchronized (messageHandlers) {
-            id = idProvider.getNextId().toString();
+            id = idProvider.getNextId();
             if (messageResponseClass != null && messageHandler != null) {
+                final String idAsText = id.asText();
                 if ((timeout == null && defaultTimeout == null) || (timeout != null && timeout < 0)) {
-                    messageHandlers.put("" + id, new MessageHandlerEntry(messageResponseClass, messageHandler));
+                    messageHandlers.put(idAsText, new MessageHandlerEntry(messageResponseClass, messageHandler));
                 } else {
-                    final String currentId = "" + id;
-                    messageHandlers.put(currentId, new MessageHandlerEntry(messageResponseClass, messageHandler, new Timer()));
-                    messageHandlers.get(currentId).timer.schedule(new TimerTask() {
+                    messageHandlers.put(idAsText, new MessageHandlerEntry(messageResponseClass, messageHandler, new Timer()));
+                    messageHandlers.get(idAsText).timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
                             MessageHandlerEntry entry;
                             synchronized (messageHandlers) {
-                                entry = messageHandlers.remove(currentId);
+                                entry = messageHandlers.remove(idAsText);
                             }
                             if (entry != null) {
                                 entry.handler.onTimeout();
@@ -163,7 +165,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
             }
         }
         JsonRpcRequest jsonRpcRequest = new JsonRpcRequest();
-        jsonRpcRequest.setId("" + id);
+        jsonRpcRequest.setId(id);
         jsonRpcRequest.setMethod(method);
         if (params != null) {
             jsonRpcRequest.setParams(jsonHelper.objectToJson(params));
@@ -199,9 +201,9 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
      *
      * @param id The identity of the JSON-RPC request to remove the message handler for
      */
-    protected void removeMessageHandler(String id) {
+    protected void removeMessageHandler(ValueNode id) {
         synchronized (messageHandlers) {
-            messageHandlers.remove(id);
+            messageHandlers.remove(id.asText());
         }
     }
 
@@ -276,7 +278,7 @@ public class AsyncJsonRpcClient implements JsonRpcRequestHandler, JsonRpcRespons
     public boolean onResponse(JsonRpcResponse message) {
         MessageHandlerEntry messageHandler;
         synchronized (messageHandlers) {
-            messageHandler = messageHandlers.remove(message.getId());
+            messageHandler = messageHandlers.remove(message.getId().asText());
         }
         if (messageHandler != null) {
             if (messageHandler.timer != null) {

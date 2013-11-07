@@ -6,6 +6,7 @@
 package com.ickstream.common.jsonrpc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
@@ -105,7 +106,7 @@ public class StreamJsonRpcService {
      * @param ops   The output stream where the JSON-RPC response should be written
      */
     protected void handle(InputStream input, OutputStream ops) {
-        String id = null;
+        ValueNode id = null;
         String version = null;
 
         JsonRpcRequest request = jsonHelper.streamToObject(input, JsonRpcRequest.class);
@@ -136,7 +137,7 @@ public class StreamJsonRpcService {
             }
             JsonRpcResponse response = new JsonRpcResponse(
                     !StringUtils.isEmpty(request.getJsonrpc()) ? request.getJsonrpc() : "2.0",
-                    !StringUtils.isEmpty(request.getId()) ? request.getId() : null
+                    (request.getId() != null && !StringUtils.isEmpty(request.getId().asText())) ? request.getId() : null
             );
             response.setError(new JsonRpcResponse.Error(JsonRpcError.INVALID_REQUEST, "Invalid Request"));
             if (messageLogger != null) {

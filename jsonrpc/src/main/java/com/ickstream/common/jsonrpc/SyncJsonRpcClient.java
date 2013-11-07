@@ -5,6 +5,8 @@
 
 package com.ickstream.common.jsonrpc;
 
+import com.fasterxml.jackson.databind.node.ValueNode;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -116,7 +118,7 @@ public class SyncJsonRpcClient extends AsyncJsonRpcClient {
         Semaphore semaphore = new Semaphore(0);
         MessageHandler<T> messageHandler = new SynchronizedMessageHandler<T>(semaphore, results, errors);
 
-        String id = super.sendRequest(method, params, messageResponseClass, messageHandler);
+        ValueNode id = super.sendRequest(method, params, messageResponseClass, messageHandler);
         try {
             boolean acquired;
             if ((timeout == null && defaultTimeout == null) || (timeout != null && timeout < 0)) {

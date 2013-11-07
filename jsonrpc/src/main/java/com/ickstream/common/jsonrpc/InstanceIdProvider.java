@@ -5,6 +5,8 @@
 
 package com.ickstream.common.jsonrpc;
 
+import com.fasterxml.jackson.databind.node.IntNode;
+
 /**
  * A JSON-RPC identity provider which generates unique identities within this identity provider instance
  * Please note that since JSON-RPC identities needs to be unique for the same communication channel, it's often easier
@@ -18,9 +20,9 @@ public class InstanceIdProvider implements IdProvider {
      * See {@link com.ickstream.common.jsonrpc.IdProvider#getNextId()}
      */
     @Override
-    public Object getNextId() {
+    public IntNode getNextId() {
         synchronized (syncObject) {
-            return ++id;
+            return new IntNode(++id);
         }
     }
 }

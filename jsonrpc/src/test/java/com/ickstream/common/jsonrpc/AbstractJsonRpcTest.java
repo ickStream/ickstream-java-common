@@ -58,7 +58,7 @@ public abstract class AbstractJsonRpcTest {
         return sb.toString();
     }
 
-    public static String getParamFromJson(String text, String param) throws IOException {
+    public static Object getParamFromJson(String text, String param) throws IOException {
         if (text != null) {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode json = mapper.readTree(text);
@@ -76,7 +76,11 @@ public abstract class AbstractJsonRpcTest {
                 if (json.isTextual()) {
                     return json.asText();
                 } else {
-                    return json.toString();
+                    if (param.equals("id")) {
+                        return json;
+                    } else {
+                        return json.toString();
+                    }
                 }
             }
         }

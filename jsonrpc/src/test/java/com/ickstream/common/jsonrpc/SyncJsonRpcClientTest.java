@@ -6,6 +6,8 @@
 package com.ickstream.common.jsonrpc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import junit.framework.Assert;
 import org.testng.annotations.Test;
 
@@ -25,7 +27,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         public void sendMessage(String message) {
             this.message = message;
             try {
-                getResponseData().setId(getParamFromJson(message, "id"));
+                getResponseData().setId((ValueNode) getParamFromJson(message, "id"));
                 getResponseData().setResult(null);
                 getResponseData().setError(new JsonRpcResponse.Error(-32000, "Some message", "Some data"));
             } catch (IOException e) {
@@ -37,8 +39,8 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
 
     private static class MessageSenderImpl implements MessageSender {
         String message;
-        private JsonRpcResponse responseData;
-        private JsonRpcResponseHandler responseHandler;
+        JsonRpcResponse responseData;
+        JsonRpcResponseHandler responseHandler;
 
         public MessageSenderImpl(JsonRpcResponse responseData) {
             this.responseData = responseData;
@@ -60,8 +62,27 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         public void sendMessage(String message) {
             this.message = message;
             try {
-                responseData.setId(getParamFromJson(message, "id"));
-                responseData.setResult(new ObjectMapper().valueToTree(2 * Integer.valueOf(getParamFromJson(message, "params"))));
+                responseData.setId((ValueNode) getParamFromJson(message, "id"));
+                responseData.setResult(new ObjectMapper().valueToTree(2 * Integer.valueOf(getParamFromJson(message, "params").toString())));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            responseHandler.onResponse(responseData);
+        }
+    }
+
+    private static class MessageSenderReplyStringIdImpl extends MessageSenderImpl {
+
+        public MessageSenderReplyStringIdImpl(JsonRpcResponse responseData) {
+            super(responseData);
+        }
+
+        @Override
+        public void sendMessage(String message) {
+            this.message = message;
+            try {
+                responseData.setId(new TextNode(getParamFromJson(message, "id").toString()));
+                responseData.setResult(new ObjectMapper().valueToTree(2 * Integer.valueOf(getParamFromJson(message, "params").toString())));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -101,7 +122,7 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
                         throw new RuntimeException(e);
                     }
                     try {
-                        responseData.setId(getParamFromJson(message, "id"));
+                        responseData.setId((ValueNode) getParamFromJson(message, "id"));
                     } catch (IOException e) {
                         e.printStackTrace();
                         throw new RuntimeException(e);
@@ -133,9 +154,9 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         @Override
         public void sendMessage(String message) {
             try {
-                int input = Integer.valueOf(getParamFromJson(message, "params"));
+                int input = Integer.valueOf(getParamFromJson(message, "params").toString());
                 JsonRpcResponse response = new JsonRpcResponse();
-                response.setId(getParamFromJson(message, "id"));
+                response.setId((ValueNode) getParamFromJson(message, "id"));
                 response.setResult(new ObjectMapper().valueToTree(input * multiplier));
                 DelayedMessageSenderImpl sender = new DelayedMessageSenderImpl(response, input * 200);
                 sender.setResponseHandler(responseHandler);
@@ -153,6 +174,21 @@ public class SyncJsonRpcClientTest extends AbstractJsonRpcTest {
         response.setResult(mapper.valueToTree(new Integer("2")));
 
         MessageSenderImpl sender = new MessageSenderImpl(response);
+        SyncJsonRpcClient client = new SyncJsonRpcClient(sender);
+        sender.setResponseHandler(client);
+
+        Integer result = client.sendRequest("someMethod", 1, Integer.class);
+
+        Assert.assertEquals("1", getParamFromJson(sender.message, "params"));
+        Assert.assertEquals(Integer.valueOf(2), result);
+    }
+
+    @Test
+    public void testRequestWithStringIdResponse() throws IOException, JsonRpcException, JsonRpcTimeoutException {
+        JsonRpcResponse response = new JsonRpcResponse("2.0", null);
+        response.setResult(mapper.valueToTree(new Integer("2")));
+
+        MessageSenderImpl sender = new MessageSenderReplyStringIdImpl(response);
         SyncJsonRpcClient client = new SyncJsonRpcClient(sender);
         sender.setResponseHandler(client);
 

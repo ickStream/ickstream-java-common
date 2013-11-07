@@ -7,6 +7,8 @@ package com.ickstream.common.jsonrpc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
 import junit.framework.Assert;
 import org.testng.annotations.Test;
 
@@ -83,7 +85,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false, false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -114,7 +116,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false, false, false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -154,7 +156,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false, false, false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -194,7 +196,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), JsonRpcResponse.class, new MessageHandlerAdapter<JsonRpcResponse>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), JsonRpcResponse.class, new MessageHandlerAdapter<JsonRpcResponse>() {
             @Override
             public void onMessage(JsonRpcResponse message) {
                 Assert.assertNotNull(message.getJsonrpc());
@@ -223,7 +225,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false, false};
-        String id1 = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id1 = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -238,7 +240,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertEquals(id1, getParamFromJson(sender.message, "id"));
         Assert.assertEquals("2", getParamFromJson(sender.message, "params.attr2"));
 
-        String id2 = client.sendRequest("someMethod", new TestData("value1", 4, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id2 = client.sendRequest("someMethod", new TestData("value1", 4, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value5", message.getAttr1());
@@ -271,7 +273,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -286,7 +288,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertEquals(id, getParamFromJson(sender.message, "id"));
         Assert.assertEquals("value1", getParamFromJson(sender.message, "params.attr1"));
 
-        JsonRpcResponse response = new JsonRpcResponse("2.0", id + "1");
+        JsonRpcResponse response = new JsonRpcResponse("2.0", new TextNode(id.asText() + "1"));
         response.setResult(mapper.valueToTree(new TestData("value5", 6, false, EnumValue.ON)));
         client.onResponse(response);
         Assert.assertFalse(validated[0]);
@@ -302,7 +304,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
         final boolean[] validated = {false};
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON), TestData.class, new MessageHandlerAdapter<TestData>() {
             @Override
             public void onMessage(TestData message) {
                 Assert.assertEquals("value3", message.getAttr1());
@@ -332,7 +334,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
     public void testRequestWithoutAnyResponse() throws IOException {
         MessageSenderImpl sender = new MessageSenderImpl();
         AsyncJsonRpcClient client = new AsyncJsonRpcClient(sender);
-        String id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON));
+        ValueNode id = client.sendRequest("someMethod", new TestData("value1", 2, true, EnumValue.ON));
 
         Assert.assertEquals(id, getParamFromJson(sender.message, "id"));
         Assert.assertEquals("value1", getParamFromJson(sender.message, "params.attr1"));
@@ -358,7 +360,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 2, true, EnumValue.ON)));
         client.onRequest(request);
@@ -385,7 +387,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 2, true, EnumValue.ON)));
         client.onRequest(request);
@@ -410,7 +412,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someOtherNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 2, true, EnumValue.ON)));
         client.onRequest(request);
@@ -445,14 +447,14 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 1, true, EnumValue.ON)));
         client.onRequest(request);
 
         Assert.assertTrue(validated[0]);
 
-        request = new JsonRpcRequest("2.0", null);
+        request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value2", 2, true, EnumValue.ON)));
         client.onRequest(request);
@@ -488,7 +490,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 1, true, EnumValue.ON)));
         client.onRequest(request);
@@ -524,7 +526,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 1, true, EnumValue.ON)));
         client.onRequest(request);
@@ -560,7 +562,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 1, true, EnumValue.ON)));
         client.onRequest(request);
@@ -568,7 +570,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertTrue(validated[0]);
         Assert.assertFalse(validated[1]);
 
-        request = new JsonRpcRequest("2.0", null);
+        request = new JsonRpcRequest("2.0");
         request.setMethod("someOtherNotification");
         request.setParams(mapper.valueToTree(new TestData("value3", 4, false, EnumValue.ON)));
         client.onRequest(request);
@@ -604,7 +606,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
             }
         });
 
-        JsonRpcRequest request = new JsonRpcRequest("2.0", null);
+        JsonRpcRequest request = new JsonRpcRequest("2.0");
         request.setMethod("someNotification");
         request.setParams(mapper.valueToTree(new TestData("value1", 1, true, EnumValue.ON)));
         client.onRequest(request);
@@ -612,7 +614,7 @@ public class AsyncJsonRpcClientTest extends AbstractJsonRpcTest {
         Assert.assertTrue(validated[0]);
         Assert.assertFalse(validated[1]);
 
-        request = new JsonRpcRequest("2.0", null);
+        request = new JsonRpcRequest("2.0");
         request.setMethod("someOtherNotification");
         request.setParams(mapper.valueToTree(new TestData("value3", 4, false, EnumValue.ON)));
         client.onRequest(request);
