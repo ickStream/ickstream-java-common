@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CoreBackendServiceFactory extends ServiceFactory {
-    private static final String COREBACKENDSERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/backend/jsonrpc";
+    private static final String COREBACKENDSERVICE_ENDPOINT = "https://api.ickstream.com/ickstream-cloud-core/backend/jsonrpc";
 
     private static final Map<String, CoreBackendServiceImpl> CORE_BACKEND_SERVICE_CACHE = new HashMap<String, CoreBackendServiceImpl>();
 
