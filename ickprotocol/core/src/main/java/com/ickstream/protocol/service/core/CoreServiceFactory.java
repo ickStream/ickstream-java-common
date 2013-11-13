@@ -12,8 +12,8 @@ import com.ickstream.protocol.common.ServiceFactory;
  * Factory which should be used to get client classes for {@link CoreService} or {@link PublicCoreService}
  */
 public class CoreServiceFactory extends ServiceFactory {
-    private static final String CORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/jsonrpc";
-    private static final String PUBLICCORESERVICE_ENDPOINT = "http://api.ickstream.com/ickstream-cloud-core/public/jsonrpc";
+    private static final String CORESERVICE_ENDPOINT = "https://api.ickstream.com/ickstream-cloud-core/jsonrpc";
+    private static final String PUBLICCORESERVICE_ENDPOINT = "https://api.ickstream.com/ickstream-cloud-core/public/jsonrpc";
 
     /**
      * Get endpoint of Cloud Core service
