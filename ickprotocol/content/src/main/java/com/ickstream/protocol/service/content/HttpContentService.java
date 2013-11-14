@@ -7,6 +7,7 @@ package com.ickstream.protocol.service.content;
 
 import com.ickstream.common.jsonrpc.HttpMessageSender;
 import com.ickstream.common.jsonrpc.MessageLogger;
+import com.ickstream.protocol.common.IckStreamTrustManager;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
@@ -14,7 +15,10 @@ import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.SchemeRegistryFactory;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * A HTTP POST based client used to communicate with online content services using the Content Access protocol.
@@ -65,7 +69,14 @@ public class HttpContentService extends ContentService {
     private static HttpClient createHttpClient() {
         try {
             Class.forName("org.apache.http.impl.conn.PoolingClientConnectionManager");
-            return new DefaultHttpClient(new PoolingClientConnectionManager());
+            SSLContext sslContext = IckStreamTrustManager.getContext();
+            if (sslContext != null) {
+                SchemeRegistry scheme = SchemeRegistryFactory.createDefault();
+                scheme.register(new Scheme("https", 443, new SSLSocketFactory(sslContext)));
+                return new DefaultHttpClient(new PoolingClientConnectionManager(scheme));
+            } else {
+                return new DefaultHttpClient(new PoolingClientConnectionManager());
+            }
         } catch (ClassNotFoundException e) {
             DefaultHttpClient client = new DefaultHttpClient();
             SchemeRegistry registry = new SchemeRegistry();
