@@ -32,8 +32,10 @@ public class IckStreamTrustManager implements X509TrustManager {
      * Initialize SSL trust manager and ensure that we are allowed to do https access to api.ickstream.com
      * This method will use the default password to access the Java cacerts keystore
      */
-    public static void init() {
-        init("changeit");
+    public synchronized static void init() {
+        if (context == null) {
+            init("changeit");
+        }
     }
 
     /**
