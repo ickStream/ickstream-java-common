@@ -22,6 +22,7 @@ import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FullBrowseMenuTest {
@@ -251,6 +252,31 @@ public class FullBrowseMenuTest {
             "   ]" +
             "}";
 
+    String CATEGORY_CATEGORY_STREAM_SERVICE = "" +
+            "{" +
+            "    \"items\": [\n" +
+            "        {\n" +
+            "            \"contextId\": \"allRadio\",\n" +
+            "            \"name\": \"Internet Radio\",\n" +
+            "            \"supportedRequests\": [\n" +
+            "                {\n" +
+            "                    \"type\": \"category\",\n" +
+            "                    \"parameters\": [\n" +
+            "                        [\"contextId\",\"type\"],\n" +
+            "                        [\"contextId\",\"type\",\"categoryId\"]\n" +
+            "                    ]\n" +
+            "                },\n" +
+            "                {\n" +
+            "                    \"type\": \"stream\",\n" +
+            "                    \"parameters\": [\n" +
+            "                        [\"contextId\",\"type\",\"categoryId\"]\n" +
+            "                    ]\n" +
+            "                }\n" +
+            "            ]\n" +
+            "        }" +
+            "    ]" +
+            "}";
+
     private class MenuItemImpl extends ContentMenuItem {
 
         public MenuItemImpl(String id, String type) {
@@ -261,6 +287,13 @@ public class FullBrowseMenuTest {
             super(null, null, new ContentItem(), parent);
             getContentItem().setId(id);
             getContentItem().setType(type);
+        }
+
+        public MenuItemImpl(String id, String type, List<String> preferredChildItems, MenuItem parent) {
+            super(null, null, new ContentItem(), parent);
+            getContentItem().setId(id);
+            getContentItem().setType(type);
+            getContentItem().setPreferredChildItems(preferredChildItems);
         }
     }
 
@@ -597,6 +630,50 @@ public class FullBrowseMenuTest {
 
         final BrowseResponse[] response = {null};
         createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("submenu1", "menu", new MenuItemImpl("menu1", "menu")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+            @Override
+            public void onResponse(BrowseResponse contentResponse) {
+                response[0] = contentResponse;
+            }
+        });
+        Assert.assertNotNull(response[0]);
+    }
+
+    @Test
+    public void testCategoryCategoryStream_SubCategories() throws ServiceTimeoutException, ServiceException {
+        Map<String, Object> expectedRequest = new HashMap<String, Object>();
+        expectedRequest.put("type", "category");
+        expectedRequest.put("categoryId", "category1");
+
+        ServiceController contentService = Mockito.mock(ServiceController.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
+        setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
+        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+
+        final BrowseResponse[] response = {null};
+        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("category1", "category", Arrays.asList("category"), null), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+            @Override
+            public void onResponse(BrowseResponse contentResponse) {
+                response[0] = contentResponse;
+            }
+        });
+        Assert.assertNotNull(response[0]);
+    }
+
+    @Test
+    public void testCategoryCategoryStream_Stream() throws ServiceTimeoutException, ServiceException {
+        Map<String, Object> expectedRequest = new HashMap<String, Object>();
+        expectedRequest.put("type", "stream");
+        expectedRequest.put("categoryId", "category2");
+
+        ServiceController contentService = Mockito.mock(ServiceController.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
+        setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
+        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+
+        final BrowseResponse[] response = {null};
+        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("category2", "category", Arrays.asList("stream"), new MenuItemImpl("category1", "category", Arrays.asList("category"), null)), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;

@@ -5,10 +5,10 @@
 
 package com.ickstream.controller.browse;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.ickstream.controller.service.ServiceController;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
@@ -28,14 +28,17 @@ public class ContentMenuItem extends AbstractMenuItem {
         return contentItem;
     }
 
+    @Override
     public String getId() {
         return contentItem.getId();
     }
 
+    @Override
     public String getImage() {
         return contentItem.getImage();
     }
 
+    @Override
     public String getText() {
         return contentItem.getText();
     }
@@ -44,10 +47,16 @@ public class ContentMenuItem extends AbstractMenuItem {
         return contentItem.getStreamingRefs();
     }
 
+    @Override
+    public List<String> getPreferredChildItems() {
+        return contentItem.getPreferredChildItems();
+    }
+
     public JsonNode getItemAttributes() {
         return contentItem.getItemAttributes();
     }
 
+    @Override
     public String getType() {
         return contentItem.getType();
     }

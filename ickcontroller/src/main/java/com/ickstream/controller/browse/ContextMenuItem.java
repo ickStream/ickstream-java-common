@@ -7,6 +7,8 @@ package com.ickstream.controller.browse;
 
 import com.ickstream.controller.service.ServiceController;
 
+import java.util.List;
+
 public class ContextMenuItem extends AbstractMenuItem {
     public final static String TYPE = "context";
     private String text;
@@ -36,5 +38,10 @@ public class ContextMenuItem extends AbstractMenuItem {
     @Override
     public String getId() {
         return getContextId();
+    }
+
+    @Override
+    public List<String> getPreferredChildItems() {
+        return null;
     }
 }

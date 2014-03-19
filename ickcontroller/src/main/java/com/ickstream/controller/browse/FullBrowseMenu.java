@@ -59,11 +59,25 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
 
     @Override
     public void findItemsInContextByType(final String contextId, final String type, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
+        final Set<String> usedTypes = new HashSet<String>();
+        MenuItem parent = contentItem;
+        while (parent != null) {
+            if (parent instanceof ContentMenuItem && parent.getType() != null && !parent.getType().equals("menu") && !parent.getType().equals("category")) {
+                usedTypes.add(parent.getType());
+            }
+            parent = parent.getParent();
+        }
+
         getProtocol(new ResponseListener<Boolean>() {
             @Override
             public void onResponse(Boolean contentResponse) {
-                Map<String, String> parameters = createChildRequestParameters(contextId, type, contentItem);
+                Map<String, String> parameters = createChildRequestParameters(contextId, type, contentItem, usedTypes);
                 if (parameters != null) {
+                    Set<String> excludedTypes = new HashSet<String>();
+                    if (parameters.containsKey("type")) {
+                        excludedTypes.add(parameters.get("type"));
+                    }
+                    final Set<String> availableChildItems = findPossibleItemTypes(contextId, type, contentItem, usedTypes, excludedTypes);
                     final String context = parameters.remove("contextId");
                     service.findItems(null, context, new HashMap<String, Object>(parameters), new MessageHandlerAdapter<ContentResponse>() {
                         @Override
@@ -75,6 +89,11 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                                 browseResponse.setCountAll(message.getCountAll());
                                 browseResponse.setOffset(message.getOffset());
                                 browseResponse.setItems(new ArrayList<MenuItem>(message.getCount()));
+                                if (message.getItems().size() > 1) {
+                                    for (String availableChildItem : availableChildItems) {
+                                        browseResponse.getItems().add(new TypeMenuItem(service, context, availableChildItem, "All " + availableChildItem + "s", null, contentItem));
+                                    }
+                                }
                                 for (ContentItem item : message.getItems()) {
                                     browseResponse.getItems().add(new ContentMenuItem(service, context, item, contentItem));
                                 }
@@ -127,17 +146,17 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         return response;
     }
 
-    private Map<String, String> createChildRequestParameters(String contextId, String type, MenuItem parentItem) {
+    private Map<String, String> createChildRequestParameters(String contextId, String type, MenuItem parentItem, Set<String> excludedTypes) {
         if (contextId != null) {
             // Find within the same context
-            Map<String, String> result = createChildRequestParametersFromContext(contextId, type, parentItem);
+            Map<String, String> result = createChildRequestParametersFromContext(contextId, type, parentItem, excludedTypes);
             if (result != null) {
                 return result;
             }
         }
         if (contextId == null || !contextId.equals("allMusic")) {
             // Find within the allMusic context
-            Map<String, String> result = createChildRequestParametersFromContext("allMusic", type, parentItem);
+            Map<String, String> result = createChildRequestParametersFromContext("allMusic", type, parentItem, excludedTypes);
             if (result != null) {
                 return result;
             }
@@ -145,8 +164,26 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         return null;
     }
 
-    private Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem) {
-        return createChildRequestParametersFromContext(contextId, type, parentItem, new Comparator<Map<String, String>>() {
+    private Set<String> findPossibleItemTypes(String contextId, String type, MenuItem parentItem, Set<String> includedTypes, Set<String> excludedTypes) {
+        if (contextId != null) {
+            // Find within the same context
+            Set<String> result = findPossibleItemTypesFromContext(contextId, type, parentItem, includedTypes, excludedTypes);
+            if (result != null) {
+                return result;
+            }
+        }
+        if (contextId == null || !contextId.equals("allMusic")) {
+            // Find within the allMusic context
+            Set<String> result = findPossibleItemTypesFromContext("allMusic", type, parentItem, includedTypes, excludedTypes);
+            if (result != null) {
+                return result;
+            }
+        }
+        return new HashSet<String>();
+    }
+
+    private Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem, Set<String> excludedTypes) {
+        return createChildRequestParametersFromContext(contextId, type, parentItem, excludedTypes, new Comparator<Map<String, String>>() {
             @Override
             public int compare(Map<String, String> entry1, Map<String, String> entry2) {
                 if (entry1.containsKey("type") && !entry2.containsKey("type")) {

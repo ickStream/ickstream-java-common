@@ -7,6 +7,8 @@ package com.ickstream.controller.browse;
 
 import com.ickstream.controller.service.ServiceController;
 
+import java.util.List;
+
 public class TypeMenuItem extends AbstractMenuItem {
     public final static String TYPE = "type";
     private String id;
@@ -46,5 +48,10 @@ public class TypeMenuItem extends AbstractMenuItem {
     @Override
     public String getImage() {
         return image;
+    }
+
+    @Override
+    public List<String> getPreferredChildItems() {
+        return null;
     }
 }

@@ -23,14 +23,17 @@ public abstract class AbstractMenuItem implements MenuItem {
         this.parent = parent;
     }
 
+    @Override
     public ServiceController getServiceController() {
         return serviceController;
     }
 
+    @Override
     public String getContextId() {
         return contextId;
     }
 
+    @Override
     public MenuItem getParent() {
         return parent;
     }

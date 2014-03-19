@@ -41,7 +41,7 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         }
     }
 
-    protected Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem, Comparator<Map<String, String>> comparator) {
+    protected Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem, Set<String> excludedTypes, Comparator<Map<String, String>> comparator) {
         ProtocolDescriptionContext context;
         synchronized (supportedRequests) {
             context = supportedRequests.get(contextId);
@@ -52,9 +52,14 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         List<Map<String, String>> possibleRequests = findPossibleRequests(context, type, parentItem);
         boolean supported = false;
         Map<String, String> supportedParameters = new HashMap<String, String>();
+        Map<String, String> preferredSupportedParameters = new HashMap<String, String>();
 
         for (Map<String, String> possibleRequest : possibleRequests) {
-            if (supportedParameters.size() == possibleRequest.size() + 1 &&
+            if (possibleRequest.containsKey("type") && excludedTypes != null && excludedTypes.contains(possibleRequest.get("type"))) {
+                // We aren't interested in excluded types
+            } else if (parentItem instanceof ContentMenuItem && parentItem.getType() != null && (!possibleRequest.containsKey(parentItem.getType() + "Id") || !possibleRequest.get(parentItem.getType() + "Id").equals(parentItem.getId()))) {
+                // We aren't interested in requests unless they filter by parent item
+            } else if (supportedParameters.size() == possibleRequest.size() + 1 &&
                     supportedParameters.containsKey("type") &&
                     !possibleRequest.containsKey("type")) {
 
@@ -67,17 +72,32 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
             } else if (supportedParameters.size() < possibleRequest.size()) {
                 // We should always prefer choices with more criteria
                 supportedParameters = possibleRequest;
+                if (parentItem != null && parentItem.getPreferredChildItems() != null && parentItem.getPreferredChildItems().size() > 0 && supportedParameters.get("type").equals(parentItem.getPreferredChildItems().get(0))) {
+                    preferredSupportedParameters = supportedParameters;
+                }
             } else if (supportedParameters.size() == possibleRequest.size() &&
                     comparator.compare(supportedParameters, possibleRequest) < 0) {
                 // With equal priority we should prefer items which show more items
                 supportedParameters = possibleRequest;
+                if (parentItem != null && parentItem.getPreferredChildItems() != null && parentItem.getPreferredChildItems().size() > 0 && supportedParameters.get("type").equals(parentItem.getPreferredChildItems().get(0))) {
+                    preferredSupportedParameters = supportedParameters;
+                }
             } else if (supportedParameters.size() == possibleRequest.size() &&
                     parentItem != null &&
                     !supportedParameters.containsKey(parentItem.getType() + "Id") &&
                     possibleRequest.containsKey(parentItem.getType() + "Id")) {
                 // With equal number of priority we should prefer items which filter by nearest parent
                 supportedParameters = possibleRequest;
+                if (parentItem.getPreferredChildItems() != null && parentItem.getPreferredChildItems().size() > 0 && supportedParameters.get("type").equals(parentItem.getPreferredChildItems().get(0))) {
+                    preferredSupportedParameters = supportedParameters;
+                }
+            } else if (preferredSupportedParameters.size() == 0 && parentItem != null && parentItem.getPreferredChildItems() != null && parentItem.getPreferredChildItems().size() > 0 && possibleRequest.containsKey("type") && possibleRequest.get("type").equals(parentItem.getPreferredChildItems().get(0))) {
+                // If type is preferred, we should use it
+                preferredSupportedParameters = possibleRequest;
             }
+        }
+        if (preferredSupportedParameters.size() > 0) {
+            supportedParameters = preferredSupportedParameters;
         }
         if (supportedParameters.size() > 0) {
             for (String supportedParameter : supportedParameters.keySet()) {
@@ -89,6 +109,48 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
 
         if (supported) {
             return supportedParameters;
+        }
+        return null;
+    }
+
+    protected Set<String> findPossibleItemTypesFromContext(String contextId, String type, MenuItem parentItem, Set<String> includedTypes, Set<String> excludedTypes) {
+        ProtocolDescriptionContext context;
+        synchronized (supportedRequests) {
+            context = supportedRequests.get(contextId);
+        }
+        if (context == null) {
+            return null;
+        }
+        List<Map<String, String>> possibleRequests = findPossibleRequests(context, type, parentItem);
+        boolean supported = false;
+        Set<String> supportedRequests = new TreeSet<String>(new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                return s1.compareTo(s2);
+            }
+        });
+
+        for (Map<String, String> possibleRequest : possibleRequests) {
+            if (possibleRequest.containsKey("type") && possibleRequest.containsKey("contextId") && excludedTypes != null && !excludedTypes.contains(possibleRequest.get("type"))) {
+
+                boolean include = true;
+                for (String includedType : includedTypes) {
+                    if (!possibleRequest.containsKey(includedType + "Id")) {
+                        include = false;
+                        break;
+                    }
+                }
+                if (include && parentItem instanceof ContentMenuItem && parentItem.getType() != null && (!possibleRequest.containsKey(parentItem.getType() + "Id") || !possibleRequest.get(parentItem.getType() + "Id").equals(parentItem.getId()))) {
+                    include = false;
+                }
+                if (include) {
+                    supportedRequests.add(possibleRequest.get("type"));
+                }
+            }
+        }
+
+        if (supportedRequests.size() > 0) {
+            return supportedRequests;
         }
         return null;
     }
