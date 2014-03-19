@@ -29,7 +29,7 @@ public class ServiceUrlResolver implements ServiceListener {
         String result = null;
         try {
             URI uri = new URI(url);
-            if (uri.getScheme().equals("service")) {
+            if (uri.getScheme() != null && uri.getScheme().equals("service")) {
                 String serviceId = uri.getAuthority();
                 synchronized (services) {
                     if (services.containsKey(serviceId)) {
