@@ -74,10 +74,20 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                 Map<String, String> parameters = createChildRequestParameters(contextId, type, contentItem, usedTypes);
                 if (parameters != null) {
                     Set<String> excludedTypes = new HashSet<String>();
+                    final Set<String> availableChildItems;
                     if (parameters.containsKey("type")) {
                         excludedTypes.add(parameters.get("type"));
+                        if (!parameters.get("type").equals("category") && contentItem instanceof ContentMenuItem && contentItem.getType().equals("category")) {
+                            excludedTypes.add("category");
+                        }
+                        if (!parameters.get("type").equals("menu") && contentItem instanceof ContentMenuItem && contentItem.getType().equals("menu")) {
+                            excludedTypes.add("menu");
+                        }
+                        availableChildItems = findPossibleItemTypes(contextId, type, contentItem, usedTypes, excludedTypes);
+                    } else {
+                        availableChildItems = new HashSet<String>();
                     }
-                    final Set<String> availableChildItems = findPossibleItemTypes(contextId, type, contentItem, usedTypes, excludedTypes);
+
                     final String context = parameters.remove("contextId");
                     service.findItems(null, context, new HashMap<String, Object>(parameters), new MessageHandlerAdapter<ContentResponse>() {
                         @Override

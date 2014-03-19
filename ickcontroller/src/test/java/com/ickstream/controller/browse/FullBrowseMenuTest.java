@@ -87,6 +87,39 @@ public class FullBrowseMenuTest {
             "    ]" +
             "}";
 
+    String ARTIST_ALBUM_TRACK_WITHOUT_ARTIST_ALBUM_FILTERING_SERVICE = "" +
+            "{" +
+            "    \"items\": [\n" +
+            "        {\n" +
+            "            \"contextId\": \"myMusic\",\n" +
+            "            \"name\": \"My Music\",\n" +
+            "            \"supportedRequests\": [\n" +
+            "                {\n" +
+            "                    \"type\": \"artist\",\n" +
+            "                    \"parameters\": [\n" +
+            "                        [\"contextId\",\"type\"]\n" +
+            "                    ]\n" +
+            "                },\n" +
+            "                {\n" +
+            "                    \"type\": \"album\",\n" +
+            "                    \"parameters\": [\n" +
+            "                        [\"contextId\",\"type\"],\n" +
+            "                        [\"contextId\",\"type\",\"artistId\"]\n" +
+            "                    ]\n" +
+            "                },\n" +
+            "                {\n" +
+            "                    \"type\": \"track\",\n" +
+            "                    \"parameters\": [\n" +
+            "                        [\"contextId\",\"type\"],\n" +
+            "                        [\"contextId\",\"type\",\"artistId\"],\n" +
+            "                        [\"contextId\",\"type\",\"albumId\"]\n" +
+            "                    ]\n" +
+            "                }\n" +
+            "            ]\n" +
+            "        }" +
+            "    ]" +
+            "}";
+
     String ARTIST_ALBUM_TRACK_SERVICE = "" +
             "{" +
             "    \"items\": [\n" +
@@ -112,6 +145,7 @@ public class FullBrowseMenuTest {
             "                    \"parameters\": [\n" +
             "                        [\"contextId\",\"type\"],\n" +
             "                        [\"contextId\",\"type\",\"artistId\"],\n" +
+            "                        [\"contextId\",\"type\",\"artistId\",\"albumId\"],\n" +
             "                        [\"contextId\",\"type\",\"albumId\"]\n" +
             "                    ]\n" +
             "                }\n" +
@@ -197,6 +231,23 @@ public class FullBrowseMenuTest {
             "        {" +
             "            \"id\": \"track2\"," +
             "            \"type\": \"track\"" +
+            "        }" +
+            "   ]" +
+            "}";
+
+    String CATEGORY_LIST = "" +
+            "{" +
+            "   \"count\": 2," +
+            "   \"offset\": 0," +
+            "   \"countAll\": 2," +
+            "   \"items\": [" +
+            "        {" +
+            "            \"id\": \"category1\"," +
+            "            \"type\": \"category\"" +
+            "        }," +
+            "        {" +
+            "            \"id\": \"category2\"," +
+            "            \"type\": \"category\"" +
             "        }" +
             "   ]" +
             "}";
@@ -297,6 +348,18 @@ public class FullBrowseMenuTest {
         }
     }
 
+    private class TypeMenuItemImpl extends TypeMenuItem {
+
+        public TypeMenuItemImpl(String type) {
+            super(null, null, type, null, null, null);
+        }
+
+        public TypeMenuItemImpl(String type, MenuItem parent) {
+            super(null, null, type, null, null, parent);
+        }
+
+    }
+
     JsonHelper jsonHelper = new JsonHelper();
 
     private BrowseMenu createBrowseMenu(ServiceController serviceController) {
@@ -354,6 +417,8 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 1);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContextMenuItem);
     }
 
     @Test
@@ -368,13 +433,16 @@ public class FullBrowseMenuTest {
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", null, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -397,6 +465,9 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -420,6 +491,8 @@ public class FullBrowseMenuTest {
         });
         Assert.assertNotNull(response[0]);
         Assert.assertEquals(1, response[0].getItems().size());
+        Assert.assertEquals(response[0].getItems().size(), 1);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContextMenuItem);
     }
 
     @Test
@@ -434,13 +507,16 @@ public class FullBrowseMenuTest {
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", null, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -463,6 +539,9 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -485,6 +564,8 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 1);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContextMenuItem);
     }
 
     @Test
@@ -499,13 +580,16 @@ public class FullBrowseMenuTest {
         setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", null, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -528,12 +612,42 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 3);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof TypeMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(2) instanceof ContentMenuItem);
     }
 
     @Test
     public void testArtistAlbumTrack_AlbumTracks() throws ServiceTimeoutException, ServiceException {
         Map<String, Object> expectedRequest = new HashMap<String, Object>();
         expectedRequest.put("type", "track");
+        expectedRequest.put("albumId", "album1");
+
+        ServiceController contentService = Mockito.mock(ServiceController.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_WITHOUT_ARTIST_ALBUM_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
+        setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
+        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+
+        final BrowseResponse[] response = {null};
+        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("album1", "album", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+            @Override
+            public void onResponse(BrowseResponse contentResponse) {
+                response[0] = contentResponse;
+            }
+        });
+        Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
+    }
+
+    @Test
+    public void testArtistAlbumTrack_ArtistAlbumTracks() throws ServiceTimeoutException, ServiceException {
+        Map<String, Object> expectedRequest = new HashMap<String, Object>();
+        expectedRequest.put("type", "track");
+        expectedRequest.put("artistId", "artist1");
         expectedRequest.put("albumId", "album1");
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
@@ -550,6 +664,34 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
+    }
+
+    @Test
+    public void testArtistAlbumTrack_ArtistTracks() throws ServiceTimeoutException, ServiceException {
+        Map<String, Object> expectedRequest = new HashMap<String, Object>();
+        expectedRequest.put("type", "track");
+        expectedRequest.put("artistId", "artist1");
+
+        ServiceController contentService = Mockito.mock(ServiceController.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
+        setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
+        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+
+        final BrowseResponse[] response = {null};
+        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("track", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+            @Override
+            public void onResponse(BrowseResponse contentResponse) {
+                response[0] = contentResponse;
+            }
+        });
+        Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -572,6 +714,8 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 1);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContextMenuItem);
     }
 
     @Test
@@ -586,13 +730,16 @@ public class FullBrowseMenuTest {
         setupFindItemsResponse(contentService, "allRadio", expectedRequest, menuList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", null, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", new TypeMenuItemImpl("menu"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -614,6 +761,9 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
 
@@ -636,6 +786,33 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
+    }
+
+    @Test
+    public void testCategoryCategoryStream_Categories() throws ServiceTimeoutException, ServiceException {
+        Map<String, Object> expectedRequest = new HashMap<String, Object>();
+        expectedRequest.put("type", "category");
+
+        ServiceController contentService = Mockito.mock(ServiceController.class);
+        GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(CATEGORY_LIST, ContentResponse.class);
+        setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
+        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+
+        final BrowseResponse[] response = {null};
+        createBrowseMenu(contentService).findItemsInContext("allRadio", new TypeMenuItemImpl("category"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+            @Override
+            public void onResponse(BrowseResponse contentResponse) {
+                response[0] = contentResponse;
+            }
+        });
+        Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 
     @Test
@@ -646,7 +823,7 @@ public class FullBrowseMenuTest {
 
         ServiceController contentService = Mockito.mock(ServiceController.class);
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
-        ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
+        ContentResponse trackList = jsonHelper.stringToObject(CATEGORY_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
         setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
 
@@ -658,6 +835,10 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 3);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof TypeMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(2) instanceof ContentMenuItem);
     }
 
     @Test
@@ -680,5 +861,8 @@ public class FullBrowseMenuTest {
             }
         });
         Assert.assertNotNull(response[0]);
+        Assert.assertEquals(response[0].getItems().size(), 2);
+        Assert.assertTrue(response[0].getItems().get(0) instanceof ContentMenuItem);
+        Assert.assertTrue(response[0].getItems().get(1) instanceof ContentMenuItem);
     }
 }

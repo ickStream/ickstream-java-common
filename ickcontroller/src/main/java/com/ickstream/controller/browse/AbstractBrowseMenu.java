@@ -59,6 +59,8 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
                 // We aren't interested in excluded types
             } else if (parentItem instanceof ContentMenuItem && parentItem.getType() != null && (!possibleRequest.containsKey(parentItem.getType() + "Id") || !possibleRequest.get(parentItem.getType() + "Id").equals(parentItem.getId()))) {
                 // We aren't interested in requests unless they filter by parent item
+            } else if (parentItem instanceof TypeMenuItem && (!possibleRequest.containsKey("type") || !possibleRequest.get("type").equals(parentItem.getId()))) {
+                // We aren't interested in requests if parent item is filtered by type and the request type is different
             } else if (supportedParameters.size() == possibleRequest.size() + 1 &&
                     supportedParameters.containsKey("type") &&
                     !possibleRequest.containsKey("type")) {
@@ -141,6 +143,8 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
                     }
                 }
                 if (include && parentItem instanceof ContentMenuItem && parentItem.getType() != null && (!possibleRequest.containsKey(parentItem.getType() + "Id") || !possibleRequest.get(parentItem.getType() + "Id").equals(parentItem.getId()))) {
+                    include = false;
+                } else if (include && parentItem instanceof TypeMenuItem && !possibleRequest.containsKey(parentItem.getType() + "Id")) {
                     include = false;
                 }
                 if (include) {
@@ -248,10 +252,14 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
                                 String value = getParameterFromItem(parameter, parentItem);
                                 if (value != null) {
                                     possibleParameters.put(parameter, value);
+                                } else {
+                                    unsupported = true;
                                 }
                             }
                         }
-                        possibleRequests.add(possibleParameters);
+                        if (!unsupported) {
+                            possibleRequests.add(possibleParameters);
+                        }
                     }
                 }
             }
