@@ -37,6 +37,10 @@ public class ContentResponse extends ChunkedResponse {
     }
 
     public void setLastChanged(Long lastChanged) {
-        this.lastChanged = lastChanged;
+        if (lastChanged > 2147483647) {
+            this.lastChanged = lastChanged / 1000;
+        } else {
+            this.lastChanged = lastChanged;
+        }
     }
 }
