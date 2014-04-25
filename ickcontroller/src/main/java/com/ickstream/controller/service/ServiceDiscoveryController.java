@@ -5,9 +5,9 @@
 
 package com.ickstream.controller.service;
 
-import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.ickp2p.DiscoveryAdapter;
 import com.ickstream.common.ickp2p.DiscoveryEvent;
+import com.ickstream.common.ickp2p.ServiceType;
 import com.ickstream.common.jsonrpc.MessageHandlerAdapter;
 import com.ickstream.common.jsonrpc.MessageLogger;
 import com.ickstream.controller.ObjectChangeListener;
@@ -20,7 +20,8 @@ import com.ickstream.protocol.service.core.ServiceResponse;
 import java.util.*;
 
 public class ServiceDiscoveryController extends DiscoveryAdapter {
-    protected final Map<String, Service> services = new HashMap<String, Service>();
+    protected final Map<String, Service> cloudServices = new HashMap<String, Service>();
+    protected final Map<String, Service> networkServices = new HashMap<String, Service>();
     protected List<ObjectChangeListener<Service>> serviceListeners = new ArrayList<ObjectChangeListener<Service>>();
     private ThreadFramework threadFramework;
 
@@ -46,13 +47,28 @@ public class ServiceDiscoveryController extends DiscoveryAdapter {
         serviceListeners.remove(serviceListener);
     }
 
+    public void setCoreService(CoreService coreService) {
+        if (this.coreService != coreService) {
+            this.coreService = coreService;
+            synchronized (cloudServices) {
+                Set<String> serviceIds = new HashSet<String>(cloudServices.keySet());
+                for (String serviceId : serviceIds) {
+                    removeDiscoveredServices(serviceId, EventSource.CLOUD);
+                }
+            }
+            if (coreService != null) {
+                refreshServices();
+            }
+        }
+    }
+
     public void refreshServices() {
         coreService.findServices(new FindServicesRequest("content"), new MessageHandlerAdapter<FindServicesResponse>() {
             @Override
             public void onMessage(FindServicesResponse message) {
                 Set<String> previous;
-                synchronized (services) {
-                    previous = new HashSet<String>(services.keySet());
+                synchronized (cloudServices) {
+                    previous = new HashSet<String>(cloudServices.keySet());
                     for (ServiceResponse response : message.getItems()) {
                         previous.remove(response.getId());
                     }
@@ -96,6 +112,12 @@ public class ServiceDiscoveryController extends DiscoveryAdapter {
     protected void addUpdateDiscoveredServices(final String serviceId, final String name, EventSource eventSource, final String url) {
         Service service = new Service(serviceId, name, url);
         boolean newService = true;
+        final Map<String, Service> services;
+        if (eventSource == EventSource.NETWORK) {
+            services = networkServices;
+        } else {
+            services = cloudServices;
+        }
         synchronized (services) {
             if (services.containsKey(serviceId)) {
                 service = services.get(serviceId);
@@ -120,8 +142,14 @@ public class ServiceDiscoveryController extends DiscoveryAdapter {
 
     protected void removeDiscoveredServices(final String serviceId, EventSource eventSource) {
         Service service;
-        synchronized (services) {
-            service = services.remove(serviceId);
+        if (eventSource == EventSource.NETWORK) {
+            synchronized (networkServices) {
+                service = networkServices.remove(serviceId);
+            }
+        } else {
+            synchronized (cloudServices) {
+                service = cloudServices.remove(serviceId);
+            }
         }
         if (service != null) {
             for (ObjectChangeListener<Service> serviceListener : serviceListeners) {

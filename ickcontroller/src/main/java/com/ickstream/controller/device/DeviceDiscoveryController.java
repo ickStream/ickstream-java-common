@@ -40,6 +40,21 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
         coreService.setAccessToken(accessToken);
     }
 
+    public void setCoreService(CoreService coreService) {
+        if (this.coreService != coreService) {
+            this.coreService = coreService;
+            synchronized (devices) {
+                Set<String> deviceIds = new HashSet<String>(devices.keySet());
+                for (String deviceId : deviceIds) {
+                    removeDiscoveredDevice(deviceId, EventSource.CLOUD);
+                }
+            }
+            if (coreService != null) {
+                refreshDevices();
+            }
+        }
+    }
+
     public void refreshDevices() {
         coreService.findDevices(null, new MessageHandlerAdapter<FindDevicesResponse>() {
             @Override
@@ -170,7 +185,7 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
             device = devices.get(deviceId);
             if (device != null) {
                 if ((device.getCloudState() != Device.CloudState.REGISTERED && eventSource == EventSource.NETWORK) ||
-                        (device.getConnectionState() != Device.ConnectionState.DISCONNECTED && eventSource == EventSource.CLOUD)) {
+                        (device.getConnectionState() == Device.ConnectionState.DISCONNECTED && eventSource == EventSource.CLOUD)) {
                     devices.remove(deviceId);
                     removedDevice = true;
                 }
@@ -182,7 +197,7 @@ public class DeviceDiscoveryController extends DiscoveryAdapter {
             }
         } else if (device != null && device.getCloudState() == Device.CloudState.REGISTERED && eventSource == EventSource.NETWORK) {
             device.setConnectionState(Device.ConnectionState.DISCONNECTED);
-        } else if (device != null && device.getConnectionState() == Device.ConnectionState.DISCONNECTED && eventSource == EventSource.CLOUD) {
+        } else if (device != null && eventSource == EventSource.CLOUD) {
             device.setCloudState(Device.CloudState.UNREGISTERED);
         }
     }

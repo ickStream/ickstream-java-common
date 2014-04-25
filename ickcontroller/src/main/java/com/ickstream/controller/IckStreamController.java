@@ -23,10 +23,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 public class IckStreamController implements MessageListener {
+    private String cloudCoreUrl;
     private String id;
     private String name;
     private String apiKey;
     private IckP2p ickP2p;
+    private boolean ickP2pInitialized = false;
     private MessageLogger messageLogger;
     private DeviceDiscoveryController deviceDiscoveryController;
     private ServiceDiscoveryController serviceDiscoveryController;
@@ -72,7 +74,7 @@ public class IckStreamController implements MessageListener {
         @Override
         public void onAdded(Device object) {
             PlayerDeviceController playerDeviceController = new PlayerDeviceController(apiKey, threadFramework, ickP2p, object, messageLogger);
-            playerDeviceController.setCoreService(getCoreService());
+            playerDeviceController.setCoreService(getCoreService(cloudCoreUrl));
             playerDeviceControllers.put(object.getId(), playerDeviceController);
             for (PlayerListener playerListener : playerListeners) {
                 playerListener.onPlayerAdded(playerDeviceController);
@@ -145,7 +147,7 @@ public class IckStreamController implements MessageListener {
     }
 
     public void unregisterCloud() {
-        final CoreService coreService = getCoreService();
+        final CoreService coreService = getCoreService(cloudCoreUrl);
         if (coreService != null) {
             coreService.getDevice(new MessageHandlerAdapter<DeviceResponse>() {
                 @Override
@@ -154,6 +156,12 @@ public class IckStreamController implements MessageListener {
                         @Override
                         public void onMessage(Boolean message) {
                             if (message) {
+                                if (serviceDiscoveryController != null) {
+                                    serviceDiscoveryController.setCoreService(null);
+                                }
+                                if (deviceDiscoveryController != null) {
+                                    deviceDiscoveryController.setCoreService(null);
+                                }
                                 for (IckStreamListener ickStreamListener : ickStreamListeners) {
                                     ickStreamListener.onCloudUnregistered();
                                 }
@@ -165,12 +173,12 @@ public class IckStreamController implements MessageListener {
         }
     }
 
-    public void registerCloud(String id, String name, String userToken) {
-        registerCloud(id, name, userToken, null);
+    public void registerCloud(String cloudCoreUrl, String id, String name, String userToken) {
+        registerCloud(cloudCoreUrl, id, name, userToken, null);
     }
 
-    public void registerCloud(String id, String name, String userToken, final String hardwareIdAppPostfix) {
-        CoreService coreService = getCoreService();
+    public void registerCloud(final String cloudCoreUrl, String id, String name, String userToken, final String hardwareIdAppPostfix) {
+        final CoreService coreService = getCoreService(cloudCoreUrl);
         if (coreService == null) {
             return;
         }
@@ -180,7 +188,7 @@ public class IckStreamController implements MessageListener {
         request.setName(name);
         request.setApplicationId(apiKey);
 
-        getCoreService().createDeviceRegistrationToken(request, new MessageHandlerAdapter<String>() {
+        coreService.createDeviceRegistrationToken(request, new MessageHandlerAdapter<String>() {
             @Override
             public void onMessage(String deviceRegistrationToken) {
                 AddDeviceRequest request = new AddDeviceRequest();
@@ -195,13 +203,22 @@ public class IckStreamController implements MessageListener {
                 request.setAddress(networkAddress);
                 request.setHardwareId(hardwareId);
                 request.setApplicationId(apiKey);
-                CoreServiceFactory.getCoreService(deviceRegistrationToken, messageLogger).addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
+                CoreServiceFactory.getCoreService(cloudCoreUrl, deviceRegistrationToken, messageLogger).addDevice(request, new MessageHandlerAdapter<AddDeviceResponse>() {
                     @Override
                     public void onMessage(AddDeviceResponse message) {
                         IckStreamController.this.id = message.getId();
                         String accessToken = message.getAccessToken();
+                        for (PlayerDeviceController controller : playerDeviceControllers.values()) {
+                            controller.setCoreService(coreService);
+                        }
                         for (IckStreamListener ickStreamListener : ickStreamListeners) {
                             ickStreamListener.onCloudRegistered(accessToken);
+                        }
+                        if (serviceDiscoveryController != null) {
+                            serviceDiscoveryController.setCoreService(coreService);
+                        }
+                        if (deviceDiscoveryController != null) {
+                            deviceDiscoveryController.setCoreService(coreService);
                         }
                     }
 
@@ -231,19 +248,20 @@ public class IckStreamController implements MessageListener {
         }, 20000);
     }
 
-    public CoreService getCoreService() {
-        if (coreService == null) {
-            coreService = CoreServiceFactory.getCoreService(null, messageLogger);
+    public CoreService getCoreService(String cloudCoreUrl) {
+        if (coreService == null || !this.cloudCoreUrl.equals(cloudCoreUrl)) {
+            this.cloudCoreUrl = cloudCoreUrl;
+            coreService = CoreServiceFactory.getCoreService(cloudCoreUrl, null, messageLogger);
             coreService.setAccessToken(accessToken);
         }
         return coreService;
     }
 
-    public void setAccessToken(String accessToken) {
+    public void setAccessToken(String cloudCoreUrl, String accessToken) {
         this.accessToken = accessToken;
-        CoreService coreService = getCoreService();
+        CoreService coreService = getCoreService(cloudCoreUrl);
         if (coreService != null) {
-            getCoreService().setAccessToken(accessToken);
+            coreService.setAccessToken(accessToken);
         }
         for (CloudServiceController cloudServiceController : cloudServiceControllers.values()) {
             cloudServiceController.setAccessToken(accessToken);
@@ -251,28 +269,38 @@ public class IckStreamController implements MessageListener {
     }
 
     protected void start(String deviceId, String deviceName) {
-        deviceDiscoveryController = new DeviceDiscoveryController(threadFramework, getCoreService(), messageLogger);
-        deviceDiscoveryController.addDeviceListener(deviceListener);
-        serviceDiscoveryController = new ServiceDiscoveryController(threadFramework, getCoreService(), messageLogger);
-        serviceDiscoveryController.addServiceListener(serviceListener);
-        ickP2p.addMessageListener(IckStreamController.this);
-        ickP2p.addDiscoveryListener(deviceDiscoveryController);
-        ickP2p.addDiscoveryListener(serviceDiscoveryController);
-        String ip = NetworkAddressHelper.getNetworkAddress();
-        try {
-            System.out.println("create(\"" + deviceName + "\",\"" + deviceId + "\",NULL,NULL,NULL," + ServiceType.CONTROLLER + ")");
-            ickP2p.create(deviceName, deviceId, null, null, null, ServiceType.CONTROLLER);
-            System.out.println("addInterface(\"" + ip + "\",NULL");
-            ickP2p.addInterface(ip, null);
-            ickP2p.resume();
-            for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                ickStreamListener.onNetworkInitialized();
-            }
-            refreshDevices();
-            refreshServices();
-        } catch (IckP2pException e) {
-            for (IckStreamListener ickStreamListener : ickStreamListeners) {
-                ickStreamListener.onError(e.getErrorCode(), "ickP2p initialization error: " + e.getErrorCode());
+        if (!ickP2pInitialized) {
+            deviceDiscoveryController = new DeviceDiscoveryController(threadFramework, getCoreService(cloudCoreUrl), messageLogger);
+            deviceDiscoveryController.addDeviceListener(deviceListener);
+            serviceDiscoveryController = new ServiceDiscoveryController(threadFramework, getCoreService(cloudCoreUrl), messageLogger);
+            serviceDiscoveryController.addServiceListener(serviceListener);
+            ickP2p.addMessageListener(IckStreamController.this);
+            ickP2p.addDiscoveryListener(deviceDiscoveryController);
+            ickP2p.addDiscoveryListener(serviceDiscoveryController);
+            String ip = NetworkAddressHelper.getNetworkAddress();
+            try {
+                System.out.println("create(\"" + deviceName + "\",\"" + deviceId + "\",NULL,NULL,NULL," + ServiceType.CONTROLLER + ")");
+                ickP2p.create(deviceName, deviceId, null, null, null, ServiceType.CONTROLLER);
+                System.out.println("addInterface(\"" + ip + "\",NULL");
+                ickP2p.addInterface(ip, null);
+                ickP2p.resume();
+                ickP2pInitialized = true;
+                for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                    ickStreamListener.onNetworkInitialized();
+                }
+                refreshDevices();
+                refreshServices();
+            } catch (IckP2pException e) {
+                ickP2p.removeDiscoveryListener(deviceDiscoveryController);
+                ickP2p.removeDiscoveryListener(serviceDiscoveryController);
+                ickP2p.removeMessageListener(IckStreamController.this);
+                serviceDiscoveryController.removeServiceListener(serviceListener);
+                deviceDiscoveryController.removeDeviceListener(deviceListener);
+                serviceDiscoveryController = null;
+                deviceDiscoveryController = null;
+                for (IckStreamListener ickStreamListener : ickStreamListeners) {
+                    ickStreamListener.onError(e.getErrorCode(), "ickP2p initialization error: " + e.getErrorCode());
+                }
             }
         }
     }
@@ -286,20 +314,20 @@ public class IckStreamController implements MessageListener {
     }
 
     public void shutdown() {
-        if (ickP2p != null) {
+        if (ickP2pInitialized) {
             try {
                 ickP2p.end();
             } catch (IckP2pException e) {
                 e.printStackTrace();
             }
-            ickP2p = null;
+            ickP2pInitialized = false;
         }
     }
 
     public void start() {
-        CoreService coreService = getCoreService();
+        CoreService coreService = getCoreService(cloudCoreUrl);
         if (coreService != null) {
-            getCoreService().setDeviceAddress(new SetDeviceAddressRequest(NetworkAddressHelper.getNetworkAddress()), new MessageHandlerAdapter<DeviceResponse>() {
+            coreService.setDeviceAddress(new SetDeviceAddressRequest(NetworkAddressHelper.getNetworkAddress()), new MessageHandlerAdapter<DeviceResponse>() {
                 @Override
                 public void onMessage(DeviceResponse message) {
                     setId(message.getId());

@@ -12,17 +12,14 @@ import com.ickstream.controller.ThreadFramework;
 import com.ickstream.protocol.service.core.*;
 import com.ickstream.protocol.service.player.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class PlayerDeviceController implements Observer, JsonRpcResponseHandler, JsonRpcRequestHandler {
     private String apiKey;
     Device device;
     List<MessageHandler<PlaybackQueueResponse>> playbackQueueListeners = new ArrayList<MessageHandler<PlaybackQueueResponse>>();
     List<MessageHandler<PlayerStatusResponse>> playerStatusListeners = new ArrayList<MessageHandler<PlayerStatusResponse>>();
-    List<PlayerStateListener> playerStateListeners = new ArrayList<PlayerStateListener>();
+    Set<PlayerStateListener> playerStateListeners = new HashSet<PlayerStateListener>();
     MessageHandler<PlaybackQueueChangedNotification> playbackQueueChangedListener;
     MessageHandler<PlayerStatusResponse> playerStatusChangedListener;
     PlayerService playerService;
