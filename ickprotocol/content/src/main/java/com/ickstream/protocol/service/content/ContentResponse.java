@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ContentResponse extends ChunkedResponse {
-    private Long expirationTimestamp;
     private Long lastChanged;
     private List<ContentItem> items = new ArrayList<ContentItem>();
 
@@ -22,14 +21,6 @@ public class ContentResponse extends ChunkedResponse {
 
     public void setItems(List<ContentItem> items) {
         this.items = items;
-    }
-
-    public Long getExpirationTimestamp() {
-        return expirationTimestamp;
-    }
-
-    public void setExpirationTimestamp(Long expirationTimestamp) {
-        this.expirationTimestamp = expirationTimestamp;
     }
 
     public Long getLastChanged() {
