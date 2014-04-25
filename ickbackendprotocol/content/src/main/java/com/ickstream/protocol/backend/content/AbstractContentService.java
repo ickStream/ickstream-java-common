@@ -793,9 +793,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     public static abstract class AbstractContentHandler extends BusinessCallHandler implements ContentHandler {
-        protected Long EXPIRATION_TIMESTAMP_HOUR = 3600l;
-        protected Long EXPIRATION_TIMESTAMP_DAY = 24l * 3600;
-        protected Long EXPIRATION_TIMESTAMP_WEEK = 7l * 24 * 3600;
 
         @Override
         public ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count) {
@@ -820,16 +817,9 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
         protected abstract ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
 
-        protected Long getExpirationTimestamp(Long expirationPeriod) {
-            return System.currentTimeMillis() / 1000 + expirationPeriod;
-        }
-
     }
 
     public static abstract class AbstractDynamicPlaylistHandler extends BusinessCallHandler implements DynamicPlaylistHandler {
-        protected Long EXPIRATION_TIMESTAMP_HOUR = 3600l;
-        protected Long EXPIRATION_TIMESTAMP_DAY = 24l * 3600;
-        protected Long EXPIRATION_TIMESTAMP_WEEK = 7l * 24 * 3600;
 
         @Override
         public ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems) {
@@ -852,10 +842,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
 
         protected abstract ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems, ContentResponse result) throws IOException;
-
-        protected Long getExpirationTimestamp(Long expirationPeriod) {
-            return System.currentTimeMillis() / 1000 + expirationPeriod;
-        }
     }
 
     private class ManagementItemHandlerEntry {
