@@ -94,7 +94,7 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                         public void onMessage(ContentResponse message) {
                             if (message != null) {
                                 BrowseResponse browseResponse = new BrowseResponse();
-                                browseResponse.setExpirationTimestamp(message.getExpirationTimestamp());
+                                browseResponse.setLastChanged(message.getLastChanged());
                                 browseResponse.setCount(message.getCount());
                                 browseResponse.setCountAll(message.getCountAll());
                                 browseResponse.setOffset(message.getOffset());

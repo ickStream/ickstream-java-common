@@ -10,15 +10,15 @@ import com.ickstream.protocol.common.ChunkedResponse;
 import java.util.List;
 
 public class BrowseResponse extends ChunkedResponse {
-    private Long expirationTimestamp;
+    private Long lastChanged;
     private List<MenuItem> items;
 
-    public Long getExpirationTimestamp() {
-        return expirationTimestamp;
+    public Long getLastChanged() {
+        return lastChanged;
     }
 
-    public void setExpirationTimestamp(Long expirationTimestamp) {
-        this.expirationTimestamp = expirationTimestamp;
+    public void setLastChanged(Long lastChanged) {
+        this.lastChanged = lastChanged;
     }
 
     public List<MenuItem> getItems() {
