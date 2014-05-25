@@ -7,7 +7,6 @@ package com.ickstream.protocol.backend.content;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.inject.Inject;
-import com.ickstream.common.jsonrpc.JsonRpcParamStructure;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
@@ -36,12 +35,74 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     private List<ContentItemHandlerEntry> contentItemHandlers = new ArrayList<ContentItemHandlerEntry>();
     private List<ManagementItemHandlerEntry> managementItemHandlers = new ArrayList<ManagementItemHandlerEntry>();
     private List<DynamicPlaylistHandlerEntry> dynamicPlaylistHandlers = new ArrayList<DynamicPlaylistHandlerEntry>();
-    private List<ContentItem> topLevelItems = new ArrayList<ContentItem>();
-    private List<ProtocolDescriptionContext> contexts = new ArrayList<ProtocolDescriptionContext>();
+    private List<ProtocolDescriptionContextEntry> contexts = new ArrayList<ProtocolDescriptionContextEntry>();
     private List<ManagementProtocolDescriptionContext> managementContexts = new ArrayList<ManagementProtocolDescriptionContext>();
 
     private static final Pattern PARAMETER_PATTERN = Pattern.compile("\\{(.*?)\\}");
     private static final Map<String, Pattern> patternCache = new HashMap<String, Pattern>();
+
+    protected static enum Context {
+        MY_MUSIC("myMusic"),
+        ALL_MUSIC("allMusic"),
+        HOT_MUSIC("hotMusic"),
+        FRIENDS_MUSIC("friendsMusic"),
+        ALL_RADIO("allRadio");
+
+        private String name;
+
+        private Context(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    ;
+
+    private static class ProtocolDescriptionContextEntry {
+        private String contextId;
+        private String resourceBundle;
+        private String nameKey;
+        private List<ImageReference> images = new ArrayList<ImageReference>();
+        private List<RequestDescription> supportedRequests = new ArrayList<RequestDescription>();
+
+        private ProtocolDescriptionContextEntry(String contextId, String resourceBundle, String nameKey) {
+            this.contextId = contextId;
+            this.resourceBundle = resourceBundle;
+            this.nameKey = nameKey;
+        }
+
+        private ProtocolDescriptionContextEntry(String contextId, String resourceBundle, String nameKey, List<ImageReference> images) {
+            this(contextId, resourceBundle, nameKey);
+            this.images = images;
+        }
+
+
+        public String getContextId() {
+            return contextId;
+        }
+
+        public String getResourceBundle() {
+            return resourceBundle;
+        }
+
+        public String getNameKey() {
+            return nameKey;
+        }
+
+        public List<ImageReference> getImages() {
+            return images;
+        }
+
+        public List<RequestDescription> getSupportedRequests() {
+            return supportedRequests;
+        }
+    }
+
+    ;
 
     protected abstract CoreBackendService getCoreBackendService();
 
@@ -111,47 +172,62 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
     }
 
+    protected void addManagementContext(Context context, List<String> supportedTypes) {
+        addManagementContext(context.toString(), supportedTypes);
+    }
+
     protected void addManagementContext(String contextId, List<String> supportedTypes) {
         ManagementProtocolDescriptionContext context = new ManagementProtocolDescriptionContext(contextId);
         context.getSupportedTypes().addAll(supportedTypes);
         managementContexts.add(context);
     }
 
-    protected void addContext(String contextId, String name) {
-        contexts.add(new ProtocolDescriptionContext(contextId, name));
+    protected void addContext(Context context) {
+        contexts.add(new ProtocolDescriptionContextEntry(context.toString(), null, "com.ickstream.protocol.backend.content.context." + context.toString()));
     }
 
-    protected void addContext(String contextId, String name, List<ImageReference> images) {
-        contexts.add(new ProtocolDescriptionContext(contextId, name, images));
+    protected void addContext(String contextId, String resourceBundle, String nameKey) {
+        contexts.add(new ProtocolDescriptionContextEntry(contextId, resourceBundle, nameKey));
+    }
+
+    protected void addContext(Context context, List<ImageReference> images) {
+        contexts.add(new ProtocolDescriptionContextEntry(context.toString(), null, "com.ickstream.protocol.backend.content.context." + context.toString(), images));
+    }
+
+    protected void addContext(String contextId, String resourceBundle, String nameKey, List<ImageReference> images) {
+        contexts.add(new ProtocolDescriptionContextEntry(contextId, resourceBundle, nameKey, images));
+    }
+
+    protected void addHandler(ContentHandler handler, Context context, String type) {
+        addHandler(handler, context.toString(), type, null, null);
     }
 
     protected void addHandler(ContentHandler handler, String contextId, String type) {
         addHandler(handler, contextId, type, null, null);
     }
 
+    protected void addHandler(ContentHandler handler, Context context, String type, List<ParameterValue> parameters) {
+        addHandler(handler, context.toString(), type, null, parameters);
+    }
+
     protected void addHandler(ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
         addHandler(handler, contextId, type, null, parameters);
+    }
+
+    protected void addDynamicPlaylistHandler(ContentHandler handler, Context context, String type, List<ParameterValue> parameters) {
+        addHandler(handler, context.toString(), type, null, parameters);
     }
 
     protected void addDynamicPlaylistHandler(ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
         addHandler(handler, contextId, type, null, parameters);
     }
 
-    protected void addTopLevelItem(String id, String text, String parentNode, String descendContextId, String descendType) {
-        addTopLevelItem(id, text, parentNode, descendContextId, descendType, null);
-    }
-
-    protected void addTopLevelItem(String id, String text, String parentNode, String descendContextId, String descendType, List<ParameterValue> descendParameters) {
-        ContentItem item = new ContentItem();
-        item.setId(id);
-        item.setText(text);
-        item.setType("menu");
-        item.setParentNode(parentNode);
-        topLevelItems.add(item);
-    }
-
     protected void addManagementItemHandler(String attribute, String expression, ManagementItemHandler handler) {
         managementItemHandlers.add(new ManagementItemHandlerEntry(handler, attribute, expression));
+    }
+
+    protected void addItemHandler(Context context, String attribute, String expression, ContentItemHandler handler) {
+        addItemHandler(context.toString(), attribute, expression, handler);
     }
 
     protected void addItemHandler(String contextId, String attribute, String expression, ContentItemHandler handler) {
@@ -167,6 +243,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             entry.getParameters().add(m.group(1));
         }
         contentItemHandlers.add(entry);
+    }
+
+    protected void addHandler(ContentHandler handler, Context context, String type, Integer maxSize, Collection<ParameterValue> parameters) {
+        addHandler(handler, context.toString(), type, maxSize, parameters);
     }
 
     protected void addHandler(ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
@@ -193,7 +273,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 supportedParameters.add(parameter.getParameter());
             }
         }
-        for (ProtocolDescriptionContext context : contexts) {
+        for (ProtocolDescriptionContextEntry context : contexts) {
             if (contextId == null || context.getContextId().equals(contextId)) {
                 RequestDescription request = new RequestDescription(type);
                 boolean added = false;
@@ -271,10 +351,11 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
-    public GetProtocolDescriptionResponse getProtocolDescription(Integer offset, Integer count) {
+    public GetProtocolDescriptionResponse getProtocolDescription(Integer offset, Integer count, String language) {
         BusinessCall businessCall = startBusinessCall("getProtocolDescription");
         businessCall.addParameter("offset", offset);
         businessCall.addParameter("count", count);
+        businessCall.addParameter("language", language);
         try {
             offset = offset != null ? offset : 0;
             count = count != null ? count : contexts.size();
@@ -285,8 +366,18 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
             for (int i = 0; i < contexts.size(); i++) {
                 if (i >= offset && result.getItems().size() < count) {
-                    ProtocolDescriptionContext context = contexts.get(i);
-                    ProtocolDescriptionContext resultContext = new ProtocolDescriptionContext(context.getContextId(), context.getName(), getImages(context.getContextId()));
+                    ProtocolDescriptionContextEntry context = contexts.get(i);
+                    String bundleId = context.getResourceBundle();
+                    if (bundleId == null) {
+                        bundleId = "ContentService";
+                    }
+                    if (language == null) {
+                        language = Locale.ENGLISH.getLanguage();
+                    }
+                    ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
+                    String name = bundle.getString(context.getNameKey());
+
+                    ProtocolDescriptionContext resultContext = new ProtocolDescriptionContext(context.getContextId(), name, getImages(context.getContextId()));
                     resultContext.setSupportedRequests(context.getSupportedRequests());
                     result.getItems().add(resultContext);
                 }
@@ -302,7 +393,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
-    public ContentItem getItem(String contextId, Map<String, String> parameters) {
+    public ContentItem getItem(String contextId, String language, Map<String, String> parameters) {
         BusinessCall businessCall = startBusinessCall("getItem");
         businessCall.addParameters(parameters);
         try {
@@ -323,7 +414,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                                             parameters.put(entry.getParameters().get(i - 1), attributeValue);
                                         }
                                     }
-                                    ContentItem result = entry.getHandler().getItemOrCatchErrors(userService, parameters);
+                                    ContentItem result = entry.getHandler().getItemOrCatchErrors(userService, language, parameters);
                                     businessLogger.logSuccessful(businessCall);
                                     return result;
                                 }
@@ -386,7 +477,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
-    public ContentResponse getNextDynamicPlaylistTracks(@JsonRpcParamStructure GetNextDynamicPlaylistTracksRequest request) {
+    public ContentResponse getNextDynamicPlaylistTracks(GetNextDynamicPlaylistTracksRequest request) {
         BusinessCall businessCall = startBusinessCall("getNextDynamicPlaylistTracks");
         businessCall.addParameter("count", request.getCount());
         businessCall.addParameter("type", request.getSelectionParameters() != null ? request.getSelectionParameters().getType() : null);
@@ -471,44 +562,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
-    public ContentResponse findTopLevelItems(Integer offset, Integer count) {
-        BusinessCall businessCall = startBusinessCall("findTopLevelItems");
-        businessCall.addParameter("offset", offset);
-        businessCall.addParameter("count", count);
-        try {
-            String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
-            offset = offset != null ? offset : 0;
-            DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
-            if (device != null) {
-                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
-                if (userService != null) {
-                    ContentResponse result = findTopLevelItems(userService, offset, count);
-                    businessLogger.logSuccessful(businessCall);
-                    return result;
-                }
-            }
-            throw new UnauthorizedAccessException();
-        } catch (RuntimeException e) {
-            businessLogger.logFailed(businessCall, e);
-            throw e;
-        }
-    }
-
-    protected ContentResponse findTopLevelItems(UserServiceResponse userService, Integer offset, Integer count) {
-        ContentResponse result = new ContentResponse();
-        result.setOffset(offset);
-        for (ContentItem item : topLevelItems) {
-            if (offset <= 0 && (count == null || count > result.getItems().size())) {
-                result.getItems().add(item);
-            }
-            offset--;
-        }
-        result.setCount(result.getItems().size());
-        result.setCountAll(topLevelItems.size());
-        return result;
-    }
-
-    @Override
     public Boolean addItem(String contextId, Map<String, String> parameters) {
         BusinessCall businessCall = startBusinessCall("addItem");
         businessCall.addParameters(parameters);
@@ -547,7 +600,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
-    public ContentResponse findItems(Integer offset, Integer count, String contextId, Map<String, String> parameters) {
+    public ContentResponse findItems(Integer offset, Integer count, String contextId, String language, Map<String, String> parameters) {
         BusinessCall businessCall = startBusinessCall("findItems");
         for (Map.Entry<String, String> parameter : parameters.entrySet()) {
             if (parameter.getKey().equalsIgnoreCase("count") || parameter.getKey().equalsIgnoreCase("offset")) {
@@ -566,7 +619,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    ContentResponse result = findItems(userService, offset, count, contextId, parameters);
+                    ContentResponse result = findItems(userService, language, offset, count, contextId, parameters);
                     businessLogger.logSuccessful(businessCall);
                     return result;
                 }
@@ -610,7 +663,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         return false;
     }
 
-    protected ContentResponse findItems(UserServiceResponse userService, Integer offset, Integer count, String contextId, Map<String, String> parameters) {
+    protected ContentResponse findItems(UserServiceResponse userService, String language, Integer offset, Integer count, String contextId, Map<String, String> parameters) {
         ContentHandlerEntry foundHandler = null;
         Map<String, String> foundParameters = null;
         for (ContentHandlerEntry entry : contentHandlers) {
@@ -646,7 +699,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (foundHandler.getMaxSize() != null && (count == null || count > foundHandler.getMaxSize())) {
                 count = foundHandler.getMaxSize();
             }
-            ContentResponse result = foundHandler.getHandler().findItems(userService, foundParameters, offset, count);
+            ContentResponse result = foundHandler.getHandler().findItems(userService, language, foundParameters, offset, count);
             if (result.getCount() == null) {
                 result.setCount(result.getItems().size());
             }
@@ -656,7 +709,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     public static interface ContentHandler {
-        ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count);
+        ContentResponse findItems(UserServiceResponse userService, String language, Map<String, String> parameters, Integer offset, Integer count);
     }
 
     public static interface DynamicPlaylistHandler {
@@ -664,7 +717,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     public static interface ContentItemHandler {
-        ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters);
+        ContentItem getItemOrCatchErrors(UserServiceResponse userService, String language, Map<String, String> parameters);
 
         StreamingReference getItemStreamingRefOrCatchErrors(UserServiceResponse userService, String trackId, List<String> preferredFormats);
     }
@@ -750,9 +803,9 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     public static abstract class AbstractContentItemHandler extends BusinessCallHandler implements ContentItemHandler {
         @Override
-        public ContentItem getItemOrCatchErrors(UserServiceResponse userService, Map<String, String> parameters) {
+        public ContentItem getItemOrCatchErrors(UserServiceResponse userService, String language, Map<String, String> parameters) {
             try {
-                return getItem(userService, parameters);
+                return getItem(userService, language, parameters);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -789,18 +842,18 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return null;
         }
 
-        protected abstract ContentItem getItem(UserServiceResponse userService, Map<String, String> parameters) throws IOException;
+        protected abstract ContentItem getItem(UserServiceResponse userService, String language, Map<String, String> parameters) throws IOException;
     }
 
     public static abstract class AbstractContentHandler extends BusinessCallHandler implements ContentHandler {
 
         @Override
-        public ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count) {
+        public ContentResponse findItems(UserServiceResponse userService, String language, Map<String, String> parameters, Integer offset, Integer count) {
             ContentResponse result = new ContentResponse();
             result.setOffset(offset);
 
             try {
-                result = findItems(userService, parameters, offset, count, result);
+                result = findItems(userService, language, parameters, offset, count, result);
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -815,7 +868,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return result;
         }
 
-        protected abstract ContentResponse findItems(UserServiceResponse userService, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
+        protected abstract ContentResponse findItems(UserServiceResponse userService, String language, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
 
     }
 

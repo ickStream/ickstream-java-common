@@ -23,7 +23,7 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
-    public ContentItem getItem(@JsonRpcParam(name = "contextId", optional = true) String contextId, @JsonRpcParamStructure Map<String, String> parameters);
+    public ContentItem getItem(@JsonRpcParam(name = "contextId", optional = true) String contextId, @JsonRpcParam(name = "language", optional = true) String language, @JsonRpcParamStructure Map<String, String> parameters);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
@@ -35,14 +35,8 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
-    public ContentResponse findTopLevelItems(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count);
 
-    @JsonRpcErrors({
-            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
-            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
-    })
-
-    public ContentResponse findItems(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "contextId", optional = true) String contextId, @JsonRpcParamStructure Map<String, String> parameters);
+    public ContentResponse findItems(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "contextId", optional = true) String contextId, @JsonRpcParam(name = "language", optional = true) String language, @JsonRpcParamStructure Map<String, String> parameters);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
@@ -60,7 +54,7 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
-    public GetProtocolDescriptionResponse getProtocolDescription(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count);
+    public GetProtocolDescriptionResponse getProtocolDescription(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "language", optional = true) String language);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
