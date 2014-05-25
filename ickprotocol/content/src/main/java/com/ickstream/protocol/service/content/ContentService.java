@@ -7,6 +7,7 @@ package com.ickstream.protocol.service.content;
 
 import com.ickstream.common.jsonrpc.*;
 import com.ickstream.protocol.common.ChunkedRequest;
+import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
@@ -110,11 +111,11 @@ public abstract class ContentService extends AbstractService implements Personal
         sendRequest("getAccountInformation", null, AccountInformation.class, messageHandler, timeout);
     }
 
-    public GetProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
+    public GetProtocolDescriptionResponse getProtocolDescription(GetProtocolDescriptionRequest request) throws ServiceException, ServiceTimeoutException {
         return getProtocolDescription(request, (Integer) null);
     }
 
-    public GetProtocolDescriptionResponse getProtocolDescription(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+    public GetProtocolDescriptionResponse getProtocolDescription(GetProtocolDescriptionRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, timeout);
         } catch (JsonRpcException e) {
@@ -124,11 +125,11 @@ public abstract class ContentService extends AbstractService implements Personal
         }
     }
 
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
+    public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         getProtocolDescription(request, messageHandler, (Integer) null);
     }
 
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
+    public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
         sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, messageHandler, timeout);
     }
 
@@ -154,33 +155,11 @@ public abstract class ContentService extends AbstractService implements Personal
         sendRequest("getManagementProtocolDescription", request, GetManagementProtocolDescriptionResponse.class, messageHandler, timeout);
     }
 
-    public ContentResponse findTopLevelItems(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
-        return findTopLevelItems(request, (Integer) null);
+    public ContentResponse findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {
+        return findItems(request, contextId, language, params, (Integer) null);
     }
 
-    public ContentResponse findTopLevelItems(ChunkedRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
-        try {
-            return sendRequest("findTopLevelItems", request, ContentResponse.class, timeout);
-        } catch (JsonRpcException e) {
-            throw getServiceException(e);
-        } catch (JsonRpcTimeoutException e) {
-            throw new ServiceTimeoutException(e);
-        }
-    }
-
-    public void findTopLevelItems(ChunkedRequest request, MessageHandler<ContentResponse> messageHandler) {
-        findTopLevelItems(request, messageHandler, (Integer) null);
-    }
-
-    public void findTopLevelItems(ChunkedRequest request, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
-        sendRequest("findTopLevelItems", request, ContentResponse.class, messageHandler, timeout);
-    }
-
-    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {
-        return findItems(request, contextId, params, (Integer) null);
-    }
-
-    public ContentResponse findItems(ChunkedRequest request, String contextId, Map<String, Object> params, Integer timeout) throws ServiceException, ServiceTimeoutException {
+    public ContentResponse findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params, Integer timeout) throws ServiceException, ServiceTimeoutException {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {
@@ -192,6 +171,9 @@ public abstract class ContentService extends AbstractService implements Personal
         }
         if (contextId != null) {
             parameters.put("contextId", contextId);
+        }
+        if (language != null) {
+            parameters.put("language", language);
         }
         parameters.putAll(params);
         try {
@@ -203,11 +185,11 @@ public abstract class ContentService extends AbstractService implements Personal
         }
     }
 
-    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
-        findItems(request, contextId, params, messageHandler, (Integer) null);
+    public void findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
+        findItems(request, contextId, language, params, messageHandler, (Integer) null);
     }
 
-    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
+    public void findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
         Map<String, Object> parameters = new HashMap<String, Object>();
         if (request != null) {
             if (request.getCount() != null) {
@@ -220,8 +202,53 @@ public abstract class ContentService extends AbstractService implements Personal
         if (contextId != null) {
             parameters.put("contextId", contextId);
         }
+        if (language != null) {
+            parameters.put("language", language);
+        }
         parameters.putAll(params);
         sendRequest("findItems", parameters, ContentResponse.class, messageHandler, timeout);
+    }
+
+    public ContentItem getItem(String contextId, String language, String itemId) throws ServiceException, ServiceTimeoutException {
+        return getItem(contextId, language, itemId, (Integer) null);
+    }
+
+    public ContentItem getItem(String contextId, String language, String itemId, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        if (itemId != null) {
+            parameters.put("itemId", contextId);
+        }
+        if (contextId != null) {
+            parameters.put("contextId", contextId);
+        }
+        if (language != null) {
+            parameters.put("language", language);
+        }
+        try {
+            return sendRequest("getItem", parameters, ContentItem.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getItem(String contextId, String language, String itemId, MessageHandler<ContentItem> messageHandler) {
+        getItem(contextId, language, itemId, messageHandler, (Integer) null);
+    }
+
+    public void getItem(String contextId, String language, String itemId, MessageHandler<ContentItem> messageHandler, Integer timeout) {
+        Map<String, Object> parameters = new HashMap<String, Object>();
+        if (itemId != null) {
+            parameters.put("itemId", itemId);
+        }
+        if (contextId != null) {
+            parameters.put("contextId", contextId);
+        }
+        if (language != null) {
+            parameters.put("language", language);
+        }
+        sendRequest("getItem", parameters, ContentItem.class, messageHandler, timeout);
     }
 
     public StreamingReference getItemStreamingRef(GetItemStreamingRefRequest request) throws ServiceException, ServiceTimeoutException {
