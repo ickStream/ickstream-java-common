@@ -11,6 +11,7 @@ import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.common.ChunkedRequest;
 import com.ickstream.protocol.service.content.ContentResponse;
 import com.ickstream.protocol.service.content.ContentService;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionRequest;
 import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 
 import java.util.Map;
@@ -40,23 +41,23 @@ public class AbstractServiceController implements ServiceController, JsonRpcResp
     }
 
     @Override
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
+    public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         contentService.getProtocolDescription(request, messageHandler);
     }
 
     @Override
-    public void getProtocolDescription(ChunkedRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
+    public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
         contentService.getProtocolDescription(request, messageHandler, timeout);
     }
 
     @Override
-    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
-        contentService.findItems(request, contextId, params, messageHandler);
+    public void findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler) {
+        contentService.findItems(request, contextId, language, params, messageHandler);
     }
 
     @Override
-    public void findItems(ChunkedRequest request, String contextId, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
-        contentService.findItems(request, contextId, params, messageHandler, timeout);
+    public void findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params, MessageHandler<ContentResponse> messageHandler, Integer timeout) {
+        contentService.findItems(request, contextId, language, params, messageHandler, timeout);
     }
 
     @Override

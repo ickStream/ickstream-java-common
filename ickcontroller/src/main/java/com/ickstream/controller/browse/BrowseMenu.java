@@ -10,9 +10,9 @@ public interface BrowseMenu {
         void onResponse(T contentResponse);
     }
 
-    void findContexts(ResponseListener<BrowseResponse> listener);
+    void findContexts(String language, ResponseListener<BrowseResponse> listener);
 
-    void findItemsInContext(String contextId, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
+    void findItemsInContext(String contextId, String language, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
 
-    void findItemsInContextByType(String contextId, String type, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
+    void findItemsInContextByType(String contextId, String language, String type, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
 }

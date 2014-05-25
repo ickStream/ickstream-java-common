@@ -7,6 +7,7 @@ package com.ickstream.controller.browse;
 
 import com.ickstream.common.jsonrpc.MessageHandlerAdapter;
 import com.ickstream.controller.service.ServiceController;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionRequest;
 import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 import com.ickstream.protocol.service.content.ProtocolDescriptionContext;
 import com.ickstream.protocol.service.content.RequestDescription;
@@ -21,9 +22,9 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         this.service = service;
     }
 
-    protected void getProtocol(final ResponseListener<Boolean> listener) {
+    protected void getProtocol(String language, final ResponseListener<Boolean> listener) {
         if (supportedRequests.size() == 0) {
-            service.getProtocolDescription(null, new MessageHandlerAdapter<GetProtocolDescriptionResponse>() {
+            service.getProtocolDescription(new GetProtocolDescriptionRequest(language), new MessageHandlerAdapter<GetProtocolDescriptionResponse>() {
                 @Override
                 public void onMessage(GetProtocolDescriptionResponse message) {
                     synchronized (supportedRequests) {

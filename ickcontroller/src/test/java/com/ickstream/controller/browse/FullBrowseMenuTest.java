@@ -13,6 +13,7 @@ import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.exception.ServiceException;
 import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.content.ContentResponse;
+import com.ickstream.protocol.service.content.GetProtocolDescriptionRequest;
 import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -20,10 +21,7 @@ import org.mockito.stubbing.Answer;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class FullBrowseMenuTest {
     String ARTIST_TRACK_SERVICE = "" +
@@ -382,19 +380,19 @@ public class FullBrowseMenuTest {
                 callback.onMessage(protocolDescription);
                 return null;
             }
-        }).when(serviceController).getProtocolDescription(Mockito.any(ChunkedRequest.class), Mockito.any(MessageHandler.class), Mockito.any(Integer.class));
+        }).when(serviceController).getProtocolDescription(Mockito.any(GetProtocolDescriptionRequest.class), Mockito.any(MessageHandler.class), Mockito.any(Integer.class));
     }
 
-    private void setupFindItemsResponse(ServiceController serviceController, String contextId, Map<String, Object> parameters, final ContentResponse response) {
+    private void setupFindItemsResponse(ServiceController serviceController, String contextId, String language, Map<String, Object> parameters, final ContentResponse response) {
         Mockito.doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                MessageHandler<ContentResponse> callback = (MessageHandler<ContentResponse>) args[3];
+                MessageHandler<ContentResponse> callback = (MessageHandler<ContentResponse>) args[4];
                 callback.onMessage(response);
                 return null;
             }
-        }).when(serviceController).findItems(Mockito.any(ChunkedRequest.class), Mockito.eq(contextId), Mockito.eq(parameters), Mockito.any(MessageHandler.class), Mockito.any(Integer.class));
+        }).when(serviceController).findItems(Mockito.any(ChunkedRequest.class), Mockito.eq(contextId), Mockito.eq(language), Mockito.eq(parameters), Mockito.any(MessageHandler.class), Mockito.any(Integer.class));
     }
 
     @Test
@@ -407,10 +405,10 @@ public class FullBrowseMenuTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new RuntimeException("Should not call findItems");
             }
-        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
+        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findContexts(new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findContexts(Locale.ENGLISH.getLanguage(), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -430,10 +428,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -455,10 +453,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -480,10 +478,10 @@ public class FullBrowseMenuTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new RuntimeException("Should not call findItems");
             }
-        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
+        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findContexts(new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findContexts(Locale.ENGLISH.getLanguage(), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -504,10 +502,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -529,10 +527,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_TRACK_WITHOUT_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allMusic", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "allMusic", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -554,10 +552,10 @@ public class FullBrowseMenuTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new RuntimeException("Should not call findItems");
             }
-        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
+        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findContexts(new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findContexts(Locale.ENGLISH.getLanguage(), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -577,10 +575,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse artistList = jsonHelper.stringToObject(ARTIST_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, artistList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, artistList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -602,10 +600,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse albumList = jsonHelper.stringToObject(ALBUM_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, albumList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, albumList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new MenuItemImpl("artist1", "artist"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -628,10 +626,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_WITHOUT_ARTIST_ALBUM_FILTERING_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("album1", "album", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new MenuItemImpl("album1", "album", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -654,10 +652,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new MenuItemImpl("album1", "album", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new MenuItemImpl("album1", "album", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -679,10 +677,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(ARTIST_ALBUM_TRACK_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "myMusic", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "myMusic", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("myMusic", new TypeMenuItemImpl("track", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("myMusic", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("track", new MenuItemImpl("artist1", "artist")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -704,10 +702,10 @@ public class FullBrowseMenuTest {
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 throw new RuntimeException("Should not call findItems");
             }
-        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
+        }).when(contentService).findItems(Mockito.any(ChunkedRequest.class), Mockito.anyString(), Mockito.anyString(), Mockito.anyMapOf(String.class, Object.class), Mockito.any(MessageHandler.class));
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findContexts(new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findContexts(Locale.ENGLISH.getLanguage(), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -727,10 +725,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse menuList = jsonHelper.stringToObject(MENU_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, menuList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, menuList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new TypeMenuItemImpl("menu"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("menu"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -751,10 +749,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse subMenuList = jsonHelper.stringToObject(SUB_MENU_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, subMenuList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, subMenuList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("menu1", "menu"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new MenuItemImpl("menu1", "menu"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -776,10 +774,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(MENU_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(STREAM_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("submenu1", "menu", new MenuItemImpl("menu1", "menu")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new MenuItemImpl("submenu1", "menu", new MenuItemImpl("menu1", "menu")), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -800,10 +798,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(CATEGORY_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new TypeMenuItemImpl("category"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new TypeMenuItemImpl("category"), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -825,10 +823,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(CATEGORY_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("category1", "category", Arrays.asList("category"), null), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new MenuItemImpl("category1", "category", Arrays.asList("category"), null), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;
@@ -851,10 +849,10 @@ public class FullBrowseMenuTest {
         GetProtocolDescriptionResponse protocolDescription = jsonHelper.stringToObject(CATEGORY_CATEGORY_STREAM_SERVICE, GetProtocolDescriptionResponse.class);
         ContentResponse trackList = jsonHelper.stringToObject(TRACK_LIST, ContentResponse.class);
         setupGetProtocolDescriptionAnswer(contentService, protocolDescription);
-        setupFindItemsResponse(contentService, "allRadio", expectedRequest, trackList);
+        setupFindItemsResponse(contentService, "allRadio", Locale.ENGLISH.getLanguage(), expectedRequest, trackList);
 
         final BrowseResponse[] response = {null};
-        createBrowseMenu(contentService).findItemsInContext("allRadio", new MenuItemImpl("category2", "category", Arrays.asList("stream"), new MenuItemImpl("category1", "category", Arrays.asList("category"), null)), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+        createBrowseMenu(contentService).findItemsInContext("allRadio", Locale.ENGLISH.getLanguage(), new MenuItemImpl("category2", "category", Arrays.asList("stream"), new MenuItemImpl("category1", "category", Arrays.asList("category"), null)), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
             @Override
             public void onResponse(BrowseResponse contentResponse) {
                 response[0] = contentResponse;

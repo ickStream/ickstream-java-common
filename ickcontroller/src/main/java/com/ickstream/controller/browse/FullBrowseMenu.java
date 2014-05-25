@@ -33,8 +33,8 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
     }
 
     @Override
-    public void findContexts(final ResponseListener<BrowseResponse> listener) {
-        getProtocol(new ResponseListener<Boolean>() {
+    public void findContexts(final String language, final ResponseListener<BrowseResponse> listener) {
+        getProtocol(language, new ResponseListener<Boolean>() {
             @Override
             public void onResponse(Boolean contentResponse) {
                 listener.onResponse(createContextsResponse());
@@ -43,9 +43,9 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
     }
 
     @Override
-    public void findItemsInContext(final String contextId, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
+    public void findItemsInContext(final String contextId, final String language, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
         if (contentItem == null || contentItem instanceof ContextMenuItem) {
-            getProtocol(new ResponseListener<Boolean>() {
+            getProtocol(language, new ResponseListener<Boolean>() {
                 @Override
                 public void onResponse(Boolean contentResponse) {
                     BrowseResponse response = createTypeMenuResponse(contextId, contentItem);
@@ -53,12 +53,12 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                 }
             });
         } else {
-            findItemsInContextByType(contextId, null, contentItem, listener);
+            findItemsInContextByType(contextId, language, null, contentItem, listener);
         }
     }
 
     @Override
-    public void findItemsInContextByType(final String contextId, final String type, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
+    public void findItemsInContextByType(final String contextId, final String language, final String type, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
         final Set<String> usedTypes = new HashSet<String>();
         MenuItem parent = contentItem;
         while (parent != null) {
@@ -68,7 +68,7 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
             parent = parent.getParent();
         }
 
-        getProtocol(new ResponseListener<Boolean>() {
+        getProtocol(language, new ResponseListener<Boolean>() {
             @Override
             public void onResponse(Boolean contentResponse) {
                 Map<String, String> parameters = createChildRequestParameters(contextId, type, contentItem, usedTypes);
@@ -89,7 +89,7 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
                     }
 
                     final String context = parameters.remove("contextId");
-                    service.findItems(null, context, new HashMap<String, Object>(parameters), new MessageHandlerAdapter<ContentResponse>() {
+                    service.findItems(null, context, language, new HashMap<String, Object>(parameters), new MessageHandlerAdapter<ContentResponse>() {
                         @Override
                         public void onMessage(ContentResponse message) {
                             if (message != null) {
