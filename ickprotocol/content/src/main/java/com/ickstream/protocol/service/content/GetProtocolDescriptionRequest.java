@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 ickStream GmbH
+ * Copyright (C) 2014 ickStream GmbH
  * All rights reserved
  */
 
@@ -23,6 +23,14 @@ public class GetProtocolDescriptionRequest extends ChunkedRequest {
 
     public GetProtocolDescriptionRequest(Integer offset, Integer count, String language) {
         super(offset, count);
+        this.language = language;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
         this.language = language;
     }
 }
