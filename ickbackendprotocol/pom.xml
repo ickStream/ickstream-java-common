@@ -17,6 +17,10 @@
 
     <packaging>pom</packaging>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <scm>
         <connection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</connection>
         <url>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</url>
