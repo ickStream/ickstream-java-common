@@ -5,35 +5,37 @@
 
 package com.ickstream.protocol.backend.content;
 
+import com.ickstream.protocol.service.ImageReference;
+
 import java.util.List;
 
 public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
     private PreferredMenuItemType type;
     private String textKey;
     private String resourceBundle;
-    private String image;
+    private List<ImageReference> images;
 
-    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, String image) {
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, List<ImageReference> images) {
         this.type = type;
         this.resourceBundle = resourceBundle;
         this.textKey = textKey;
-        this.image = image;
+        this.images = images;
     }
 
-    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, String image, List<PreferredMenuItemEntry> childItems) {
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
         super(childItems);
         this.type = type;
         this.resourceBundle = resourceBundle;
         this.textKey = textKey;
-        this.image = image;
+        this.images = images;
     }
 
-    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, String image, PreferredMenuRequestEntry childRequest) {
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String resourceBundle, String textKey, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
         super(childRequest);
         this.type = type;
         this.resourceBundle = resourceBundle;
         this.textKey = textKey;
-        this.image = image;
+        this.images = images;
     }
 
     public PreferredMenuItemType getType() {
@@ -48,8 +50,8 @@ public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
         return resourceBundle;
     }
 
-    public String getImage() {
-        return image;
+    public List<ImageReference> getImages() {
+        return images;
     }
 
 }
