@@ -360,8 +360,8 @@ public class FullBrowseMenuTest {
 
     JsonHelper jsonHelper = new JsonHelper();
 
-    private BrowseMenu createBrowseMenu(ServiceController serviceController) {
-        BrowseMenu menu = new FullBrowseMenu(serviceController, Arrays.asList(
+    private FullBrowseMenu createBrowseMenu(ServiceController serviceController) {
+        FullBrowseMenu menu = new FullBrowseMenu(serviceController, Arrays.asList(
                 new TypeMenuItem("category", "Categories", null),
                 new TypeMenuItem("artist", "Artists", null),
                 new TypeMenuItem("album", "Albums", null),

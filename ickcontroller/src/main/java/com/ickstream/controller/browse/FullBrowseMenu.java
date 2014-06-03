@@ -32,7 +32,6 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         }
     }
 
-    @Override
     public void findContexts(final String language, final ResponseListener<BrowseResponse> listener) {
         getProtocol(language, new ResponseListener<Boolean>() {
             @Override
@@ -42,7 +41,6 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         });
     }
 
-    @Override
     public void findItemsInContext(final String contextId, final String language, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
         if (contentItem == null || contentItem instanceof ContextMenuItem) {
             getProtocol(language, new ResponseListener<Boolean>() {
@@ -57,7 +55,6 @@ public class FullBrowseMenu extends AbstractBrowseMenu {
         }
     }
 
-    @Override
     public void findItemsInContextByType(final String contextId, final String language, final String type, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
         final Set<String> usedTypes = new HashSet<String>();
         MenuItem parent = contentItem;

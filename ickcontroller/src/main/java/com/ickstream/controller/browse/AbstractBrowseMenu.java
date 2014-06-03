@@ -42,6 +42,40 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         }
     }
 
+    public void findChilds(final String language, final MenuItem contentItem, final ResponseListener<BrowseResponse> listener) {
+        String contextId = null;
+        if (contentItem != null) {
+            contextId = contentItem.getContextId();
+        }
+        String type = null;
+        if (contentItem instanceof TypeMenuItem) {
+            type = contentItem.getId();
+        }
+
+        if (contextId == null) {
+            findContexts(Locale.getDefault().getLanguage(), new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+                @Override
+                public void onResponse(BrowseResponse contentResponse) {
+                    listener.onResponse(contentResponse);
+                }
+            });
+        } else if ((contentItem instanceof ContextMenuItem || contentItem == null) && type == null) {
+            findItemsInContext(contextId, Locale.getDefault().getLanguage(), contentItem, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+                @Override
+                public void onResponse(BrowseResponse contentResponse) {
+                    listener.onResponse(contentResponse);
+                }
+            });
+        } else {
+            findItemsInContextByType(contextId, Locale.getDefault().getLanguage(), type, contentItem, new FullBrowseMenu.ResponseListener<BrowseResponse>() {
+                @Override
+                public void onResponse(BrowseResponse contentResponse) {
+                    listener.onResponse(contentResponse);
+                }
+            });
+        }
+    }
+
     protected Map<String, String> createChildRequestParametersFromContext(String contextId, String type, MenuItem parentItem, Set<String> excludedTypes, Comparator<Map<String, String>> comparator) {
         ProtocolDescriptionContext context;
         synchronized (supportedRequests) {
@@ -280,4 +314,10 @@ public abstract class AbstractBrowseMenu implements BrowseMenu {
         }
         return null;
     }
+
+    public abstract void findContexts(String language, ResponseListener<BrowseResponse> listener);
+
+    public abstract void findItemsInContext(String contextId, String language, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
+
+    public abstract void findItemsInContextByType(String contextId, String language, String type, MenuItem contentItem, ResponseListener<BrowseResponse> listener);
 }

@@ -9,10 +9,7 @@ import com.ickstream.common.jsonrpc.JsonRpcResponse;
 import com.ickstream.common.jsonrpc.JsonRpcResponseHandler;
 import com.ickstream.common.jsonrpc.MessageHandler;
 import com.ickstream.protocol.common.ChunkedRequest;
-import com.ickstream.protocol.service.content.ContentResponse;
-import com.ickstream.protocol.service.content.ContentService;
-import com.ickstream.protocol.service.content.GetProtocolDescriptionRequest;
-import com.ickstream.protocol.service.content.GetProtocolDescriptionResponse;
+import com.ickstream.protocol.service.content.*;
 
 import java.util.Map;
 
@@ -41,13 +38,35 @@ public class AbstractServiceController implements ServiceController, JsonRpcResp
     }
 
     @Override
+    @Deprecated
     public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         contentService.getProtocolDescription(request, messageHandler);
     }
 
     @Override
+    @Deprecated
     public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
         contentService.getProtocolDescription(request, messageHandler, timeout);
+    }
+
+    @Override
+    public void getProtocolDescription2(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescription2Response> messageHandler) {
+        contentService.getProtocolDescription2(request, messageHandler);
+    }
+
+    @Override
+    public void getProtocolDescription2(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescription2Response> messageHandler, Integer timeout) {
+        contentService.getProtocolDescription2(request, messageHandler, timeout);
+    }
+
+    @Override
+    public void getPreferredMenus(GetPreferredMenusRequest request, MessageHandler<GetPreferredMenusResponse> messageHandler) {
+        contentService.getPreferredMenus(request, messageHandler);
+    }
+
+    @Override
+    public void getPreferredMenus(GetPreferredMenusRequest request, MessageHandler<GetPreferredMenusResponse> messageHandler, Integer timeout) {
+        contentService.getPreferredMenus(request, messageHandler, timeout);
     }
 
     @Override
