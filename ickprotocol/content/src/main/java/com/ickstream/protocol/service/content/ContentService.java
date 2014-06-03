@@ -25,6 +25,7 @@ import java.util.Map;
  */
 public abstract class ContentService extends AbstractService implements PersonalizedService {
     private String id;
+    protected final static String PROTOCOL_VERSION = "2.0";
 
     /**
      * Creates a new instance for the specified service identity using the specified message sender
@@ -111,10 +112,12 @@ public abstract class ContentService extends AbstractService implements Personal
         sendRequest("getAccountInformation", null, AccountInformation.class, messageHandler, timeout);
     }
 
+    @Deprecated
     public GetProtocolDescriptionResponse getProtocolDescription(GetProtocolDescriptionRequest request) throws ServiceException, ServiceTimeoutException {
         return getProtocolDescription(request, (Integer) null);
     }
 
+    @Deprecated
     public GetProtocolDescriptionResponse getProtocolDescription(GetProtocolDescriptionRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
         try {
             return sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, timeout);
@@ -125,12 +128,36 @@ public abstract class ContentService extends AbstractService implements Personal
         }
     }
 
+    @Deprecated
     public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler) {
         getProtocolDescription(request, messageHandler, (Integer) null);
     }
 
+    @Deprecated
     public void getProtocolDescription(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescriptionResponse> messageHandler, Integer timeout) {
         sendRequest("getProtocolDescription", request, GetProtocolDescriptionResponse.class, messageHandler, timeout);
+    }
+
+    public GetProtocolDescription2Response getProtocolDescription2(GetProtocolDescriptionRequest request) throws ServiceException, ServiceTimeoutException {
+        return getProtocolDescription2(request, (Integer) null);
+    }
+
+    public GetProtocolDescription2Response getProtocolDescription2(GetProtocolDescriptionRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getProtocolDescription2", request, GetProtocolDescription2Response.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getProtocolDescription2(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescription2Response> messageHandler) {
+        getProtocolDescription2(request, messageHandler, (Integer) null);
+    }
+
+    public void getProtocolDescription2(GetProtocolDescriptionRequest request, MessageHandler<GetProtocolDescription2Response> messageHandler, Integer timeout) {
+        sendRequest("getProtocolDescription2", request, GetProtocolDescription2Response.class, messageHandler, timeout);
     }
 
     public GetManagementProtocolDescriptionResponse getManagementProtocolDescription(ChunkedRequest request) throws ServiceException, ServiceTimeoutException {
@@ -153,6 +180,28 @@ public abstract class ContentService extends AbstractService implements Personal
 
     public void getManagementProtocolDescription(ChunkedRequest request, MessageHandler<GetManagementProtocolDescriptionResponse> messageHandler, Integer timeout) {
         sendRequest("getManagementProtocolDescription", request, GetManagementProtocolDescriptionResponse.class, messageHandler, timeout);
+    }
+
+    public GetPreferredMenusResponse getPreferredMenus(GetPreferredMenusRequest request) throws ServiceException, ServiceTimeoutException {
+        return getPreferredMenus(request, (Integer) null);
+    }
+
+    public GetPreferredMenusResponse getPreferredMenus(GetPreferredMenusRequest request, Integer timeout) throws ServiceException, ServiceTimeoutException {
+        try {
+            return sendRequest("getPreferredMenus", request, GetPreferredMenusResponse.class, timeout);
+        } catch (JsonRpcException e) {
+            throw getServiceException(e);
+        } catch (JsonRpcTimeoutException e) {
+            throw new ServiceTimeoutException(e);
+        }
+    }
+
+    public void getPreferredMenus(GetPreferredMenusRequest request, MessageHandler<GetPreferredMenusResponse> messageHandler) {
+        getPreferredMenus(request, messageHandler, (Integer) null);
+    }
+
+    public void getPreferredMenus(GetPreferredMenusRequest request, MessageHandler<GetPreferredMenusResponse> messageHandler, Integer timeout) {
+        sendRequest("getPreferredMenus", request, GetPreferredMenusResponse.class, messageHandler, timeout);
     }
 
     public ContentResponse findItems(ChunkedRequest request, String contextId, String language, Map<String, Object> params) throws ServiceException, ServiceTimeoutException {

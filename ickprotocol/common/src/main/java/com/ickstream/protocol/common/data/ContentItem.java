@@ -18,6 +18,7 @@ public class ContentItem implements AbstractContentItem {
     private String image;
     private List<StreamingReference> streamingRefs;
     private List<String> preferredChildItems;
+    private String preferredChildRequest;
     private JsonNode itemAttributes;
 
     public String getId() {
@@ -74,6 +75,14 @@ public class ContentItem implements AbstractContentItem {
 
     public void setPreferredChildItems(List<String> preferredChildItems) {
         this.preferredChildItems = preferredChildItems;
+    }
+
+    public String getPreferredChildRequest() {
+        return preferredChildRequest;
+    }
+
+    public void setPreferredChildRequest(String preferredChildRequest) {
+        this.preferredChildRequest = preferredChildRequest;
     }
 
     public JsonNode getItemAttributes() {
