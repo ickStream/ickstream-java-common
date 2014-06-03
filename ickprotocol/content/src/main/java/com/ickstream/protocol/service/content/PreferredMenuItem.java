@@ -5,35 +5,38 @@
 
 package com.ickstream.protocol.service.content;
 
+import com.ickstream.protocol.service.ImageReference;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class PreferredMenuItem extends AbstractPreferredMenu {
     private String text;
     private String type;
-    private String image;
+    private List<ImageReference> images = new ArrayList<ImageReference>();
 
     public PreferredMenuItem() {
     }
 
-    public PreferredMenuItem(String type, String text, String image) {
+    public PreferredMenuItem(String type, String text, List<ImageReference> images) {
         this.type = type;
         this.text = text;
-        this.image = image;
+        this.images = images;
     }
 
-    public PreferredMenuItem(String type, String text, String image, List<PreferredMenuItem> childItems) {
+    public PreferredMenuItem(String type, String text, List<ImageReference> images, List<PreferredMenuItem> childItems) {
         super(childItems);
         this.type = type;
         this.text = text;
-        this.image = image;
+        this.images = images;
     }
 
 
-    public PreferredMenuItem(String type, String text, String image, PreferredMenuRequest childRequest) {
+    public PreferredMenuItem(String type, String text, List<ImageReference> images, PreferredMenuRequest childRequest) {
         super(childRequest);
         this.type = type;
         this.text = text;
-        this.image = image;
+        this.images = images;
     }
 
     public String getType() {
@@ -44,12 +47,12 @@ public class PreferredMenuItem extends AbstractPreferredMenu {
         this.type = type;
     }
 
-    public String getImage() {
-        return image;
+    public List<ImageReference> getImages() {
+        return images;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setImages(List<ImageReference> images) {
+        this.images = images;
     }
 
     public String getText() {
