@@ -65,7 +65,9 @@ public class PreferredBrowseMenu implements BrowseMenu {
                             BrowseResponse response = new BrowseResponse();
                             response.setItems(new ArrayList<MenuItem>());
                             for (PreferredMenuItem preferredMenuItem : preferredMenuItems) {
-                                response.getItems().add(new PreferredTextMenuItem(preferredMenuItem, service, preferredMenuItem.getText(), contentItem));
+                                if (!preferredMenuItem.getType().equals("search")) {
+                                    response.getItems().add(new PreferredTextMenuItem(preferredMenuItem, service, preferredMenuItem.getText(), contentItem));
+                                }
                             }
                             listener.onResponse(response);
                         }
