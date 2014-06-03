@@ -54,7 +54,20 @@ public interface ContentService extends PersonalizedService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
+    @Deprecated
     public GetProtocolDescriptionResponse getProtocolDescription(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "language", optional = true) String language);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    public GetProtocolDescription2Response getProtocolDescription2(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "language", optional = true) String language);
+
+    @JsonRpcErrors({
+            @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
+            @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
+    })
+    public GetPreferredMenusResponse getPreferredMenus(@JsonRpcParam(name = "offset", optional = true) Integer offset, @JsonRpcParam(name = "count", optional = true) Integer count, @JsonRpcParam(name = "language", optional = true) String language);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),

@@ -31,15 +31,32 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     @Inject
     BusinessLogger businessLogger;
 
+    protected static final String PROTOCOL_VERSION = "2.0";
+    protected static final String PROTOCOL_VERSION_1_0 = "1.0";
+    protected static final String PROTOCOL_VERSION_2_0 = "2.0";
+
+    private String version = PROTOCOL_VERSION;
     private List<ContentHandlerEntry> contentHandlers = new ArrayList<ContentHandlerEntry>();
     private List<ContentItemHandlerEntry> contentItemHandlers = new ArrayList<ContentItemHandlerEntry>();
     private List<ManagementItemHandlerEntry> managementItemHandlers = new ArrayList<ManagementItemHandlerEntry>();
     private List<DynamicPlaylistHandlerEntry> dynamicPlaylistHandlers = new ArrayList<DynamicPlaylistHandlerEntry>();
     private List<ProtocolDescriptionContextEntry> contexts = new ArrayList<ProtocolDescriptionContextEntry>();
+    private List<PreferredMenuItemEntry> preferredMenus = new ArrayList<PreferredMenuItemEntry>();
     private List<ManagementProtocolDescriptionContext> managementContexts = new ArrayList<ManagementProtocolDescriptionContext>();
 
     private static final Pattern PARAMETER_PATTERN = Pattern.compile("\\{(.*?)\\}");
     private static final Map<String, Pattern> patternCache = new HashMap<String, Pattern>();
+
+    protected AbstractContentService() {
+    }
+
+    protected AbstractContentService(String version) {
+        this.version = version;
+    }
+
+    protected String getVersion() {
+        return version;
+    }
 
     protected static enum Context {
         MY_MUSIC("myMusic"),
@@ -68,6 +85,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         private String nameKey;
         private List<ImageReference> images = new ArrayList<ImageReference>();
         private List<RequestDescription> supportedRequests = new ArrayList<RequestDescription>();
+        private Map<String, Map<String, RequestDescription2>> supportedRequests2 = new HashMap<String, Map<String, RequestDescription2>>();
 
         private ProtocolDescriptionContextEntry(String contextId, String resourceBundle, String nameKey) {
             this.contextId = contextId;
@@ -99,6 +117,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
         public List<RequestDescription> getSupportedRequests() {
             return supportedRequests;
+        }
+
+        public Map<String, Map<String, RequestDescription2>> getSupportedRequests2() {
+            return supportedRequests2;
         }
     }
 
@@ -182,6 +204,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         managementContexts.add(context);
     }
 
+    protected void addPreferredMenu(PreferredMenuItemEntry hierarchy) {
+        preferredMenus.add(hierarchy);
+    }
+
     protected void addContext(Context context) {
         contexts.add(new ProtocolDescriptionContextEntry(context.toString(), null, "com.ickstream.protocol.backend.content.context." + context.toString()));
     }
@@ -198,28 +224,48 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         contexts.add(new ProtocolDescriptionContextEntry(contextId, resourceBundle, nameKey, images));
     }
 
+    @Deprecated
     protected void addHandler(ContentHandler handler, Context context, String type) {
         addHandler(handler, context.toString(), type, null, null);
     }
 
+    @Deprecated
     protected void addHandler(ContentHandler handler, String contextId, String type) {
         addHandler(handler, contextId, type, null, null);
     }
 
+    @Deprecated
     protected void addHandler(ContentHandler handler, Context context, String type, List<ParameterValue> parameters) {
         addHandler(handler, context.toString(), type, null, parameters);
     }
 
+    @Deprecated
     protected void addHandler(ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
         addHandler(handler, contextId, type, null, parameters);
     }
 
+    protected void addHandler(String id, ContentHandler handler, Context context, String type) {
+        addHandler(id, handler, context.toString(), type, null, null);
+    }
+
+    protected void addHandler(String id, ContentHandler handler, String contextId, String type) {
+        addHandler(id, handler, contextId, type, null, null);
+    }
+
+    protected void addHandler(String id, ContentHandler handler, Context context, String type, List<ParameterValue> parameters) {
+        addHandler(id, handler, context.toString(), type, null, parameters);
+    }
+
+    protected void addHandler(String id, ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
+        addHandler(id, handler, contextId, type, null, parameters);
+    }
+
     protected void addDynamicPlaylistHandler(ContentHandler handler, Context context, String type, List<ParameterValue> parameters) {
-        addHandler(handler, context.toString(), type, null, parameters);
+        addHandler(null, handler, context.toString(), type, null, parameters);
     }
 
     protected void addDynamicPlaylistHandler(ContentHandler handler, String contextId, String type, List<ParameterValue> parameters) {
-        addHandler(handler, contextId, type, null, parameters);
+        addHandler(null, handler, contextId, type, null, parameters);
     }
 
     protected void addManagementItemHandler(String attribute, String expression, ManagementItemHandler handler) {
@@ -245,11 +291,21 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         contentItemHandlers.add(entry);
     }
 
+    @Deprecated
     protected void addHandler(ContentHandler handler, Context context, String type, Integer maxSize, Collection<ParameterValue> parameters) {
         addHandler(handler, context.toString(), type, maxSize, parameters);
     }
 
+    protected void addHandler(String id, ContentHandler handler, Context context, String type, Integer maxSize, Collection<ParameterValue> parameters) {
+        addHandler(id, handler, context.toString(), type, maxSize, parameters);
+    }
+
+    @Deprecated
     protected void addHandler(ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
+        addHandler(null, handler, contextId, type, maxSize, parameters);
+    }
+
+    protected void addHandler(String id, ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
         ContentHandlerEntry entry = new ContentHandlerEntry();
         entry.setHandler(handler);
         entry.setMaxSize(maxSize != null ? maxSize : 200);
@@ -289,6 +345,18 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     context.getSupportedRequests().add(request);
                 }
                 request.getParameters().add(supportedParameters);
+                String typeKey = "none";
+                if (type != null) {
+                    typeKey = type;
+                }
+                if (!context.getSupportedRequests2().containsKey(typeKey)) {
+                    context.getSupportedRequests2().put(typeKey, new HashMap<String, RequestDescription2>());
+                }
+                if (id != null) {
+                    context.getSupportedRequests2().get(typeKey).put(id, new RequestDescription2(supportedParameters));
+                } else {
+                    context.getSupportedRequests2().get(typeKey).put(handler.getClass().getSimpleName(), new RequestDescription2(supportedParameters));
+                }
             }
         }
     }
@@ -351,6 +419,72 @@ public abstract class AbstractContentService extends AbstractCloudService implem
     }
 
     @Override
+    public GetPreferredMenusResponse getPreferredMenus(Integer offset, Integer count, String language) {
+        BusinessCall businessCall = startBusinessCall("getPreferredMenus");
+        businessCall.addParameter("offset", offset);
+        businessCall.addParameter("count", count);
+        businessCall.addParameter("language", language);
+        try {
+            offset = offset != null ? offset : 0;
+            count = count != null ? count : preferredMenus.size();
+
+            GetPreferredMenusResponse result = new GetPreferredMenusResponse();
+            result.setOffset(offset);
+            result.setCountAll(contexts.size());
+
+            for (int i = 0; i < preferredMenus.size(); i++) {
+                if (i >= offset && result.getItems().size() < count) {
+                    PreferredMenuItemEntry hierarchy = preferredMenus.get(i);
+                    result.getItems().add(convertPreferredMenuEntryToItem(hierarchy, language));
+                }
+            }
+
+            result.setCount(result.getItems().size());
+            businessLogger.logSuccessful(businessCall);
+            return result;
+        } catch (RuntimeException e) {
+            businessLogger.logFailed(businessCall, e);
+            throw e;
+        }
+    }
+
+    private <T extends AbstractPreferredMenu> T fillPreferredMenuChildItemOrRequest(T itemRequest, AbstractPreferredMenuItemEntry entry, String language) {
+        if (entry.getChildItems() != null && entry.getChildItems().size() > 0) {
+            itemRequest.setChildItems(new ArrayList<PreferredMenuItem>(entry.getChildItems().size()));
+            for (PreferredMenuItemEntry child : entry.getChildItems()) {
+                itemRequest.getChildItems().add(convertPreferredMenuEntryToItem(child, language));
+            }
+        } else if (entry.getChildRequest() != null) {
+            itemRequest.setChildRequest(convertPreferredMenuEntryToRequest(entry.getChildRequest(), language));
+        }
+        return itemRequest;
+    }
+
+    private PreferredMenuRequest convertPreferredMenuEntryToRequest(PreferredMenuRequestEntry menuItemEntry, String language) {
+        PreferredMenuRequest request = new PreferredMenuRequest(menuItemEntry.getRequest());
+        return fillPreferredMenuChildItemOrRequest(request, menuItemEntry, language);
+    }
+
+    private PreferredMenuItem convertPreferredMenuEntryToItem(PreferredMenuItemEntry menuItemEntry, String language) {
+        PreferredMenuItem item = new PreferredMenuItem();
+        if (menuItemEntry.getType() != null) {
+            item.setType(menuItemEntry.getType().toString());
+        }
+        item.setImage(menuItemEntry.getImage());
+        String bundleId = menuItemEntry.getResourceBundle();
+        if (bundleId == null) {
+            bundleId = "ContentService";
+        }
+        if (language == null) {
+            language = Locale.ENGLISH.getLanguage();
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
+        item.setText(bundle.getString(menuItemEntry.getTextKey()));
+        return fillPreferredMenuChildItemOrRequest(item, menuItemEntry, language);
+    }
+
+    @Override
+    @Deprecated
     public GetProtocolDescriptionResponse getProtocolDescription(Integer offset, Integer count, String language) {
         BusinessCall businessCall = startBusinessCall("getProtocolDescription");
         businessCall.addParameter("offset", offset);
@@ -379,6 +513,48 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
                     ProtocolDescriptionContext resultContext = new ProtocolDescriptionContext(context.getContextId(), name, getImages(context.getContextId()));
                     resultContext.setSupportedRequests(context.getSupportedRequests());
+                    result.getItems().add(resultContext);
+                }
+            }
+
+            result.setCount(result.getItems().size());
+            businessLogger.logSuccessful(businessCall);
+            return result;
+        } catch (RuntimeException e) {
+            businessLogger.logFailed(businessCall, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public GetProtocolDescription2Response getProtocolDescription2(Integer offset, Integer count, String language) {
+        BusinessCall businessCall = startBusinessCall("getProtocolDescription2");
+        businessCall.addParameter("offset", offset);
+        businessCall.addParameter("count", count);
+        businessCall.addParameter("language", language);
+        try {
+            offset = offset != null ? offset : 0;
+            count = count != null ? count : contexts.size();
+
+            GetProtocolDescription2Response result = new GetProtocolDescription2Response();
+            result.setOffset(offset);
+            result.setCountAll(contexts.size());
+
+            for (int i = 0; i < contexts.size(); i++) {
+                if (i >= offset && result.getItems().size() < count) {
+                    ProtocolDescriptionContextEntry context = contexts.get(i);
+                    String bundleId = context.getResourceBundle();
+                    if (bundleId == null) {
+                        bundleId = "ContentService";
+                    }
+                    if (language == null) {
+                        language = Locale.ENGLISH.getLanguage();
+                    }
+                    ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
+                    String name = bundle.getString(context.getNameKey());
+
+                    ProtocolDescription2Context resultContext = new ProtocolDescription2Context(context.getContextId(), name, getImages(context.getContextId()));
+                    resultContext.setSupportedRequests(context.getSupportedRequests2());
                     result.getItems().add(resultContext);
                 }
             }
