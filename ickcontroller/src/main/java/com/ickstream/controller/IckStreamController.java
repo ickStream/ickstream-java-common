@@ -249,7 +249,7 @@ public class IckStreamController implements MessageListener {
     }
 
     public CoreService getCoreService(String cloudCoreUrl) {
-        if (coreService == null || !this.cloudCoreUrl.equals(cloudCoreUrl)) {
+        if (coreService == null || this.cloudCoreUrl == null || !this.cloudCoreUrl.equals(cloudCoreUrl)) {
             this.cloudCoreUrl = cloudCoreUrl;
             coreService = CoreServiceFactory.getCoreService(cloudCoreUrl, null, messageLogger);
             coreService.setAccessToken(accessToken);
