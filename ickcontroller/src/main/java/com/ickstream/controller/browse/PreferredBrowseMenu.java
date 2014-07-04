@@ -58,6 +58,24 @@ public class PreferredBrowseMenu implements BrowseMenu {
                                         listener.onResponse(response);
                                     }
                                 });
+                            } else if ((contentItem instanceof PreferredContentMenuItem && ((PreferredContentMenuItem) contentItem).getContentItem().getPreferredChildRequest() != null)) {
+
+                                final PreferredMenuRequest childRequest = new PreferredMenuRequest(((PreferredContentMenuItem) contentItem).getContentItem().getPreferredChildRequest());
+                                String requestId = childRequest.getRequest();
+                                Map<String, Object> request = getRequest(requestId, contentItem);
+                                service.findItems(null, (String) request.get("contextId"), language, request, new MessageHandlerAdapter<ContentResponse>() {
+                                    @Override
+                                    public void onMessage(ContentResponse message) {
+                                        BrowseResponse response = new BrowseResponse();
+                                        response.setItems(new ArrayList<MenuItem>());
+                                        response.setLastChanged(message.getLastChanged());
+
+                                        for (ContentItem item : message.getItems()) {
+                                            response.getItems().add(new PreferredContentMenuItem(childRequest, service, null, item, contentItem));
+                                        }
+                                        listener.onResponse(response);
+                                    }
+                                });
                             } else {
                                 listener.onResponse(new BrowseResponse());
                             }
