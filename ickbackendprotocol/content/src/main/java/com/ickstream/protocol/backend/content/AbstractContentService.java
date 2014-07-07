@@ -6,7 +6,9 @@
 package com.ickstream.protocol.backend.content;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.ickstream.common.jsonrpc.JsonHelper;
 import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
@@ -324,9 +326,17 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             entry.getParameters().add(new ParameterValue("type", type));
         }
         contentHandlers.add(entry);
+        JsonNode values = null;
         if (parameters != null) {
+            Map<String, String> parameterValues = new HashMap<String, String>();
             for (ParameterValue parameter : parameters) {
                 supportedParameters.add(parameter.getParameter());
+                if (!parameter.getParameter().equals("contextId") && !parameter.getParameter().equals("type") && parameter.getValue() != null) {
+                    parameterValues.put(parameter.getParameter(), parameter.getValue());
+                }
+            }
+            if (parameterValues.size() > 0) {
+                values = new JsonHelper().objectToJson(parameterValues);
             }
         }
         for (ProtocolDescriptionContextEntry context : contexts) {
@@ -353,9 +363,17 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     context.getSupportedRequests2().put(typeKey, new HashMap<String, RequestDescription2>());
                 }
                 if (id != null) {
-                    context.getSupportedRequests2().get(typeKey).put(id, new RequestDescription2(supportedParameters));
+                    if (values != null) {
+                        context.getSupportedRequests2().get(typeKey).put(id, new RequestDescription2(supportedParameters, values));
+                    } else {
+                        context.getSupportedRequests2().get(typeKey).put(id, new RequestDescription2(supportedParameters));
+                    }
                 } else {
-                    context.getSupportedRequests2().get(typeKey).put(handler.getClass().getSimpleName(), new RequestDescription2(supportedParameters));
+                    if (values != null) {
+                        context.getSupportedRequests2().get(typeKey).put(handler.getClass().getSimpleName(), new RequestDescription2(supportedParameters, values));
+                    } else {
+                        context.getSupportedRequests2().get(typeKey).put(handler.getClass().getSimpleName(), new RequestDescription2(supportedParameters));
+                    }
                 }
             }
         }
