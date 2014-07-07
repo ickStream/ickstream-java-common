@@ -430,7 +430,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
             GetPreferredMenusResponse result = new GetPreferredMenusResponse();
             result.setOffset(offset);
-            result.setCountAll(contexts.size());
+            result.setCountAll(preferredMenus.size());
 
             for (int i = 0; i < preferredMenus.size(); i++) {
                 if (i >= offset && result.getItems().size() < count) {
