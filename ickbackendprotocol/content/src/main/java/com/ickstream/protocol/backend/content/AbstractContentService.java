@@ -451,11 +451,13 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected void initializeDynamicPreferredMenus(String language) {
         String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
-        DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
-        if (device != null) {
-            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
-            if (userService != null) {
-                initializeDynamicPreferredMenus(userService, language);
+        if (deviceId != null) {
+            DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+            if (device != null) {
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+                if (userService != null) {
+                    initializeDynamicPreferredMenus(userService, language);
+                }
             }
         }
     }
@@ -590,11 +592,13 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected void initializeDynamicContexts(String language) {
         String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
-        DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
-        if (device != null) {
-            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
-            if (userService != null) {
-                initializeDynamicContexts(userService, language);
+        if (deviceId != null) {
+            DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+            if (device != null) {
+                UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+                if (userService != null) {
+                    initializeDynamicContexts(userService, language);
+                }
             }
         }
     }
