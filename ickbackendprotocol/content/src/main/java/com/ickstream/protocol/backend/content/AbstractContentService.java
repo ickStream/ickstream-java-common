@@ -307,7 +307,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         addHandler(null, handler, contextId, type, maxSize, parameters);
     }
 
-    protected void addHandler(String id, ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
+    protected ContentHandlerEntry createContentHandler(ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
         ContentHandlerEntry entry = new ContentHandlerEntry();
         entry.setHandler(handler);
         entry.setMaxSize(maxSize != null ? maxSize : 200);
@@ -316,16 +316,25 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         } else {
             entry.setParameters(new TreeSet<ParameterValue>());
         }
-        List<String> supportedParameters = new ArrayList<String>();
         if (contextId != null) {
-            supportedParameters.add("contextId");
             entry.getParameters().add(new ParameterValue("contextId", contextId));
         }
         if (type != null) {
-            supportedParameters.add("type");
             entry.getParameters().add(new ParameterValue("type", type));
         }
+        return entry;
+    }
+
+    protected void addHandler(String id, ContentHandler handler, String contextId, String type, Integer maxSize, Collection<ParameterValue> parameters) {
+        ContentHandlerEntry entry = createContentHandler(handler, contextId, type, maxSize, parameters);
         contentHandlers.add(entry);
+        List<String> supportedParameters = new ArrayList<String>();
+        if (contextId != null) {
+            supportedParameters.add("contextId");
+        }
+        if (type != null) {
+            supportedParameters.add("type");
+        }
         JsonNode values = null;
         if (parameters != null) {
             Map<String, String> parameterValues = new HashMap<String, String>();
@@ -445,21 +454,23 @@ public abstract class AbstractContentService extends AbstractCloudService implem
      * @param userService The user service related to this request
      * @param language    The language to use for the menus
      */
-    protected void initializeDynamicPreferredMenus(UserServiceResponse userService, String language) {
-        // Do nothing
+    protected List<PreferredMenuItemEntry> getPreferredMenus(UserServiceResponse userService, String language) {
+        return preferredMenus;
     }
 
-    protected void initializeDynamicPreferredMenus(String language) {
+
+    protected List<PreferredMenuItemEntry> getPreferredMenus(String language) {
         String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
         if (deviceId != null) {
             DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    initializeDynamicPreferredMenus(userService, language);
+                    return getPreferredMenus(userService, language);
                 }
             }
         }
+        return preferredMenus;
     }
 
     @Override
@@ -469,7 +480,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameter("count", count);
         businessCall.addParameter("language", language);
         try {
-            initializeDynamicPreferredMenus(language);
+            List<PreferredMenuItemEntry> preferredMenus = getPreferredMenus(language);
 
             offset = offset != null ? offset : 0;
             count = count != null ? count : preferredMenus.size();
@@ -542,8 +553,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameter("count", count);
         businessCall.addParameter("language", language);
         try {
-            initializeDynamicContexts(language);
-
             offset = offset != null ? offset : 0;
             count = count != null ? count : contexts.size();
 
@@ -586,21 +595,23 @@ public abstract class AbstractContentService extends AbstractCloudService implem
      *
      * @param userService The user service related to this request
      */
-    protected void initializeDynamicContexts(UserServiceResponse userService, String language) {
+    protected Map<String, Map<String, RequestDescription2>> getAdditionalRequestsForContext(String contextId, UserServiceResponse userService) {
         // Do nothing
+        return new HashMap<String, Map<String, RequestDescription2>>();
     }
 
-    protected void initializeDynamicContexts(String language) {
+    protected Map<String, Map<String, RequestDescription2>> getAdditionalRequestsForContext(String contextId) {
         String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
         if (deviceId != null) {
             DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    initializeDynamicContexts(userService, language);
+                    return getAdditionalRequestsForContext(contextId, userService);
                 }
             }
         }
+        return new HashMap<String, Map<String, RequestDescription2>>();
     }
 
     @Override
@@ -612,8 +623,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         try {
             offset = offset != null ? offset : 0;
             count = count != null ? count : contexts.size();
-
-            initializeDynamicContexts(language);
 
             GetProtocolDescription2Response result = new GetProtocolDescription2Response();
             result.setOffset(offset);
@@ -634,6 +643,22 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
                     ProtocolDescription2Context resultContext = new ProtocolDescription2Context(context.getContextId(), name, getImages(context.getContextId()));
                     resultContext.setSupportedRequests(context.getSupportedRequests2());
+                    Map<String, Map<String, RequestDescription2>> additionalRequests = getAdditionalRequestsForContext(context.getContextId());
+                    if (additionalRequests != null) {
+                        Map<String, Map<String, RequestDescription2>> staticRequests = resultContext.getSupportedRequests();
+                        resultContext.setSupportedRequests(new HashMap<String, Map<String, RequestDescription2>>(resultContext.getSupportedRequests().size()));
+                        for (Map.Entry<String, Map<String, RequestDescription2>> staticEntry : staticRequests.entrySet()) {
+                            resultContext.getSupportedRequests().put(staticEntry.getKey(), new HashMap<String, RequestDescription2>(staticEntry.getValue()));
+                        }
+                        for (Map.Entry<String, Map<String, RequestDescription2>> entry : getAdditionalRequestsForContext(context.getContextId()).entrySet()) {
+                            if (resultContext.getSupportedRequests().containsKey(entry.getKey())) {
+                                resultContext.getSupportedRequests().get(entry.getKey()).putAll(entry.getValue());
+                            } else {
+                                resultContext.getSupportedRequests().put(entry.getKey(), new HashMap<String, RequestDescription2>(entry.getValue()));
+                            }
+                        }
+                    }
+
                     result.getItems().add(resultContext);
                 }
             }
@@ -657,7 +682,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    initializeDynamicContexts(userService,language);
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         if (contextId == null || contextId.equals(entry.getContextId())) {
                             if (parameters.containsKey(entry.getAttribute())) {
@@ -704,7 +728,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    initializeDynamicContexts(userService,null);
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         Matcher m = getPattern(entry.getPattern()).matcher(itemId);
                         if (m.matches()) {
@@ -753,7 +776,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
                     if (request.getSelectionParameters().getType() != null) {
-                        initializeDynamicContexts(userService,null);
                         DynamicPlaylistHandlerEntry foundHandler = null;
                         Map<String, String> adjustedParameters = new HashMap<String, String>();
                         for (DynamicPlaylistHandlerEntry entry : dynamicPlaylistHandlers) {
@@ -827,7 +849,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
-                initializeDynamicContexts(userService, parameters.get("language"));
                 Boolean result = addItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
                 return result;
@@ -847,7 +868,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
-                initializeDynamicContexts(userService,null);
                 Boolean result = removeItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
                 return result;
@@ -879,7 +899,6 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
-                    initializeDynamicContexts(userService,language);
                     ContentResponse result = findItems(userService, language, offset, count, contextId, parameters);
                     businessLogger.logSuccessful(businessCall);
                     return result;
@@ -924,10 +943,14 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         return false;
     }
 
+    protected List<ContentHandlerEntry> getContentHandlers(UserServiceResponse userService, String language) {
+        return contentHandlers;
+    }
+
     protected ContentResponse findItems(UserServiceResponse userService, String language, Integer offset, Integer count, String contextId, Map<String, String> parameters) {
         ContentHandlerEntry foundHandler = null;
         Map<String, String> foundParameters = null;
-        for (ContentHandlerEntry entry : contentHandlers) {
+        for (ContentHandlerEntry entry : getContentHandlers(userService, language)) {
             boolean match = true;
             Map<String, String> adjustedParameters = new HashMap<String, String>(parameters);
             for (ParameterValue param : entry.getParameters()) {
@@ -1260,7 +1283,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
     }
 
-    private class ContentHandlerEntry {
+    protected class ContentHandlerEntry {
         private ContentHandler handler;
         private String pattern;
         private Integer maxSize;
