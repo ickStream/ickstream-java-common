@@ -650,7 +650,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                         for (Map.Entry<String, Map<String, RequestDescription2>> staticEntry : staticRequests.entrySet()) {
                             resultContext.getSupportedRequests().put(staticEntry.getKey(), new HashMap<String, RequestDescription2>(staticEntry.getValue()));
                         }
-                        for (Map.Entry<String, Map<String, RequestDescription2>> entry : getAdditionalRequestsForContext(context.getContextId()).entrySet()) {
+                        for (Map.Entry<String, Map<String, RequestDescription2>> entry : additionalRequests.entrySet()) {
                             if (resultContext.getSupportedRequests().containsKey(entry.getKey())) {
                                 resultContext.getSupportedRequests().get(entry.getKey()).putAll(entry.getValue());
                             } else {
