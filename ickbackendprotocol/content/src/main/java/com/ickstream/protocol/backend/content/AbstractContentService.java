@@ -331,7 +331,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             Map<String, String> parameterValues = new HashMap<String, String>();
             for (ParameterValue parameter : parameters) {
                 supportedParameters.add(parameter.getParameter());
-                if (!parameter.getParameter().equals("contextId") && !parameter.getParameter().equals("type") && parameter.getValue() != null) {
+                if (!parameter.getParameter().equals("contextId") && !parameter.getParameter().equals("type") && parameter.getValue() != null && parameter.isPredefined()) {
                     parameterValues.put(parameter.getParameter(), parameter.getValue());
                 }
             }
@@ -1236,6 +1236,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         private String parameter;
         private String value;
         private boolean optional;
+        private boolean predefined;
         private List<String> parameters = new ArrayList<String>();
 
         public ParameterValue(String parameter, String value) {
@@ -1243,9 +1244,14 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
 
         public ParameterValue(String parameter, String value, boolean optional) {
+            this(parameter, value, optional, false);
+        }
+
+        public ParameterValue(String parameter, String value, boolean optional, boolean predefined) {
             this.parameter = parameter;
             this.value = value;
             this.optional = optional;
+            this.predefined = predefined;
             if (value != null && value.contains("{")) {
                 Matcher m = PARAMETER_PATTERN.matcher(value);
                 while (m.find()) {
@@ -1277,6 +1283,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
         public List<String> getParameters() {
             return parameters;
+        }
+
+        public boolean isPredefined() {
+            return predefined;
         }
 
         @Override
