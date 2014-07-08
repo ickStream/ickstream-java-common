@@ -11,6 +11,7 @@ import java.util.List;
 
 public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
     private PreferredMenuItemType type;
+    private String textValue;
     private String textKey;
     private String resourceBundle;
     private List<ImageReference> images;
@@ -38,6 +39,26 @@ public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
         this.images = images;
     }
 
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String textValue, List<ImageReference> images) {
+        this.type = type;
+        this.textValue = textValue;
+        this.images = images;
+    }
+
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String textValue, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
+        super(childItems);
+        this.type = type;
+        this.textValue = textValue;
+        this.images = images;
+    }
+
+    public PreferredMenuItemEntry(PreferredMenuItemType type, String textValue, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
+        super(childRequest);
+        this.type = type;
+        this.textValue = textValue;
+        this.images = images;
+    }
+
     public PreferredMenuItemType getType() {
         return type;
     }
@@ -48,6 +69,10 @@ public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
 
     public String getResourceBundle() {
         return resourceBundle;
+    }
+
+    public String getTextValue() {
+        return textValue;
     }
 
     public List<ImageReference> getImages() {

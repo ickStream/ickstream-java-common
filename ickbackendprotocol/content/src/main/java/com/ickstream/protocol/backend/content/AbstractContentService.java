@@ -436,6 +436,30 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
     }
 
+
+    /**
+     * Initialize dynamic preferred menus to be returned from {@link #getPreferredMenus(Integer, Integer, String)} method.
+     * The default implementation doesn't provide any dynamic preferred menus, override this function if
+     * the service need to request information from the backend service to get dynamic preferred menus.
+     *
+     * @param userService The user service related to this request
+     * @param language    The language to use for the menus
+     */
+    protected void initializeDynamicPreferredMenus(UserServiceResponse userService, String language) {
+        // Do nothing
+    }
+
+    protected void initializeDynamicPreferredMenus(String language) {
+        String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
+        DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+        if (device != null) {
+            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+            if (userService != null) {
+                initializeDynamicPreferredMenus(userService, language);
+            }
+        }
+    }
+
     @Override
     public GetPreferredMenusResponse getPreferredMenus(Integer offset, Integer count, String language) {
         BusinessCall businessCall = startBusinessCall("getPreferredMenus");
@@ -443,8 +467,11 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameter("count", count);
         businessCall.addParameter("language", language);
         try {
+            initializeDynamicPreferredMenus(language);
+
             offset = offset != null ? offset : 0;
             count = count != null ? count : preferredMenus.size();
+
 
             GetPreferredMenusResponse result = new GetPreferredMenusResponse();
             result.setOffset(offset);
@@ -496,8 +523,12 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         if (language == null) {
             language = Locale.ENGLISH.getLanguage();
         }
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
-        item.setText(bundle.getString(menuItemEntry.getTextKey()));
+        if (menuItemEntry.getTextKey() != null) {
+            ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
+            item.setText(bundle.getString(menuItemEntry.getTextKey()));
+        } else {
+            item.setText(menuItemEntry.getTextValue());
+        }
         return fillPreferredMenuChildItemOrRequest(item, menuItemEntry, language);
     }
 
@@ -509,6 +540,8 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         businessCall.addParameter("count", count);
         businessCall.addParameter("language", language);
         try {
+            initializeDynamicContexts(language);
+
             offset = offset != null ? offset : 0;
             count = count != null ? count : contexts.size();
 
@@ -544,6 +577,28 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         }
     }
 
+    /**
+     * Initialize dynamic contexts. This method does nothing by default but can be overridden in
+     * sub classes which need to setup contexts or information in the contexts based on calls to the
+     * backend service.
+     *
+     * @param userService The user service related to this request
+     */
+    protected void initializeDynamicContexts(UserServiceResponse userService, String language) {
+        // Do nothing
+    }
+
+    protected void initializeDynamicContexts(String language) {
+        String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
+        DeviceResponse device = getCoreBackendService().getDeviceById(deviceId);
+        if (device != null) {
+            UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
+            if (userService != null) {
+                initializeDynamicContexts(userService, language);
+            }
+        }
+    }
+
     @Override
     public GetProtocolDescription2Response getProtocolDescription2(Integer offset, Integer count, String language) {
         BusinessCall businessCall = startBusinessCall("getProtocolDescription2");
@@ -553,6 +608,8 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         try {
             offset = offset != null ? offset : 0;
             count = count != null ? count : contexts.size();
+
+            initializeDynamicContexts(language);
 
             GetProtocolDescription2Response result = new GetProtocolDescription2Response();
             result.setOffset(offset);
@@ -596,6 +653,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
+                    initializeDynamicContexts(userService,language);
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         if (contextId == null || contextId.equals(entry.getContextId())) {
                             if (parameters.containsKey(entry.getAttribute())) {
@@ -642,6 +700,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
+                    initializeDynamicContexts(userService,null);
                     for (ContentItemHandlerEntry entry : contentItemHandlers) {
                         Matcher m = getPattern(entry.getPattern()).matcher(itemId);
                         if (m.matches()) {
@@ -690,6 +749,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
                     if (request.getSelectionParameters().getType() != null) {
+                        initializeDynamicContexts(userService,null);
                         DynamicPlaylistHandlerEntry foundHandler = null;
                         Map<String, String> adjustedParameters = new HashMap<String, String>();
                         for (DynamicPlaylistHandlerEntry entry : dynamicPlaylistHandlers) {
@@ -763,6 +823,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
+                initializeDynamicContexts(userService, parameters.get("language"));
                 Boolean result = addItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
                 return result;
@@ -782,6 +843,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             String deviceId = InjectHelper.instance(RequestContext.class).getDeviceId();
             UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
             if (userService != null) {
+                initializeDynamicContexts(userService,null);
                 Boolean result = removeItem(userService, contextId, parameters);
                 businessLogger.logSuccessful(businessCall);
                 return result;
@@ -813,6 +875,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             if (device != null) {
                 UserServiceResponse userService = getCoreBackendService().getUserServiceByDevice(deviceId);
                 if (userService != null) {
+                    initializeDynamicContexts(userService,language);
                     ContentResponse result = findItems(userService, language, offset, count, contextId, parameters);
                     businessLogger.logSuccessful(businessCall);
                     return result;
