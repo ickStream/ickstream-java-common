@@ -19,7 +19,7 @@ public class CoreBackendServiceFactory extends ServiceFactory {
         }
     }
 
-    public static synchronized CoreBackendService getCoreBackendService(String accessToken) {
+    public synchronized CoreBackendService getCoreBackendService(String accessToken) {
         CoreBackendServiceImpl coreService = CORE_BACKEND_SERVICE_CACHE.get(accessToken);
         if (coreService == null) {
             coreService = new CoreBackendServiceImpl(createHttpClient(), getCoreBackendServiceEndpoint());
