@@ -16,11 +16,19 @@ import java.io.UnsupportedEncodingException;
 public class OAuth20ServiceImpl extends org.scribe.oauth.OAuth20ServiceImpl {
     private DefaultApi20 api;
     OAuthConfig config;
+    String tokenType;
 
     public OAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config) {
         super(api, config);
         this.api = api;
         this.config = config;
+    }
+
+    public OAuth20ServiceImpl(DefaultApi20 api, OAuthConfig config, String tokenType) {
+        super(api, config);
+        this.api = api;
+        this.config = config;
+        this.tokenType = tokenType;
     }
 
     @Override
@@ -88,6 +96,10 @@ public class OAuth20ServiceImpl extends org.scribe.oauth.OAuth20ServiceImpl {
                 ((com.ickstream.protocol.oauth.DefaultApi20) api).getTokenParameterName() != null) {
             request.addQuerystringParameter(((com.ickstream.protocol.oauth.DefaultApi20) api).getTokenParameterName(), accessToken.getToken());
         }
-        request.addHeader("Authorization", "OAuth " + accessToken.getToken());
+        if (tokenType != null) {
+            request.addHeader("Authorization", tokenType + " " + accessToken.getToken());
+        } else {
+            request.addHeader("Authorization", "OAuth " + accessToken.getToken());
+        }
     }
 }
