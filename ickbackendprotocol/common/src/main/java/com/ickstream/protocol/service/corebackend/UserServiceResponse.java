@@ -14,6 +14,7 @@ public class UserServiceResponse implements Serializable {
     private String accessTokenSecret;
     private String refreshToken;
     private String customData;
+    private String country;
     private ServiceResponse service;
 
     public String getUserId() {
@@ -62,6 +63,14 @@ public class UserServiceResponse implements Serializable {
 
     public void setCustomData(String customData) {
         this.customData = customData;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public ServiceResponse getService() {
