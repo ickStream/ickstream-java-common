@@ -1047,7 +1047,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public Boolean addItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                return addItem(userService, contextId, itemId);
+                try {
+                    return addItem(userService, contextId, itemId);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        return addItem(userService, contextId, itemId);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1065,7 +1074,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public Boolean removeItemOrCatchErrors(UserServiceResponse userService, String contextId, String itemId) {
             try {
-                return removeItem(userService, contextId, itemId);
+                try {
+                    return removeItem(userService, contextId, itemId);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        return removeItem(userService, contextId, itemId);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1080,6 +1098,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return false;
         }
 
+        protected void refreshAccessToken(UnauthorizedAccessException originalException, UserServiceResponse userService) {
+            throw originalException;
+        }
+
         protected abstract Boolean addItem(UserServiceResponse userService, String contextId, String itemId) throws IOException;
 
         protected abstract Boolean removeItem(UserServiceResponse userService, String contextId, String itemId) throws IOException;
@@ -1089,7 +1111,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public ContentItem getItemOrCatchErrors(UserServiceResponse userService, String language, Map<String, String> parameters) {
             try {
-                return getItem(userService, language, parameters);
+                try {
+                    return getItem(userService, language, parameters);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        return getItem(userService, language, parameters);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1107,7 +1138,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         @Override
         public StreamingReference getItemStreamingRefOrCatchErrors(UserServiceResponse userService, String itemId, List<String> preferredFormats) {
             try {
-                return getItemStreamingRef(userService, itemId, preferredFormats);
+                try {
+                    return getItemStreamingRef(userService, itemId, preferredFormats);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        return getItemStreamingRef(userService, itemId, preferredFormats);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1120,6 +1160,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             }
 
             return null;
+        }
+
+        protected void refreshAccessToken(UnauthorizedAccessException originalException, UserServiceResponse userService) {
+            throw originalException;
         }
 
         protected StreamingReference getItemStreamingRef(UserServiceResponse userService, String itemId, List<String> preferredFormats) throws IOException {
@@ -1137,7 +1181,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             result.setOffset(offset);
 
             try {
-                result = findItems(userService, language, parameters, offset, count, result);
+                try {
+                    result = findItems(userService, language, parameters, offset, count, result);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        result = findItems(userService, language, parameters, offset, count, result);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1152,6 +1205,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             return result;
         }
 
+        protected void refreshAccessToken(UnauthorizedAccessException originalException, UserServiceResponse userService) {
+            throw originalException;
+        }
+
         protected abstract ContentResponse findItems(UserServiceResponse userService, String language, Map<String, String> parameters, Integer offset, Integer count, ContentResponse result) throws IOException;
 
     }
@@ -1163,7 +1220,16 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             ContentResponse result = new ContentResponse();
 
             try {
-                result = getNextDynamicPlaylistTracks(userService, count, parameters, previousItems, result);
+                try {
+                    result = getNextDynamicPlaylistTracks(userService, count, parameters, previousItems, result);
+                } catch (UnauthorizedAccessException e) {
+                    if (userService.getRefreshToken() != null) {
+                        refreshAccessToken(e, userService);
+                        result = getNextDynamicPlaylistTracks(userService, count, parameters, previousItems, result);
+                    } else {
+                        throw e;
+                    }
+                }
             } catch (UnsupportedEncodingException e) {
                 //TODO: How do we handle errors ?
                 e.printStackTrace();
@@ -1176,6 +1242,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             }
 
             return result;
+        }
+
+        protected void refreshAccessToken(UnauthorizedAccessException originalException, UserServiceResponse userService) {
+            throw originalException;
         }
 
         protected abstract ContentResponse getNextDynamicPlaylistTracks(UserServiceResponse userService, Integer count, Map<String, String> parameters, List<ContentItem> previousItems, ContentResponse result) throws IOException;
