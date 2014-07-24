@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 ickStream GmbH
+ * Copyright (C) 2013-2014 ickStream GmbH
  * All rights reserved
  */
 
@@ -243,6 +243,20 @@ public class StreamJsonRpcService {
                         } else if (annotation instanceof JsonRpcParamStructure) {
                             foundParameter = false;
                             optionalParameter = true;
+                        } else if (annotation instanceof JsonRpcParamArray) {
+                            if (paramsNode != null && !paramsNode.isNull()) {
+                                Class cls = method.getParameterTypes()[i];
+                                if (Collection.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.isArray()) {
+                                        foundParameter = true;
+                                    }
+                                }
+                            } else {
+                                foundParameter = false;
+                                if (((JsonRpcParamArray) annotation).optional()) {
+                                    optionalParameter = true;
+                                }
+                            }
                         }
                     }
                     if (!foundParameter) {
@@ -370,11 +384,14 @@ public class StreamJsonRpcService {
         for (Annotation[] annotations : parameterAnnotations) {
             String name = null;
             boolean structure = false;
+            boolean array = false;
             for (Annotation annotation : annotations) {
                 if (annotation instanceof JsonRpcParam) {
                     name = ((JsonRpcParam) annotation).name();
                 } else if (annotation instanceof JsonRpcParamStructure) {
                     structure = true;
+                } else if (annotation instanceof JsonRpcParamArray) {
+                    array = true;
                 }
             }
             if (name != null && paramsNode != null && paramsNode.has(name)) {
@@ -384,6 +401,12 @@ public class StreamJsonRpcService {
                     params.add(paramsNode);
                 } else {
                     params.add(jsonHelper.createObject());
+                }
+            } else if (array) {
+                if (paramsNode != null) {
+                    params.add(paramsNode);
+                } else {
+                    params.add(null);
                 }
             } else {
                 params.add(null);

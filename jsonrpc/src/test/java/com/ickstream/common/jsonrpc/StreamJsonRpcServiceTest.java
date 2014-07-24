@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 ickStream GmbH
+ * Copyright (C) 2013-2014 ickStream GmbH
  * All rights reserved
  */
 
@@ -128,6 +128,20 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         String testMethodMap(@JsonRpcParamStructure Map<String, JsonNode> extraParameters);
 
         String testMethodMap(@JsonRpcParam(name = "param1") String param1, @JsonRpcParamStructure Map<String, JsonNode> extraParameters);
+    }
+
+    public static interface ParameterArrayMethods {
+        String testMethodArrayOptional(@JsonRpcParamArray(optional = true) List<String> arrayParameters);
+
+        String testMethodArrayMandatory(@JsonRpcParamArray(optional = false) List<String> arrayParameters);
+
+        String testMethodArrayMandatory();
+
+        String testMethodArrayJson(@JsonRpcParamArray(optional = false) List<JsonNode> arrayParameters);
+
+        String testMethodArrayOptionalJson(@JsonRpcParamArray(optional = true) List<JsonNode> arrayParameters);
+
+        String testMethodArrayMap(@JsonRpcParamArray(optional = false) List<Map<String, JsonNode>> arrayParameters);
     }
 
     public static interface ExceptionMethods {
@@ -341,6 +355,72 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         public String testMethodMap(@JsonRpcParam(name = "param1") String param1, @JsonRpcParamStructure Map<String, JsonNode> extraParameters) {
             Assert.assertNotNull(extraParameters);
             return "testMethodMapParam1WithExtras" + (extraParameters != null && extraParameters.size() > 0 ? "_" + StringUtils.join(extraParameters.keySet().toArray()) : "");
+        }
+    }
+
+    public static class ParameterArrayMethodsImpl implements ParameterArrayMethods {
+        @Override
+        public String testMethodArrayOptional(@JsonRpcParamArray(optional = true) List<String> arrayParameters) {
+            return "testMethodArrayOptional" + (arrayParameters != null ? "_" + StringUtils.join(arrayParameters, ",") : "");
+        }
+
+        @Override
+        public String testMethodArrayMandatory(@JsonRpcParamArray(optional = false) List<String> arrayParameters) {
+            Assert.assertNotNull(arrayParameters);
+            return "testMethodArrayMandatory" + "_" + StringUtils.join(arrayParameters, ",");
+        }
+
+        @Override
+        public String testMethodArrayMandatory() {
+            Assert.assertTrue(false);
+            return null;
+        }
+
+        @Override
+        public String testMethodArrayJson(@JsonRpcParamArray(optional = false) List<JsonNode> arrayParameters) {
+            Assert.assertNotNull(arrayParameters);
+            String arrayAttributes = "";
+            for (JsonNode arrayParameter : arrayParameters) {
+                Iterator<Map.Entry<String, JsonNode>> fields = arrayParameter.fields();
+                List<String> fieldNames = new ArrayList<String>();
+                while (fields.hasNext()) {
+                    Map.Entry<String, JsonNode> next = fields.next();
+                    fieldNames.add(next.getKey());
+                }
+                if (fieldNames.size() > 0) {
+                    arrayAttributes += "_" + StringUtils.join(fieldNames.toArray());
+                }
+            }
+            return "testMethodArrayJson" + arrayAttributes;
+        }
+
+        @Override
+        public String testMethodArrayOptionalJson(@JsonRpcParamArray(optional = true) List<JsonNode> arrayParameters) {
+            String arrayAttributes = "";
+            if (arrayParameters != null) {
+                for (JsonNode arrayParameter : arrayParameters) {
+                    Iterator<Map.Entry<String, JsonNode>> fields = arrayParameter.fields();
+                    List<String> fieldNames = new ArrayList<String>();
+                    while (fields.hasNext()) {
+                        Map.Entry<String, JsonNode> next = fields.next();
+                        fieldNames.add(next.getKey());
+                    }
+                    if (fieldNames.size() > 0) {
+                        arrayAttributes += "_" + StringUtils.join(fieldNames.toArray());
+                    }
+                }
+            }
+            return "testMethodArrayOptionalJson" + arrayAttributes;
+        }
+
+        @Override
+        public String testMethodArrayMap(@JsonRpcParamArray(optional = false) List<Map<String, JsonNode>> arrayParameters) {
+            Assert.assertNotNull(arrayParameters);
+            String arrayAttributes = "";
+            for (Map<String, JsonNode> arrayParameter : arrayParameters) {
+                arrayAttributes += "_" + StringUtils.join(arrayParameter.keySet(), ",");
+            }
+            return "testMethodArrayMap" + arrayAttributes;
         }
     }
 
@@ -1022,5 +1102,111 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         Assert.assertEquals("one", getParamFromJson(outputString.toString(), "result.0.attr1"));
         Assert.assertEquals("two", getParamFromJson(outputString.toString(), "result.1.attr2"));
         Assert.assertEquals("three", getParamFromJson(outputString.toString(), "result.2.attr3"));
+    }
+
+    @Test
+    public void testWithArrayOptional() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayOptional", "[\"param1\"]")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayOptional_param1", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayOptionalWithNull() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayOptional", null)), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayOptional", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayWithParameter() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayMandatory", "[\"param1\"]")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayMandatory_param1", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayWithParameterWithNull() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayMandatory", null)), new WriterOutputStream(outputString));
+
+        Assert.assertNull(getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayJson() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayJson", "[{\"param1\":\"something\"},{\"param2\":\"somethingelse\"}]")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayJson_param1_param2", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayJsonWithNull() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayJson", null)), new WriterOutputStream(outputString));
+
+        Assert.assertNull(getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayOptionalJson() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayOptionalJson", "[{\"param1\":\"something\"},{\"param2\":\"somethingelse\"}]")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayOptionalJson_param1_param2", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayOptionalJsonWithNull() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayOptionalJson", null)), new WriterOutputStream(outputString));
+
+        Assert.assertEquals("testMethodArrayOptionalJson", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayMap() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayMap", "[{\"param1\":\"something\"},{\"param2\":\"somethingelse\"}]")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodArrayMap_param1_param2", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithArrayMapWithNull() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new ParameterArrayMethodsImpl(), ParameterArrayMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodArrayMap", null)), new WriterOutputStream(outputString));
+
+        Assert.assertNull(getParamFromJson(outputString.toString(), "result"));
     }
 }
