@@ -5,15 +5,17 @@
 
 package com.ickstream.protocol.service;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class ServiceInformation {
+public class ServiceInformation implements Serializable {
     private String id;
     private String name;
     private String type;
     private String url;
     private List<ImageReference> images;
     private String serviceUrl;
+    private String mainCategory;
 
     public String getId() {
         return id;
@@ -61,5 +63,13 @@ public class ServiceInformation {
 
     public void setImages(List<ImageReference> images) {
         this.images = images;
+    }
+
+    public String getMainCategory() {
+        return mainCategory;
+    }
+
+    public void setMainCategory(String mainCategory) {
+        this.mainCategory = mainCategory;
     }
 }

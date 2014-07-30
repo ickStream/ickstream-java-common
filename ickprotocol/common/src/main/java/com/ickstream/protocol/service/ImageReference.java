@@ -5,13 +5,22 @@
 
 package com.ickstream.protocol.service;
 
-public class ImageReference {
+import java.io.Serializable;
+
+public class ImageReference implements Serializable {
     private String url;
     private String type;
     private Integer width;
     private Integer height;
 
     public ImageReference() {
+    }
+
+    public ImageReference(String url, String type, Integer width, Integer height) {
+        this.url = url;
+        this.type = type;
+        this.width = width;
+        this.height = height;
     }
 
     public ImageReference(String url, ImageType type) {

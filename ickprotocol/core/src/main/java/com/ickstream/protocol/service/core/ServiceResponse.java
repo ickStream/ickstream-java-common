@@ -5,12 +5,18 @@
 
 package com.ickstream.protocol.service.core;
 
+import com.ickstream.protocol.service.ImageReference;
+
+import java.util.List;
+
 public class ServiceResponse {
     private String id;
     private String name;
     private String type;
     private String url;
     private String addServiceUrl;
+    private String mainCategory;
+    private List<ImageReference> images;
 
     public String getId() {
         return id;
@@ -50,5 +56,21 @@ public class ServiceResponse {
 
     public void setAddServiceUrl(String addServiceUrl) {
         this.addServiceUrl = addServiceUrl;
+    }
+
+    public String getMainCategory() {
+        return mainCategory;
+    }
+
+    public void setMainCategory(String mainCategory) {
+        this.mainCategory = mainCategory;
+    }
+
+    public List<ImageReference> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ImageReference> images) {
+        this.images = images;
     }
 }
