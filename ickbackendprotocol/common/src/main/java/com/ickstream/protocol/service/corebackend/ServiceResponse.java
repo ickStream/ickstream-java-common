@@ -14,6 +14,7 @@ public class ServiceResponse implements Serializable {
     private String apiKey;
     private String apiSecret;
     private String type;
+    private String mainCategory;
     private String addServiceUrl;
     private String customData1;
     private String customData2;
@@ -106,5 +107,13 @@ public class ServiceResponse implements Serializable {
 
     public void setCustomData4(String customData4) {
         this.customData4 = customData4;
+    }
+
+    public String getMainCategory() {
+        return mainCategory;
+    }
+
+    public void setMainCategory(String mainCategory) {
+        this.mainCategory = mainCategory;
     }
 }
