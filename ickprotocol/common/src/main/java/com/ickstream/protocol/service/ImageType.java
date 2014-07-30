@@ -10,10 +10,14 @@ public class ImageType {
     private Integer height;
     private Integer width;
 
-    public static final ImageType SMALL = new ImageType("small", 80, 50);
+    public static final ImageType RIBBON = new ImageType("ribbon", 54, 106);
+    public static final ImageType ICON_RGB = new ImageType("icon_rgb", 300, 300);
+    public static final ImageType ICON_BW = new ImageType("icon_bw", 80, 60);
+    public static final ImageType IMAGE = new ImageType("image", null, null);
+
 
     public ImageType(Integer width, Integer height) {
-        this.name = "custom";
+        this.name = IMAGE.getName();
         this.height = height;
         this.width = width;
     }
