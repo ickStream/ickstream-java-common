@@ -13,6 +13,7 @@ import java.util.List;
 public class PreferredMenuItem extends AbstractPreferredMenu {
     private String text;
     private String type;
+    private String imageType;
     private List<ImageReference> images = new ArrayList<ImageReference>();
 
     public PreferredMenuItem() {
@@ -53,6 +54,14 @@ public class PreferredMenuItem extends AbstractPreferredMenu {
 
     public void setImages(List<ImageReference> images) {
         this.images = images;
+    }
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
     }
 
     public String getText() {
