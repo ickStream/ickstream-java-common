@@ -488,6 +488,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         if (menuItemEntry.getType() != null) {
             item.setType(menuItemEntry.getType().toString());
         }
+        item.setContextId(menuItemEntry.getContextId());
         item.setMenuType(menuItemEntry.getMenuType());
         item.setImages(menuItemEntry.getImages());
         String bundleId = menuItemEntry.getResourceBundle();
