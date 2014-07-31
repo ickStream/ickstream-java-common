@@ -13,31 +13,46 @@ import java.util.List;
 public class PreferredMenuItem extends AbstractPreferredMenu {
     private String text;
     private String type;
-    private String imageType;
+    private String menuType;
+    private String contextId;
     private List<ImageReference> images = new ArrayList<ImageReference>();
 
     public PreferredMenuItem() {
     }
 
-    public PreferredMenuItem(String type, String text, List<ImageReference> images) {
+    public PreferredMenuItem(String contextId, String type, String text, String menuType, List<ImageReference> images) {
+        this.contextId = contextId;
         this.type = type;
         this.text = text;
         this.images = images;
+        this.menuType = menuType;
     }
 
-    public PreferredMenuItem(String type, String text, List<ImageReference> images, List<PreferredMenuItem> childItems) {
+    public PreferredMenuItem(String contextId, String type, String text, String menuType, List<ImageReference> images, List<PreferredMenuItem> childItems) {
         super(childItems);
+        this.contextId = contextId;
         this.type = type;
         this.text = text;
         this.images = images;
+        this.menuType = menuType;
     }
 
 
-    public PreferredMenuItem(String type, String text, List<ImageReference> images, PreferredMenuRequest childRequest) {
+    public PreferredMenuItem(String contextId, String type, String text, String menuType, List<ImageReference> images, PreferredMenuRequest childRequest) {
         super(childRequest);
+        this.contextId = contextId;
         this.type = type;
         this.text = text;
         this.images = images;
+        this.menuType = menuType;
+    }
+
+    public String getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
     }
 
     public String getType() {
@@ -56,12 +71,12 @@ public class PreferredMenuItem extends AbstractPreferredMenu {
         this.images = images;
     }
 
-    public String getImageType() {
-        return imageType;
+    public String getMenuType() {
+        return menuType;
     }
 
-    public void setImageType(String imageType) {
-        this.imageType = imageType;
+    public void setMenuType(String menuType) {
+        this.menuType = menuType;
     }
 
     public String getText() {

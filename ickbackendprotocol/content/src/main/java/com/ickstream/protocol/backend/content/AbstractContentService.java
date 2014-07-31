@@ -13,6 +13,7 @@ import com.ickstream.protocol.backend.common.*;
 import com.ickstream.protocol.common.data.ContentItem;
 import com.ickstream.protocol.common.data.StreamingReference;
 import com.ickstream.protocol.service.AccountInformation;
+import com.ickstream.protocol.service.ImageReference;
 import com.ickstream.protocol.service.content.*;
 import com.ickstream.protocol.service.corebackend.CoreBackendService;
 import com.ickstream.protocol.service.corebackend.DeviceResponse;
@@ -59,31 +60,12 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         return version;
     }
 
-    protected static enum Context {
-        MY_MUSIC("myMusic"),
-        ALL_MUSIC("allMusic"),
-        HOT_MUSIC("hotMusic"),
-        FRIENDS_MUSIC("friendsMusic"),
-        ALL_RADIO("allRadio");
-
-        private String name;
-
-        private Context(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    ;
 
     private static class ProtocolDescriptionContextEntry {
         private String contextId;
         private String resourceBundle;
         private String nameKey;
+        private List<ImageReference> images = new ArrayList<ImageReference>();
         private List<RequestDescription> supportedRequests = new ArrayList<RequestDescription>();
         private Map<String, Map<String, RequestDescription2>> supportedRequests2 = new HashMap<String, Map<String, RequestDescription2>>();
 
@@ -92,6 +74,12 @@ public abstract class AbstractContentService extends AbstractCloudService implem
             this.resourceBundle = resourceBundle;
             this.nameKey = nameKey;
         }
+
+        private ProtocolDescriptionContextEntry(String contextId, String resourceBundle, String nameKey, List<ImageReference> images) {
+            this(contextId, resourceBundle, nameKey);
+            this.images = images;
+        }
+
 
         public String getContextId() {
             return contextId;
@@ -103,6 +91,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
         public String getNameKey() {
             return nameKey;
+        }
+
+        public List<ImageReference> getImages() {
+            return images;
         }
 
         public List<RequestDescription> getSupportedRequests() {
@@ -124,6 +116,10 @@ public abstract class AbstractContentService extends AbstractCloudService implem
      * @return The identity of this service
      */
     protected abstract String getServiceId();
+
+    protected List<ImageReference> getImages(String contextId) {
+        return null;
+    }
 
     protected AccountInformation getAccountInformation(UserServiceResponse userService) throws IOException {
         return null;
@@ -200,6 +196,14 @@ public abstract class AbstractContentService extends AbstractCloudService implem
 
     protected void addContext(String contextId, String resourceBundle, String nameKey) {
         contexts.add(new ProtocolDescriptionContextEntry(contextId, resourceBundle, nameKey));
+    }
+
+    protected void addContext(Context context, List<ImageReference> images) {
+        contexts.add(new ProtocolDescriptionContextEntry(context.toString(), null, "com.ickstream.protocol.backend.content.context." + context.toString(), images));
+    }
+
+    protected void addContext(String contextId, String resourceBundle, String nameKey, List<ImageReference> images) {
+        contexts.add(new ProtocolDescriptionContextEntry(contextId, resourceBundle, nameKey, images));
     }
 
     protected void addHandler(String id, ContentHandler handler, Context context, String type) {
@@ -484,7 +488,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
         if (menuItemEntry.getType() != null) {
             item.setType(menuItemEntry.getType().toString());
         }
-        item.setImageType(menuItemEntry.getImageType());
+        item.setMenuType(menuItemEntry.getMenuType());
         item.setImages(menuItemEntry.getImages());
         String bundleId = menuItemEntry.getResourceBundle();
         if (bundleId == null) {
@@ -530,7 +534,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
                     String name = bundle.getString(context.getNameKey());
 
-                    ProtocolDescriptionContext resultContext = new ProtocolDescriptionContext(context.getContextId(), name);
+                    ProtocolDescriptionContext resultContext = new ProtocolDescriptionContext(context.getContextId(), name, getImages(context.getContextId()));
                     resultContext.setSupportedRequests(context.getSupportedRequests());
                     result.getItems().add(resultContext);
                 }
@@ -598,7 +602,7 @@ public abstract class AbstractContentService extends AbstractCloudService implem
                     ResourceBundle bundle = ResourceBundle.getBundle(bundleId, new Locale(language));
                     String name = bundle.getString(context.getNameKey());
 
-                    ProtocolDescription2Context resultContext = new ProtocolDescription2Context(context.getContextId(), name);
+                    ProtocolDescription2Context resultContext = new ProtocolDescription2Context(context.getContextId(), name, getImages(context.getContextId()));
                     resultContext.setSupportedRequests(context.getSupportedRequests2());
                     Map<String, Map<String, RequestDescription2>> additionalRequests = getAdditionalRequestsForContext(context.getContextId());
                     if (additionalRequests != null) {
