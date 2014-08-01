@@ -45,9 +45,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</connection>
-        <url>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</url>
-        <developerConnection>scm:git:git@bitbucket.org:ickstream/ickstream-java-common.git</developerConnection>
+        <connection>scm:git:git@github.com:ickStream/ickstream-java-common.git</connection>
+        <url>scm:git:git@github.com:ickStream/ickstream-java-common.git</url>
+        <developerConnection>scm:git:git@github.com:ickStream/ickstream-java-common.git</developerConnection>
     </scm>
 
     <distributionManagement>
