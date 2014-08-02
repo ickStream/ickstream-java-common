@@ -42,67 +42,67 @@ public class PreferredMenuItemEntry extends AbstractPreferredMenuItemEntry {
     private List<ImageReference> images;
 
     public static PreferredMenuItemEntry createLocalized(String contextId, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, null, null, childItems);
+        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, menuType, null, childItems);
     }
 
     public static PreferredMenuItemEntry createLocalized(String contextId, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, null, null, childRequest);
+        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, menuType, null, childRequest);
     }
 
     public static PreferredMenuItemEntry createLocalizedWithExplicitImage(String contextId, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, null, images, childItems);
+        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, menuType, images, childItems);
     }
 
     public static PreferredMenuItemEntry createLocalizedWithExplicitImage(String contextId, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, null, images, childRequest);
+        return new PreferredMenuItemEntry(contextId, type, resourceBundle, textKey, null, menuType, images, childRequest);
     }
 
     public static PreferredMenuItemEntry createWithExplicitImage(String contextId, PreferredMenuItemType type, String textValue, String menuType, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, null, images, childItems);
+        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, menuType, images, childItems);
     }
 
     public static PreferredMenuItemEntry createWithExplicitImage(String contextId, PreferredMenuItemType type, String textValue, String menuType, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, null, images, childRequest);
+        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, menuType, images, childRequest);
     }
 
     public static PreferredMenuItemEntry create(String contextId, PreferredMenuItemType type, String textValue, String menuType, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, null, null, childItems);
+        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, menuType, null, childItems);
     }
 
     public static PreferredMenuItemEntry create(String contextId, PreferredMenuItemType type, String textValue, String menuType, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, null, null, childRequest);
+        return new PreferredMenuItemEntry(contextId, type, null, null, textValue, menuType, null, childRequest);
     }
 
     public static PreferredMenuItemEntry createLocalized(Context context, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, null, null, childItems);
+        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, menuType, null, childItems);
     }
 
     public static PreferredMenuItemEntry createLocalized(Context context, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, null, null, childRequest);
+        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, menuType, null, childRequest);
     }
 
     public static PreferredMenuItemEntry createLocalizedWithExplicitImage(Context context, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, null, images, childItems);
+        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, menuType, images, childItems);
     }
 
     public static PreferredMenuItemEntry createLocalizedWithExplicitImage(Context context, PreferredMenuItemType type, String resourceBundle, String textKey, String menuType, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, null, images, childRequest);
+        return new PreferredMenuItemEntry(context.toString(), type, resourceBundle, textKey, null, menuType, images, childRequest);
     }
 
     public static PreferredMenuItemEntry createWithExplicitImage(Context context, PreferredMenuItemType type, String textValue, String menuType, List<ImageReference> images, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, null, images, childItems);
+        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, menuType, images, childItems);
     }
 
     public static PreferredMenuItemEntry createWithExplicitImage(Context context, PreferredMenuItemType type, String textValue, String menuType, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, null, images, childRequest);
+        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, menuType, images, childRequest);
     }
 
     public static PreferredMenuItemEntry create(Context context, PreferredMenuItemType type, String textValue, String menuType, List<PreferredMenuItemEntry> childItems) {
-        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, null, null, childItems);
+        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, menuType, null, childItems);
     }
 
     public static PreferredMenuItemEntry create(Context context, PreferredMenuItemType type, String textValue, String menuType, PreferredMenuRequestEntry childRequest) {
-        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, null, null, childRequest);
+        return new PreferredMenuItemEntry(context.toString(), type, null, null, textValue, menuType, null, childRequest);
     }
 
     private PreferredMenuItemEntry(String contextId, PreferredMenuItemType type, String resourceBundle, String textKey, String textValue, String menuType, List<ImageReference> images, PreferredMenuRequestEntry childRequest) {
