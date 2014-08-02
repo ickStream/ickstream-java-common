@@ -64,7 +64,7 @@ public abstract class AbstractCloudService implements CloudService {
             serviceInformation.setId(service.getId());
             serviceInformation.setName(service.getName());
             serviceInformation.setType(service.getType());
-            serviceInformation.getMainCategory();
+            serviceInformation.setMainCategory(service.getMainCategory());
             serviceInformation.setUrl(service.getUrl());
             serviceInformation.setImages(getImages());
             return serviceInformation;
