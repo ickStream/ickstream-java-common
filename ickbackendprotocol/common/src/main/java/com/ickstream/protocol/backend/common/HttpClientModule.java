@@ -31,9 +31,16 @@ package com.ickstream.protocol.backend.common;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.ickstream.protocol.common.IckStreamTrustManager;
 import org.apache.http.client.HttpClient;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.SchemeRegistryFactory;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * Injection module that provides instances of {@link HttpClient}, a service should use
@@ -53,7 +60,15 @@ public class HttpClientModule extends AbstractModule {
     @Provides
     @Singleton
     public HttpClient createHttpClient() {
-        PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+        PoolingClientConnectionManager cm;
+        SSLContext sslContext = IckStreamTrustManager.getContext();
+        if (sslContext != null) {
+            SchemeRegistry scheme = SchemeRegistryFactory.createDefault();
+            scheme.register(new Scheme("https", 443, new SSLSocketFactory(sslContext)));
+            cm = new PoolingClientConnectionManager(scheme);
+        } else {
+            cm = new PoolingClientConnectionManager();
+        }
         try {
             Integer defaultMaxPerRoute = Integer.valueOf(System.getProperty("ickstream-http-connections-max-per-route", "1000"));
             cm.setDefaultMaxPerRoute(defaultMaxPerRoute);
