@@ -96,38 +96,25 @@ public abstract class AbstractCloudServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
+            RequestContext context = InjectHelper.instance(RequestContext.class);
+            String remoteAddr = req.getHeader("X-Forwarded-For");
+            if (remoteAddr == null) {
+                remoteAddr = req.getRemoteAddr();
+            }
+            if (remoteAddr != null) {
+                remoteAddr = remoteAddr.split(",")[0].trim();
+                if (!LOCAL_ADDRESS_PATTERN.matcher(remoteAddr).matches()) {
+                    context.setDeviceAddress(remoteAddr);
+                }
+            }
+            context.setContextUrl(req.getScheme() + "://" + req.getServerName() + (req.getServerPort() != 80 ? ":" + req.getServerPort() : "") + req.getContextPath());
             CloudService service = InjectHelper.instance(implementationClass);
             String deviceId = req.getRemoteUser();
             if (deviceId != null && remoteInterface != null) {
-                RequestContext context = InjectHelper.instance(RequestContext.class);
-                context.setUserId(req.getUserPrincipal().getName());
                 context.setDeviceId(deviceId);
-                String remoteAddr = req.getHeader("X-Forwarded-For");
-                if (remoteAddr == null) {
-                    remoteAddr = req.getRemoteAddr();
-                }
-                if (remoteAddr != null) {
-                    remoteAddr = remoteAddr.split(",")[0].trim();
-                    if (!LOCAL_ADDRESS_PATTERN.matcher(remoteAddr).matches()) {
-                        context.setDeviceAddress(remoteAddr);
-                    }
-                }
-                context.setContextUrl(req.getScheme() + "://" + req.getServerName() + (req.getServerPort() != 80 ? ":" + req.getServerPort() : "") + req.getContextPath());
                 new HttpJsonRpcService(service, remoteInterface).handle(req, resp);
             } else if (req.getUserPrincipal() != null && userRemoteInterface != null) {
-                RequestContext context = InjectHelper.instance(RequestContext.class);
                 context.setUserId(req.getUserPrincipal().getName());
-                String remoteAddr = req.getHeader("X-Forwarded-For");
-                if (remoteAddr == null) {
-                    remoteAddr = req.getRemoteAddr();
-                }
-                if (remoteAddr != null) {
-                    remoteAddr = remoteAddr.split(",")[0].trim();
-                    if (!LOCAL_ADDRESS_PATTERN.matcher(remoteAddr).matches()) {
-                        context.setDeviceAddress(remoteAddr);
-                    }
-                }
-                context.setContextUrl(req.getScheme() + "://" + req.getServerName() + (req.getServerPort() != 80 ? ":" + req.getServerPort() : "") + req.getContextPath());
                 new HttpJsonRpcService(service, userRemoteInterface).handle(req, resp);
             } else {
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization failed");
