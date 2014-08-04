@@ -177,7 +177,7 @@ public abstract class AbstractOAuthService extends HttpServlet {
 
                         ServiceCredentials serviceCredentials = getServiceCredentials(oAuthService, service, accessToken);
 
-                        String code = getCoreBackendService().createAuthorizationCodeForIdentity(type, identity, application.getId(), serviceCredentials.getServiceIdentity(), serviceCredentials.getAccessToken(), serviceCredentials.getAccessTokenSecret(), serviceCredentials.getRefreshToken(), serviceCredentials.getCustomData(), req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString());
+                        String code = getCoreBackendService().createAuthorizationCodeForIdentity((String) req.getSession().getAttribute(OAuthConstants.CLIENT_ID), type, identity, serviceCredentials.getServiceIdentity(), serviceCredentials.getAccessToken(), serviceCredentials.getAccessTokenSecret(), serviceCredentials.getRefreshToken(), serviceCredentials.getCustomData(), req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString());
 
                         UserResponse user = getCoreBackendService().getUserByIdentity(type, identity);
 
