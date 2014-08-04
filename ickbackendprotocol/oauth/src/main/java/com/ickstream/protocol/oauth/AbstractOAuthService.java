@@ -28,6 +28,7 @@
 
 package com.ickstream.protocol.oauth;
 
+import com.ickstream.protocol.backend.common.ServiceCredentials;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
 import com.ickstream.protocol.service.corebackend.*;
@@ -173,7 +174,10 @@ public abstract class AbstractOAuthService extends HttpServlet {
                             req.getSession().removeAttribute(OAuthConstants.CLIENT_ID);
                         }
                     } else if (type != null && type.equals("email") && identity != null) {
-                        String code = getCoreBackendService().createAuthorizationCodeForIdentity(type, identity, accessToken.getToken(), accessToken.getSecret(), req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString());
+
+                        ServiceCredentials serviceCredentials = getServiceCredentials(oAuthService, service, accessToken);
+
+                        String code = getCoreBackendService().createAuthorizationCodeForIdentity(type, identity, serviceCredentials.getServiceIdentity(), serviceCredentials.getAccessToken(), serviceCredentials.getAccessTokenSecret(), serviceCredentials.getRefreshToken(), serviceCredentials.getCustomData(), req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString());
 
                         UserResponse user = getCoreBackendService().getUserByIdentity(type, identity);
 
@@ -346,5 +350,15 @@ public abstract class AbstractOAuthService extends HttpServlet {
         getCoreBackendService().setUserService(userService);
     }
 
-
+    protected ServiceCredentials getServiceCredentials(OAuthService oAuthService, ServiceResponse service, Token accessToken) {
+        ServiceCredentials serviceCredentials = new ServiceCredentials();
+        serviceCredentials.setAccessToken(accessToken.getToken());
+        serviceCredentials.setAccessTokenSecret(accessToken.getSecret());
+        if (accessToken instanceof TokenWithRefresh) {
+            serviceCredentials.setRefreshToken(((TokenWithRefresh) accessToken).getRefreshToken());
+        }
+        String serviceIdentity = getServiceIdentity(oAuthService, service, accessToken);
+        serviceCredentials.setServiceIdentity(serviceIdentity);
+        return serviceCredentials;
+    }
 }

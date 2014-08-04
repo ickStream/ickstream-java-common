@@ -115,7 +115,7 @@ public interface CoreBackendService extends CloudService {
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),
             @JsonRpcError(exception = UnauthorizedAccessException.class, code = -32000, message = "Unauthorized access")
     })
-    String createAuthorizationCodeForIdentity(@JsonRpcParam(name = "type") String type, @JsonRpcParam(name = "identity") String identity, @JsonRpcParam(name = "accessToken") String accessToken, @JsonRpcParam(name = "accessTokenSecret") String accessTokenSecret, @JsonRpcParam(name = "redirectUri") String redirectUri);
+    String createAuthorizationCodeForIdentity(@JsonRpcParam(name = "type") String type, @JsonRpcParam(name = "identity") String identity, @JsonRpcParam(name = "serviceIdentity") String serviceIdentity, @JsonRpcParam(name = "accessToken") String accessToken, @JsonRpcParam(name = "accessTokenSecret") String accessTokenSecret, @JsonRpcParam(name = "refreshToken", optional = true) String refreshToken, @JsonRpcParam(name = "customData", optional = true) String customData, @JsonRpcParam(name = "redirectUri") String redirectUri);
 
     @JsonRpcErrors({
             @JsonRpcError(exception = InvalidParameterException.class, code = -32602, message = "Invalid method parameters"),

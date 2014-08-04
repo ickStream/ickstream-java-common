@@ -289,13 +289,15 @@ public class CoreBackendServiceImpl extends SyncJsonRpcClient implements CoreBac
     }
 
     @Override
-    public String createAuthorizationCodeForIdentity(String type, String identity, String accessToken, String accessTokenSecret, String redirectUri) {
+    public String createAuthorizationCodeForIdentity(String type, String identity, String serviceIdentity, String accessToken, String accessTokenSecret, String refreshToken, String customData, String redirectUri) {
         try {
             Map<String, String> request = new HashMap<String, String>();
             request.put("type", type);
             request.put("identity", identity);
+            request.put("serviceIdentity", serviceIdentity);
             request.put("accessToken", accessToken);
             request.put("accessTokenSecret", accessTokenSecret);
+            request.put("refreshToken", refreshToken);
             request.put("redirectUri", redirectUri);
             return sendRequest("createAuthorizationCodeForIdentity", request, String.class, (Integer) null);
         } catch (JsonRpcException e) {
