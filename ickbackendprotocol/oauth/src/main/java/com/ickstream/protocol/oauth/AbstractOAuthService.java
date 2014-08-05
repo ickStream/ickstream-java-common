@@ -28,6 +28,7 @@
 
 package com.ickstream.protocol.oauth;
 
+import com.ickstream.protocol.backend.common.RestCallHelper;
 import com.ickstream.protocol.backend.common.ServiceCredentials;
 import com.ickstream.protocol.backend.common.UnauthorizedAccessException;
 import com.ickstream.protocol.common.exception.UnauthorizedException;
@@ -60,6 +61,14 @@ public abstract class AbstractOAuthService extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (req.getRequestURI().endsWith("/create_user") &&
+                req.getSession().getAttribute(OAuthConstants.REDIRECT_URI) != null &&
+                req.getSession().getAttribute(OAuthConstants.CLIENT_ID) != null &&
+                req.getParameter(OAuthConstants.CODE) != null) {
+
+            renderAccountCreationPage(resp, req.getRequestURI().replaceAll("/create_user$", ""), req.getParameter(OAuthConstants.CODE));
+            return;
+        }
         if (req.getParameter(OAuthConstants.REDIRECT_URI) != null) {
             req.getSession().setAttribute(OAuthConstants.REDIRECT_URI, req.getParameter(OAuthConstants.REDIRECT_URI));
         }
@@ -182,19 +191,8 @@ public abstract class AbstractOAuthService extends HttpServlet {
                         UserResponse user = getCoreBackendService().getUserByIdentity(type, identity);
 
                         if (user == null) {
-                            String styleSheetUrl = System.getProperty("ickstream-core-stylesheet-url", "https://api.ickstream.com/ickstream-cloud-core");
-                            resp.setContentType("text/html");
-                            resp.setCharacterEncoding("utf-8");
-                            resp.getWriter().append("<HTML>\n<HEAD>\n")
-                                    .append(OAuthServiceHelper.getDeviceOptimizedStylesheetHeader())
-                                    .append("</HEAD>\n<BODY>\n");
-                            resp.getWriter().append("<div id=\"question\">No previous account exist, do you want to create a new one ?</div>");
-                            resp.getWriter().append("<FORM action=\"").append(req.getRequestURI()).append("\" method=\"post\">");
-                            resp.getWriter().append("<INPUT hidden=\"hidden\" name=\"" + OAuthConstants.CODE + "\" value=\"").append(code).append("\">");
-                            resp.getWriter().append("<INPUT type=\"submit\" name=\"cancel\" value=\"Cancel\">");
-                            resp.getWriter().append("<INPUT type=\"submit\" name=\"create\" value=\"Create new account\">");
-                            resp.getWriter().append("</FORM>");
-                            resp.getWriter().append("</BODY></HTML>");
+                            req.getSession().setAttribute("generated_code", code);
+                            renderAccountCreationPage(resp, req.getRequestURI(), code);
                         } else {
                             resp.sendRedirect(req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString() + "?" + OAuthConstants.CODE + "=" + code);
                             req.getSession().removeAttribute(OAuthConstants.REDIRECT_URI);
@@ -227,17 +225,45 @@ public abstract class AbstractOAuthService extends HttpServlet {
         }
     }
 
+    private void renderAccountCreationPage(HttpServletResponse resp, String uri, String code) throws IOException {
+        resp.setContentType("text/html");
+        resp.setCharacterEncoding("utf-8");
+        resp.getWriter().append("<HTML>\n<HEAD>\n")
+                .append(OAuthServiceHelper.getDeviceOptimizedStylesheetHeader())
+                .append("</HEAD>\n<BODY>\n");
+        resp.getWriter().append("<div id=\"question\">No previous account exist, do you want to create a new one ?</div>");
+        resp.getWriter().append("<div id=\"termsofuseheader\">Terms of Use:</div>");
+        resp.getWriter().append("<textarea id=\"termsofuse\" readonly=\"readonly\" style=\"resize: none;\" data-role=\"none\">");
+        String termsOfUseUrl = System.getProperty("ickstream-core-termsofuse-url", "https://api.ickstream.com/termsofuse.txt");
+        String termsOfUse = RestCallHelper.callResourceWithGet(termsOfUseUrl, null);
+        resp.getWriter().append(termsOfUse);
+        resp.getWriter().append("</textarea>");
+        resp.getWriter().append("<FORM action=\"").append(uri).append("\" method=\"post\">");
+        resp.getWriter().append("<INPUT type=\"hidden\" name=\"" + OAuthConstants.CODE + "\" value=\"").append(code).append("\">");
+        resp.getWriter().append("<INPUT type=\"checkbox\" name=\"termsofuse_confirmation\" value=\"1\">I agree with Terms of Use</INPUT><BR>");
+        resp.getWriter().append("<INPUT type=\"submit\" name=\"cancel\" value=\"Cancel\">");
+        resp.getWriter().append("<INPUT type=\"submit\" name=\"create\" value=\"Create account\">");
+        resp.getWriter().append("</FORM>");
+        resp.getWriter().append("</BODY></HTML>");
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getSession().getAttribute(OAuthConstants.REDIRECT_URI) != null) {
             String redirect_uri = req.getSession().getAttribute(OAuthConstants.REDIRECT_URI).toString();
-            req.getSession().removeAttribute(OAuthConstants.REDIRECT_URI);
-            req.getSession().removeAttribute(OAuthConstants.CLIENT_ID);
             String code = req.getParameter(OAuthConstants.CODE);
             Boolean create = req.getParameter("create") != null;
             if (code != null && create != null && create) {
-                resp.sendRedirect(redirect_uri + "?" + OAuthConstants.CODE + "=" + code);
+                if (req.getParameter("termsofuse_confirmation") != null && req.getParameter("termsofuse_confirmation").equals("1")) {
+                    req.getSession().removeAttribute(OAuthConstants.REDIRECT_URI);
+                    req.getSession().removeAttribute(OAuthConstants.CLIENT_ID);
+                    resp.sendRedirect(redirect_uri + "?" + OAuthConstants.CODE + "=" + code);
+                } else {
+                    resp.sendRedirect(req.getRequestURI() + "/create_user?" + OAuthConstants.CODE + "=" + code);
+                }
             } else {
+                req.getSession().removeAttribute(OAuthConstants.REDIRECT_URI);
+                req.getSession().removeAttribute(OAuthConstants.CLIENT_ID);
                 resp.sendRedirect(redirect_uri + "?error=access_denied");
             }
         }
