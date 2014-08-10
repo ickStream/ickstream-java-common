@@ -41,6 +41,22 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import javax.net.ssl.SSLContext;
 
 public class ServiceFactory {
+    private final static String ICKSTREAM_SERVER = "https://api.ickstream.com";
+
+    /**
+     * Get URL to main ickStream server
+     *
+     * @return The endpoint URL main ickStream server
+     */
+    public static String getServer() {
+        String url = System.getProperty("ickstream-server");
+        if (url != null) {
+            return url;
+        } else {
+            return ICKSTREAM_SERVER;
+        }
+    }
+
     public static HttpClient createHttpClient() {
         try {
             Class.forName("org.apache.http.impl.conn.PoolingClientConnectionManager");
