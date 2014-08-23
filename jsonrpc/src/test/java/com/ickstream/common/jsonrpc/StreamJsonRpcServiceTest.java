@@ -40,6 +40,8 @@ import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
@@ -118,6 +120,8 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
         String testMethod(@JsonRpcParam(name = "param1") Integer param1);
 
+        String testMethod(@JsonRpcParam(name = "param1") Date param1);
+
         String testMethod(@JsonRpcParam(name = "param1") ExtraParameters param1);
 
         String testMethod(@JsonRpcParam(name = "param1") List<String> param1);
@@ -127,6 +131,8 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         String testMethodOnlyBoolean(@JsonRpcParam(name = "param1") Boolean param1);
 
         String testMethodOnlyInteger(@JsonRpcParam(name = "param1") Integer param1);
+
+        String testMethodOnlyDate(@JsonRpcParam(name = "param1") Date param1);
     }
 
     public static interface SimpleParameterMethods {
@@ -265,6 +271,14 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         }
 
         @Override
+        public String testMethod(@JsonRpcParam(name = "param1") Date param1) {
+            if (param1 != null && param1.getTime() > 100000) {
+                return "testMethodParam1Date";
+            }
+            return null;
+        }
+
+        @Override
         public String testMethod(@JsonRpcParam(name = "param1") ExtraParameters param1) {
             return "testMethodParam1Object";
         }
@@ -287,6 +301,14 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         @Override
         public String testMethodOnlyInteger(@JsonRpcParam(name = "param1") Integer param1) {
             return "testMethodParam1OnlyInteger";
+        }
+
+        @Override
+        public String testMethodOnlyDate(@JsonRpcParam(name = "param1") Date param1) {
+            if (param1 != null && param1.getTime() > 100000) {
+                return "testMethodParam1OnlyDate";
+            }
+            return null;
         }
     }
 
@@ -808,6 +830,28 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
 
         Assert.assertEquals("testMethodParam1Boolean", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithDateParameter_ShouldPreferNumber() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StringWriter outputString = new StringWriter();
+        Date dateValue = new Date();
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":" + dateValue.getTime() + "}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1Number", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithDateParameterOnlyMethod() throws IOException, ParseException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
+        StringWriter outputString = new StringWriter();
+        Date dateValue = new SimpleDateFormat("yyyy-MM-dd").parse("2010-01-01");
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyDate", "{\"param1\":" + dateValue.getTime() + "}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1OnlyDate", getParamFromJson(outputString.toString(), "result"));
     }
 
     @Test

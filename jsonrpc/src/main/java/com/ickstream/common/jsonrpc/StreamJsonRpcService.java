@@ -250,6 +250,10 @@ public class StreamJsonRpcService {
                                     if (paramsNode.get(name).isArray()) {
                                         foundParameter = true;
                                     }
+                                } else if (Date.class.isAssignableFrom(cls)) {
+                                    if (paramsNode.get(name).isLong()) {
+                                        foundParameter = true;
+                                    }
                                 } else {
                                     if (paramsNode.get(name).isObject()) {
                                         foundParameter = true;
