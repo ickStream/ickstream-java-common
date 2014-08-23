@@ -135,6 +135,16 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         String testMethodOnlyDate(@JsonRpcParam(name = "param1") Date param1);
     }
 
+    public static interface SimpleTypeNullMethods {
+        String testMethodOnlyString(@JsonRpcParam(name = "param1", optional = true) String param1);
+
+        String testMethodOnlyBoolean(@JsonRpcParam(name = "param1", optional = true) Boolean param1);
+
+        String testMethodOnlyInteger(@JsonRpcParam(name = "param1", optional = true) Integer param1);
+
+        String testMethodOnlyDate(@JsonRpcParam(name = "param1", optional = true) Date param1);
+    }
+
     public static interface SimpleParameterMethods {
         String testMethod();
 
@@ -307,6 +317,45 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
         public String testMethodOnlyDate(@JsonRpcParam(name = "param1") Date param1) {
             if (param1 != null && param1.getTime() > 100000) {
                 return "testMethodParam1OnlyDate";
+            }
+            return null;
+        }
+    }
+
+    public static class SimpleTypeMethodsWithNullImpl implements SimpleTypeNullMethods {
+        @Override
+        public String testMethodOnlyString(@JsonRpcParam(name = "param1", optional = true) String param1) {
+            if (param1 != null) {
+                return "testMethodParam1OnlyString";
+            } else {
+                return "testMethodParam1OnlyStringButNull";
+            }
+        }
+
+        @Override
+        public String testMethodOnlyBoolean(@JsonRpcParam(name = "param1", optional = true) Boolean param1) {
+            if (param1 != null) {
+                return "testMethodParam1OnlyBoolean";
+            } else {
+                return "testMethodParam1OnlyBooleanButNull";
+            }
+        }
+
+        @Override
+        public String testMethodOnlyInteger(@JsonRpcParam(name = "param1", optional = true) Integer param1) {
+            if (param1 != null) {
+                return "testMethodParam1OnlyInteger";
+            } else {
+                return "testMethodParam1OnlyIntegerButNull";
+            }
+        }
+
+        @Override
+        public String testMethodOnlyDate(@JsonRpcParam(name = "param1", optional = true) Date param1) {
+            if (param1 != null && param1.getTime() > 100000) {
+                return "testMethodParam1OnlyDate";
+            } else if (param1 == null) {
+                return "testMethodParam1OnlyDateButNull";
             }
             return null;
         }
@@ -778,6 +827,17 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
+    public void testWithStringParameterOnlyMethodNullValue() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsWithNullImpl(), SimpleTypeNullMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyString", "{\"param1\":null}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1OnlyStringButNull", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
     public void testWithStringParameterOnlyMethodNotExisting() throws IOException {
         StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
@@ -808,6 +868,17 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
 
         Assert.assertEquals("testMethodParam1OnlyInteger", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithNumberParameterOnlyMethodNullValue() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsWithNullImpl(), SimpleTypeNullMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyInteger", "{\"param1\":null}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1OnlyIntegerButNull", getParamFromJson(outputString.toString(), "result"));
     }
 
     @Test
@@ -855,6 +926,16 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
+    public void testWithDateParameterOnlyMethodNullValue() throws IOException, ParseException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsWithNullImpl(), SimpleTypeNullMethods.class);
+        StringWriter outputString = new StringWriter();
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyDate", "{\"param1\":" + null + "}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1OnlyDateButNull", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
     public void testWithBooleanParameterOnlyMethod() throws IOException {
         StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
@@ -863,6 +944,17 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
 
 
         Assert.assertEquals("testMethodParam1OnlyBoolean", getParamFromJson(outputString.toString(), "result"));
+    }
+
+    @Test
+    public void testWithBooleanParameterOnlyMethodNullValue() throws IOException {
+        StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsWithNullImpl(), SimpleTypeNullMethods.class);
+        StringWriter outputString = new StringWriter();
+
+        service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethodOnlyBoolean", "{\"param1\":null}")), new WriterOutputStream(outputString));
+
+
+        Assert.assertEquals("testMethodParam1OnlyBooleanButNull", getParamFromJson(outputString.toString(), "result"));
     }
 
     @Test
