@@ -59,6 +59,8 @@ public interface PlayerManager {
 
     Double getSeekPosition();
 
+	void setSeekPos(Double seekPosition);
+		    
     void sendPlayerStatusChangedNotification();
 
     void sendPlaylistChangedNotification();
