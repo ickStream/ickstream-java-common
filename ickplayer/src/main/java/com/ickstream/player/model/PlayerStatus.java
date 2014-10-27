@@ -28,6 +28,7 @@
 
 package com.ickstream.player.model;
 
+import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ickstream.protocol.service.player.PlaybackQueueItem;
 import com.ickstream.protocol.service.player.PlaybackQueueMode;
@@ -38,6 +39,7 @@ public class PlayerStatus {
     private Double volumeLevel = 0.1;
     private Boolean muted = Boolean.FALSE;
     private Double seekPos;
+    private long timeSeekPosWasSet;
     private Integer playbackQueuePos;
     private PlaybackQueueMode playbackQueueMode = PlaybackQueueMode.QUEUE;
     @JsonIgnore
@@ -98,11 +100,17 @@ public class PlayerStatus {
     }
 
     public Double getSeekPos() {
-        return seekPos;
+    	if (getPlaying()) {
+    		long nowInMilliseconds = new Date().getTime();
+    		return Double.valueOf(seekPos.doubleValue() + ((nowInMilliseconds - timeSeekPosWasSet) / 1000.0));
+    	} else {
+    		return seekPos;
+    	}
     }
 
     public void setSeekPos(Double seekPos) {
         this.seekPos = seekPos;
+        this.timeSeekPosWasSet = new Date().getTime();
     }
 
     public Integer getPlaybackQueuePos() {
