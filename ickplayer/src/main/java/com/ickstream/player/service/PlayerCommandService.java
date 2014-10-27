@@ -514,6 +514,10 @@ public class PlayerCommandService {
             Double seekPosition = request.getSeekPos() != null ? request.getSeekPos() : 0;
             //TODO: Handle logic regarding seek position and length of track
             playerStatus.setSeekPos(seekPosition);
+            if (player != null) {
+                player.setSeekPos(seekPosition);            	
+            }
+
             return getSeekPosition();
         } else {
             throw new IllegalArgumentException("Invalid playback queue position specified");
