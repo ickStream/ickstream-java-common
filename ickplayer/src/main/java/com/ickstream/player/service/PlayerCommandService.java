@@ -478,6 +478,14 @@ public class PlayerCommandService {
 
         playerStatus.getPlaybackQueue().updateTimestamp();
         playerStatus.setPlaybackQueuePos(modifiedPlaybackQueuePos);
+        
+        if (player != null) {
+        	// playlist
+            player.sendPlaylistChangedNotification();
+            // playbackQueuePos
+            player.sendPlayerStatusChangedNotification();
+        }
+        
         return new PlaybackQueueModificationResponse(true, modifiedPlaybackQueuePos);
     }
 
