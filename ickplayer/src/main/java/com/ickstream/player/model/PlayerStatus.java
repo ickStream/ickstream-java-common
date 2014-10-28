@@ -100,7 +100,7 @@ public class PlayerStatus {
     }
 
     public Double getSeekPos() {
-    	if (getPlaying()) {
+    	if (seekPos!=null && getPlaying()) {
     		long nowInMilliseconds = new Date().getTime();
     		return Double.valueOf(seekPos.doubleValue() + ((nowInMilliseconds - timeSeekPosWasSet) / 1000.0));
     	} else {
