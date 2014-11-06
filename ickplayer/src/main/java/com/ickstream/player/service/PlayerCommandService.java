@@ -795,7 +795,7 @@ public class PlayerCommandService {
             if (shuffleWasTurnedOff) {
                 Integer currentPos = playerStatus.getPlaybackQueuePos();
                 PlaybackQueueItemInstance currentTrack = null;
-                if (currentPos != null) {
+                if (currentPos != null && playerStatus.getPlaybackQueue().getItems().size() > currentPos) {
                     currentTrack = playerStatus.getPlaybackQueue().getItems().get(currentPos);
                 }
                 playerStatus.getPlaybackQueue().setItems(new ArrayList<PlaybackQueueItemInstance>(playerStatus.getPlaybackQueue().getOriginallyOrderedItems()));
