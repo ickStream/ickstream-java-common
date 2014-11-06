@@ -808,10 +808,18 @@ public class PlayerCommandService {
             } else if (shuffleWasTurnedOn) {
                 shuffle = true;
             }
+
             playerStatus.setPlaybackQueueMode(request.getPlaybackQueueMode());
             if (shuffle) {
-                shuffleTracks();
-            } else if (player != null) {
+                boolean needsEvents = internalShuffleTracks();
+                if (needsEvents && player != null) {
+                    player.sendPlaylistChangedNotification();
+                    // playerStatusChanged should be sent here, because playbackPosition has changed.
+                    // we do it later anyways because of the playbackQueueModeChange
+                }
+            }
+            // every change of playbackQueueMode needs a playerstatusChangedNotification
+            if (player != null) {
                 player.sendPlayerStatusChangedNotification();
             }
             return new PlaybackQueueModeResponse(playerStatus.getPlaybackQueueMode());
@@ -820,28 +828,43 @@ public class PlayerCommandService {
 
     public PlaybackQueueModificationResponse shuffleTracks() {
         synchronized (syncObject) {
-            List<PlaybackQueueItemInstance> playbackQueueItems = playerStatus.getPlaybackQueue().getItems();
-            if (playbackQueueItems.size() > 1) {
-                PlaybackQueueItemInstance currentItem = null;
-                if (playerStatus.getPlaybackQueuePos() != null && playerStatus.getPlaybackQueuePos() < playbackQueueItems.size()) {
-                    currentItem = playbackQueueItems.remove(playerStatus.getPlaybackQueuePos().intValue());
-                }
-                Collections.shuffle(playbackQueueItems);
-                if (currentItem != null) {
-                    playbackQueueItems.add(0, currentItem);
-                }
-                if (!playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) {
-                    playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(playbackQueueItems));
-                }
-                playerStatus.getPlaybackQueue().setItems(playbackQueueItems);
-                playerStatus.setPlaybackQueuePos(0);
-                if (player != null) {
-                    player.sendPlaylistChangedNotification();
-                    player.sendPlayerStatusChangedNotification();
-                }
+            boolean needsEvents = internalShuffleTracks();
+            if (needsEvents && player != null) {
+                player.sendPlaylistChangedNotification();
+                player.sendPlayerStatusChangedNotification();
             }
             return new PlaybackQueueModificationResponse(true, playerStatus.getPlaybackQueuePos());
         }
+    }
+
+    /**
+     * shuffles all tracks without sending any notification. Tracks are not shuffled when there are no or only one item in the playbackQueue
+     *
+     * @return whether tracks have been shuffled at all and a notification needs to be sent to the player
+     * caller has to make sure, that following notifications are sent:
+     * playlistChangeNotification: because all tracks have changed their order
+     * playerStatusChanged: because the playbackQueuePos will have changed
+     */
+
+    private boolean internalShuffleTracks() {
+        List<PlaybackQueueItemInstance> playbackQueueItems = playerStatus.getPlaybackQueue().getItems();
+        if (playbackQueueItems.size() > 1) {
+            PlaybackQueueItemInstance currentItem = null;
+            if (playerStatus.getPlaybackQueuePos() != null && playerStatus.getPlaybackQueuePos() < playbackQueueItems.size()) {
+                currentItem = playbackQueueItems.remove(playerStatus.getPlaybackQueuePos().intValue());
+            }
+            Collections.shuffle(playbackQueueItems);
+            if (currentItem != null) {
+                playbackQueueItems.add(0, currentItem);
+            }
+            if (!playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) {
+                playerStatus.getPlaybackQueue().setOriginallyOrderedItems(new ArrayList<PlaybackQueueItemInstance>(playbackQueueItems));
+            }
+            playerStatus.getPlaybackQueue().setItems(playbackQueueItems);
+            playerStatus.setPlaybackQueuePos(0);
+            return true;
+        }
+        return false;
     }
 
     public synchronized PlaybackQueueModificationResponse setDynamicPlaybackQueueParameters(@JsonRpcParamStructure DynamicPlaybackQueueParametersRequest request) {
