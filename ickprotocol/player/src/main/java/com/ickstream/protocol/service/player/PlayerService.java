@@ -38,8 +38,9 @@ import java.util.Map;
 
 /**
  * Client class for accessing Player service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class PlayerService extends AsyncJsonRpcClient implements JsonRpcResponseHandler, JsonRpcRequestHandler {
     private String deviceId;

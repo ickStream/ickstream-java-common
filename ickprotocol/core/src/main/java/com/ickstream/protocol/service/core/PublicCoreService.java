@@ -38,8 +38,9 @@ import org.apache.http.client.HttpClient;
 
 /**
  * Client class for accessing Cloud Core Authentiation service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class PublicCoreService extends AbstractService implements Service {
     /**

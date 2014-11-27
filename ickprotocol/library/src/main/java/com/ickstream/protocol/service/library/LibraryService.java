@@ -40,8 +40,9 @@ import java.util.Map;
 
 /**
  * Client class for accessing Library service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class LibraryService extends AbstractService implements Service {
 

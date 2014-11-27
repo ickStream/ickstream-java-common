@@ -38,8 +38,9 @@ import org.apache.http.client.HttpClient;
 
 /**
  * Client class for accessing Cloud Core service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class CoreService extends AbstractService implements Service {
     private String endpoint;
