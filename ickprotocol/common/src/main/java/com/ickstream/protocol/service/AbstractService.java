@@ -36,8 +36,9 @@ import com.ickstream.protocol.common.exception.UnauthorizedException;
 /**
  * Abstract service clients that can make both asynchronous and synchronous calls to
  * ickStream services.
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class AbstractService extends SyncJsonRpcClient implements Service {
     /**

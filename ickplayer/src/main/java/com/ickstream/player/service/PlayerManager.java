@@ -29,6 +29,10 @@
 package com.ickstream.player.service;
 
 public interface PlayerManager {
+    void setUserId(String userId);
+
+    String getUserId();
+
     void setAccessToken(String accessToken);
 
     Boolean hasAccessToken();

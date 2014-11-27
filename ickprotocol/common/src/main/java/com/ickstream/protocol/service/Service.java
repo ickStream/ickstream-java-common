@@ -34,8 +34,9 @@ import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 
 /**
  * Represents an ickStream service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public interface Service {
     ServiceInformation getServiceInformation() throws ServiceException, ServiceTimeoutException;

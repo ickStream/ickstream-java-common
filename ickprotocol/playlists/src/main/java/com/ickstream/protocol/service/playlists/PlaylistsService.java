@@ -37,8 +37,9 @@ import org.apache.http.client.HttpClient;
 
 /**
  * Client class for accessing Playlists service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class PlaylistsService extends AbstractService implements Service {
 

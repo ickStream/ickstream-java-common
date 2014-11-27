@@ -43,8 +43,9 @@ import java.util.Map;
 
 /**
  * Abstract class that implements client access to content services implementing the Content Access protocol
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public abstract class ContentService extends AbstractService implements PersonalizedService {
     private String id;

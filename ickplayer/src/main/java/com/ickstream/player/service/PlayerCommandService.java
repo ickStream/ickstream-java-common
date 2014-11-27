@@ -143,6 +143,7 @@ public class PlayerCommandService {
 				@Override
 				public void onMessage(AddDeviceResponse response) {
 					player.setAccessToken(response.getAccessToken());
+                    player.setUserId(response.getUserId());
 				}
 
 				@Override
@@ -181,6 +182,12 @@ public class PlayerCommandService {
 		response.setHardwareId(player.getHardwareId());
 		response.setPlayerModel(player.getModel());
 		response.setCloudCoreUrl(player.getCloudCoreUrl());
+        if (player != null && player.hasAccessToken()) {
+            response.setCloudCoreStatus(CloudCoreStatus.REGISTERED);
+            response.setUserId(player.getUserId());
+        }else {
+            response.setCloudCoreStatus(CloudCoreStatus.UNREGISTERED);
+        }
 		return response;
 	}
 
@@ -206,6 +213,7 @@ public class PlayerCommandService {
 			response.setPlaybackQueueMode(playerStatus.getPlaybackQueueMode());
 			if (player != null && player.hasAccessToken()) {
 				response.setCloudCoreStatus(CloudCoreStatus.REGISTERED);
+				response.setUserId(player.getUserId());
 			} else {
 				response.setCloudCoreStatus(CloudCoreStatus.UNREGISTERED);
 			}

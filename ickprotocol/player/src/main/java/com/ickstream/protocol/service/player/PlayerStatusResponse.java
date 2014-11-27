@@ -38,6 +38,7 @@ public class PlayerStatusResponse {
     private PlaybackQueueItem track;
     private PlaybackQueueMode playbackQueueMode;
     private CloudCoreStatus cloudCoreStatus;
+    private String userId;
 
     public Long getLastChanged() {
         return lastChanged;
@@ -109,5 +110,13 @@ public class PlayerStatusResponse {
 
     public void setCloudCoreStatus(CloudCoreStatus cloudCoreStatus) {
         this.cloudCoreStatus = cloudCoreStatus;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

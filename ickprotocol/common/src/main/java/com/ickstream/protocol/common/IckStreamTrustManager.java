@@ -43,9 +43,10 @@ import java.security.cert.X509Certificate;
 
 /**
  * X509TrustManager implementation that allows access to ickStream cloud services using https
- * <p/>
+ * <p>
  * This is just a workaround to the fact that all necessary CA certificates aren't included in the default Java distribution
  * from Oracle. They are included on OSX and Android, so it's mainly an issue for Linux users.
+ * </p>
  */
 public class IckStreamTrustManager implements X509TrustManager {
     private static final String JAVA_CA_CERT_FILE_NAME = "cacerts";

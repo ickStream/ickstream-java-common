@@ -40,8 +40,9 @@ import java.util.Map;
 
 /**
  * Client class for accessing Favorites service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class FavoritesService extends AbstractService implements Service {
 

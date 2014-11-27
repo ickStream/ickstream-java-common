@@ -36,8 +36,9 @@ import org.apache.http.client.HttpClient;
 
 /**
  * Client class for accessing Scrobble service
- * <p/>
+ * <p>
  * See the official API documentation for details regarding individual methods and parameters.
+ * </p>
  */
 public class ScrobbleService extends AbstractService {
 
