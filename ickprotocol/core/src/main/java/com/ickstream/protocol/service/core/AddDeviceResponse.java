@@ -30,6 +30,7 @@ package com.ickstream.protocol.service.core;
 
 public class AddDeviceResponse extends DeviceResponse {
     private String accessToken;
+    private String userId;
 
     public String getAccessToken() {
         return accessToken;
@@ -37,5 +38,13 @@ public class AddDeviceResponse extends DeviceResponse {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }
