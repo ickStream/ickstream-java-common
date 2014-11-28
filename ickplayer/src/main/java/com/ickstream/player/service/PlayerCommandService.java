@@ -37,6 +37,7 @@ import com.ickstream.protocol.common.exception.ServiceTimeoutException;
 import com.ickstream.protocol.service.core.AddDeviceRequest;
 import com.ickstream.protocol.service.core.AddDeviceResponse;
 import com.ickstream.protocol.service.core.CoreServiceFactory;
+import com.ickstream.protocol.service.core.GetUserResponse;
 import com.ickstream.protocol.service.player.*;
 
 import java.util.*;
@@ -132,7 +133,21 @@ public class PlayerCommandService {
                 @Override
                 public void onMessage(AddDeviceResponse response) {
                     player.setAccessToken(response.getAccessToken());
-                    player.setUserId(response.getUserId());
+                    String userId = response.getUserId();
+                    if (userId == null) {
+                        // This is a special case which only happens when used towards an old server that doesn't return userId in addDevice response
+                        try {
+                            GetUserResponse user = CoreServiceFactory.getCoreService(player.getCloudCoreUrl(), response.getAccessToken()).getUser();
+                            if (user != null) {
+                                userId = user.getId();
+                            }
+                        } catch (ServiceException e) {
+                            e.printStackTrace();
+                        } catch (ServiceTimeoutException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    player.setUserId(userId);
                 }
 
                 @Override
