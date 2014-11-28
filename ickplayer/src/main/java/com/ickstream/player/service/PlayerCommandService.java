@@ -546,7 +546,7 @@ public class PlayerCommandService {
             //TODO: Handle logic regarding seek position and length of track
             playerStatus.setSeekPos(seekPosition);
             if (player != null) {
-                player.setSeekPos(seekPosition);            	
+                player.setSeekPosition(seekPosition);            	
             }
 
             return getSeekPosition();

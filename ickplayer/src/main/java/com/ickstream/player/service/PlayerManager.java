@@ -59,7 +59,7 @@ public interface PlayerManager {
 
     Double getSeekPosition();
 
-	void setSeekPos(Double seekPosition);
+    void setSeekPosition(Double seekPosition);
 		    
     void sendPlayerStatusChangedNotification();
 
