@@ -124,17 +124,7 @@ public class PlayerCommandService {
                     }
                 }
             }
-            if (configuration.getAccessToken() != null) {
-                if (configuration.getAccessToken().length() == 0) {
-                    if (player.hasAccessToken()) {
-                        player.setAccessToken(null);
-                        sendPlayerStatusChanged = true;
-                    }
-                } else {
-                    player.setAccessToken(configuration.getAccessToken());
-                    sendPlayerStatusChanged = true;
-                }
-            } else if (configuration.getDeviceRegistrationToken() != null && configuration.getDeviceRegistrationToken().length() > 0) {
+            if (configuration.getDeviceRegistrationToken() != null && configuration.getDeviceRegistrationToken().length() > 0) {
                 AddDeviceRequest request = new AddDeviceRequest();
                 request.setAddress(NetworkAddressHelper.getNetworkAddress());
                 request.setApplicationId(apiKey);
@@ -200,7 +190,6 @@ public class PlayerCommandService {
         synchronized (syncObject) {
             PlayerConfigurationResponse response = new PlayerConfigurationResponse();
             response.setPlayerName(player.getName());
-            response.setHardwareId(player.getHardwareId());
             response.setPlayerModel(player.getModel());
             response.setCloudCoreUrl(player.getCloudCoreUrl());
             if (player != null && player.hasAccessToken()) {
