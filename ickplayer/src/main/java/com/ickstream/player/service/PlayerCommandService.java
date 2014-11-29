@@ -138,6 +138,7 @@ public class PlayerCommandService {
                     @Override
                     public void onMessage(AddDeviceResponse response) {
                         player.setAccessToken(response.getAccessToken());
+                        player.setModel(response.getModel());
                         String userId = response.getUserId();
                         if (userId == null) {
                             // This is a special case which only happens when used towards an old server that doesn't return userId in addDevice response

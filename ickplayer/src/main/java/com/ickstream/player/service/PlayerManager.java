@@ -45,6 +45,8 @@ public interface PlayerManager {
 
     String getName();
 
+    void setModel(String model);
+
     String getModel();
 
     String getHardwareId();
