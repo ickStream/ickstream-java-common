@@ -32,7 +32,6 @@ import com.ickstream.player.model.PlaybackQueue;
 import com.ickstream.player.model.PlaybackQueueItemInstance;
 import com.ickstream.player.model.PlayerStatus;
 import com.ickstream.protocol.service.player.*;
-
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -1904,56 +1903,56 @@ public class PlayerCommandServicePlaylistManagementTest {
             Assert.assertEquals(status.getPlaybackQueue().getItems().get(4).getId(), "track5");
         }
     }
-    
+
     @Test
     public void testSetPlaybackQueueModeWithEmptyPlaybackQueue_mustSendPlayerStatusChangedNotification_shuffle() {
         PlayerManager player = Mockito.mock(PlayerManager.class);
-    	
+
         PlayerStatus playerStatus = new PlayerStatus(new PlaybackQueue());
         playerStatus.setPlaying(false);
         playerStatus.setSeekPos(0.0);
         playerStatus.setPlaybackQueuePos(0);
         playerStatus.setPlaybackQueueMode(PlaybackQueueMode.QUEUE);
-        
+
         PlayerCommandService service = new PlayerCommandService(null, player, playerStatus, new Object());
-        
+
         service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_SHUFFLE));
         Mockito.verify(player).sendPlayerStatusChangedNotification();
         Assert.assertEquals(playerStatus.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_SHUFFLE);
     }
-    
+
     @Test
     public void testSetPlaybackQueueModeWithEmptyPlaybackQueue_mustSendPlayerStatusChangedNotification_repeat() {
         PlayerManager player = Mockito.mock(PlayerManager.class);
-    	
+
         PlayerStatus playerStatus = new PlayerStatus(new PlaybackQueue());
         playerStatus.setPlaying(false);
         playerStatus.setSeekPos(0.0);
         playerStatus.setPlaybackQueuePos(0);
         playerStatus.setPlaybackQueueMode(PlaybackQueueMode.QUEUE);
-        
+
         PlayerCommandService service = new PlayerCommandService(null, player, playerStatus, new Object());
-        
-    	service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_REPEAT));
-    	Mockito.verify(player).sendPlayerStatusChangedNotification();
-    	Assert.assertEquals(playerStatus.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_REPEAT);
+
+        service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_REPEAT));
+        Mockito.verify(player).sendPlayerStatusChangedNotification();
+        Assert.assertEquals(playerStatus.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_REPEAT);
     }
-    
+
     @Test
     public void testSetPlaybackQueueModeWithEmptyPlaybackQueue_mustSendPlayerStatusChangedNotification_repeatShuffle() {
         PlayerManager player = Mockito.mock(PlayerManager.class);
-    	
+
         PlayerStatus playerStatus = new PlayerStatus(new PlaybackQueue());
         playerStatus.setPlaying(false);
         playerStatus.setSeekPos(0.0);
         playerStatus.setPlaybackQueuePos(0);
         playerStatus.setPlaybackQueueMode(PlaybackQueueMode.QUEUE);
-        
+
         PlayerCommandService service = new PlayerCommandService(null, player, playerStatus, new Object());
-    	
-    	service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE));
-    	Mockito.verify(player).sendPlayerStatusChangedNotification();
-    	Assert.assertEquals(playerStatus.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE);
+
+        service.setPlaybackQueueMode(new PlaybackQueueModeRequest(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE));
+        Mockito.verify(player).sendPlayerStatusChangedNotification();
+        Assert.assertEquals(playerStatus.getPlaybackQueueMode(), PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE);
     }
 
     @Test
