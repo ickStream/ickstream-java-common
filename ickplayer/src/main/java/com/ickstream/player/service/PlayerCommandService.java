@@ -787,8 +787,12 @@ public class PlayerCommandService {
     public PlaybackQueueModeResponse setPlaybackQueueMode(@JsonRpcParamStructure PlaybackQueueModeRequest request) {
         synchronized (syncObject) {
             boolean shuffle = false;
-            if ((playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) &&
-                    !(request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))) {
+            boolean shuffleWasTurnedOff = (playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))
+                    && !(request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) || request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE));
+            boolean shuffleWasTurnedOn = (request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE))
+                    || (request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE));
+
+            if (shuffleWasTurnedOff) {
                 Integer currentPos = playerStatus.getPlaybackQueuePos();
                 PlaybackQueueItemInstance currentTrack = null;
                 if (currentPos != null) {
@@ -801,8 +805,7 @@ public class PlayerCommandService {
                         playerStatus.setPlaybackQueuePos(newPos);
                     }
                 }
-            } else if ((request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE)) ||
-                    (request.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_REPEAT_SHUFFLE) && !playerStatus.getPlaybackQueueMode().equals(PlaybackQueueMode.QUEUE_SHUFFLE))) {
+            } else if (shuffleWasTurnedOn) {
                 shuffle = true;
             }
             playerStatus.setPlaybackQueueMode(request.getPlaybackQueueMode());
