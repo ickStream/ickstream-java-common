@@ -45,8 +45,6 @@ public interface PlayerManager {
 
     String getName();
 
-    void setModel(String model);
-
     String getModel();
 
     String getHardwareId();
@@ -62,7 +60,7 @@ public interface PlayerManager {
     Double getSeekPosition();
 
     void setSeekPosition(Double seekPosition);
-		    
+
     void sendPlayerStatusChangedNotification();
 
     void sendPlaylistChangedNotification();
