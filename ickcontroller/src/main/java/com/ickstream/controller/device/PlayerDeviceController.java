@@ -100,7 +100,9 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
                     if (message) {
                         device.setCloudState(Device.CloudState.UNREGISTERED);
                         if (device.getConnectionState() == Device.ConnectionState.INITIALIZED) {
-                            playerService.setPlayerConfiguration(new PlayerConfigurationRequest(null, ""), new MessageHandlerAdapter<PlayerConfigurationResponse>() {
+                            PlayerConfigurationRequest request = new PlayerConfigurationRequest();
+                            request.setDeviceRegistrationToken("");
+                            playerService.setPlayerConfiguration(request, new MessageHandlerAdapter<PlayerConfigurationResponse>() {
                                 //TODO: Do we need to do something ?
                             });
                         }
@@ -139,7 +141,9 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
     }
 
     public void setName(String name) {
-        playerService.setPlayerConfiguration(new PlayerConfigurationRequest(name, null), new MessageHandlerAdapter<PlayerConfigurationResponse>() {
+        PlayerConfigurationRequest request = new PlayerConfigurationRequest();
+        request.setPlayerName(name);
+        playerService.setPlayerConfiguration(request, new MessageHandlerAdapter<PlayerConfigurationResponse>() {
             @Override
             public void onMessage(PlayerConfigurationResponse message) {
                 device.setName(message.getPlayerName());
@@ -217,9 +221,6 @@ public class PlayerDeviceController implements Observer, JsonRpcResponseHandler,
             playerService.getPlayerConfiguration(new MessageHandlerAdapter<PlayerConfigurationResponse>() {
                 @Override
                 public void onMessage(PlayerConfigurationResponse message) {
-                    if (message.getHardwareId() != null) {
-                        device.setHardwareId(message.getHardwareId());
-                    }
                     if (message.getPlayerModel() != null) {
                         device.setModel(message.getPlayerModel());
                     }
