@@ -31,7 +31,6 @@ package com.ickstream.protocol.service.player;
 public class PlayerConfigurationResponse {
     String playerName;
     String playerModel;
-    String hardwareId;
     String cloudCoreUrl;
     CloudCoreStatus cloudCoreStatus;
     String userId;
@@ -44,24 +43,12 @@ public class PlayerConfigurationResponse {
         this.playerName = playerName;
     }
 
-    @Deprecated
     public String getPlayerModel() {
         return playerModel;
     }
 
-    @Deprecated
     public void setPlayerModel(String playerModel) {
         this.playerModel = playerModel;
-    }
-
-    @Deprecated
-    public String getHardwareId() {
-        return hardwareId;
-    }
-
-    @Deprecated
-    public void setHardwareId(String hardwareId) {
-        this.hardwareId = hardwareId;
     }
 
     public String getCloudCoreUrl() {
