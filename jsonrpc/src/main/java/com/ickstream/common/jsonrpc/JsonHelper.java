@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,6 +103,7 @@ public class JsonHelper {
             return mapper.treeToValue(mapper.readTree(text), objectClass);
         } catch (IOException e) {
             e.printStackTrace();
+            System.err.println(text);
         }
         return null;
     }
@@ -116,7 +118,7 @@ public class JsonHelper {
      */
     public <T> T streamToObject(InputStream stream, Class<T> objectClass) {
         try {
-            return mapper.treeToValue(mapper.readTree(stream), objectClass);
+            return stringToObject(IOUtils.toString(stream, "UTF-8"), objectClass);
         } catch (IOException e) {
             e.printStackTrace();
         }
