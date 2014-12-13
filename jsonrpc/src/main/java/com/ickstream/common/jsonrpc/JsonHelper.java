@@ -33,11 +33,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.IOUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Type;
 
 /**
@@ -118,7 +115,14 @@ public class JsonHelper {
      */
     public <T> T streamToObject(InputStream stream, Class<T> objectClass) {
         try {
-            return stringToObject(IOUtils.toString(stream, "UTF-8"), objectClass);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            StringBuilder out = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append('\n');
+            }
+            return stringToObject(out.toString(), objectClass);
         } catch (IOException e) {
             e.printStackTrace();
         }
