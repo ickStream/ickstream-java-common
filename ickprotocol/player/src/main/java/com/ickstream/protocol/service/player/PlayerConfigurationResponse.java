@@ -29,11 +29,20 @@
 package com.ickstream.protocol.service.player;
 
 public class PlayerConfigurationResponse {
+    String id;
     String playerName;
     String playerModel;
     String cloudCoreUrl;
     CloudCoreStatus cloudCoreStatus;
     String userId;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getPlayerName() {
         return playerName;
