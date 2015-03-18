@@ -122,6 +122,7 @@ public class JsonHelper {
                 out.append(line);
                 out.append('\n');
             }
+            reader.close();
             return stringToObject(out.toString(), objectClass);
         } catch (IOException e) {
             e.printStackTrace();
