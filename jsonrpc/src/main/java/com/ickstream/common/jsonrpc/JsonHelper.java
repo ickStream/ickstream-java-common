@@ -126,6 +126,12 @@ public class JsonHelper {
             return stringToObject(out.toString(), objectClass);
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
