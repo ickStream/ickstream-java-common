@@ -67,7 +67,32 @@ public class CampaignServiceFactory extends CoreServiceFactory {
     }
 
     /**
-     * Get a Scrobble service client and configure it to use the specified url and access token
+     * Get a Campaign service client and configure it to use the specified access token and message logger.
+     * The service URL will be detected by calling Cloud Core service.
+     *
+     * @param accessToken   The OAuth access token to use for authorization
+     * @param messageLogger The message logger implementation to use for logging messages
+     * @return A client for Scrobble service
+     */
+    public static CampaignService getCampaignService(String accessToken, MessageLogger messageLogger) {
+        try {
+            FindServicesResponse response = getCoreService(accessToken, messageLogger).findServices(new FindServicesRequest("campaign"));
+            if (response != null && response.getItems().size() > 0) {
+                CampaignService campaignService = new CampaignService(new DefaultHttpClient(), response.getItems().get(0).getUrl());
+                campaignService.setAccessToken(accessToken);
+                campaignService.setMessageLogger(messageLogger);
+                return campaignService;
+            }
+        } catch (ServiceException e) {
+            e.printStackTrace();
+        } catch (ServiceTimeoutException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * Get a Campaign service client and configure it to use the specified url and access token
      * The service URL will be detected by calling Cloud Core service.
      *
      * @param cloudCoreUrl The endpoint URL of the Cloud Core service to use
@@ -76,5 +101,16 @@ public class CampaignServiceFactory extends CoreServiceFactory {
      */
     public static CampaignService getCampaignService(String cloudCoreUrl, String accessToken) {
         return getCampaignService(cloudCoreUrl, accessToken, null);
+    }
+
+    /**
+     * Get a Campaign service client and configure it to use the specified access token
+     * The service URL will be detected by calling Cloud Core service.
+     *
+     * @param accessToken The OAuth access token to use for authorization
+     * @return A client for Scrobble service
+     */
+    public static CampaignService getCampaignService(String accessToken) {
+        return getCampaignService(accessToken, (MessageLogger) null);
     }
 }
