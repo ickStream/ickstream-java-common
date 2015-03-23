@@ -29,8 +29,26 @@
 package com.ickstream.protocol.service.campaign;
 
 public class CampaignCodeResponse {
+    private String campaignId;
+    private String campaignName;
     private String code;
     private String service;
+
+    public String getCampaignId() {
+        return campaignId;
+    }
+
+    public void setCampaignId(String campaignId) {
+        this.campaignId = campaignId;
+    }
+
+    public String getCampaignName() {
+        return campaignName;
+    }
+
+    public void setCampaignName(String campaignName) {
+        this.campaignName = campaignName;
+    }
 
     public String getCode() {
         return code;
