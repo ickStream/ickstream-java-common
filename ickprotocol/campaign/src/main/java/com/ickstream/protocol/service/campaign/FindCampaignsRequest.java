@@ -35,6 +35,7 @@ public class FindCampaignsRequest extends ChunkedRequest {
     private String serviceId;
 
     public FindCampaignsRequest(String applicationId) {
+        this.applicationId = applicationId;
     }
 
     public FindCampaignsRequest(String applicationId, String serviceId) {

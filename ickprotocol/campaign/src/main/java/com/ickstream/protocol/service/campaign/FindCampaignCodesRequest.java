@@ -32,21 +32,34 @@ import com.ickstream.protocol.common.ChunkedRequest;
 
 public class FindCampaignCodesRequest extends ChunkedRequest {
     private String serviceId;
+    private String applicationId;
 
-    public FindCampaignCodesRequest() {
+    public FindCampaignCodesRequest(String applicationId) {
+        this.applicationId = applicationId;
     }
 
-    public FindCampaignCodesRequest(String serviceId) {
+    public FindCampaignCodesRequest(String applicationId, String serviceId) {
+        this.applicationId = applicationId;
         this.serviceId = serviceId;
     }
 
-    public FindCampaignCodesRequest(Integer offset, Integer count) {
+    public FindCampaignCodesRequest(Integer offset, Integer count, String applicationId) {
         super(offset, count);
+        this.applicationId = applicationId;
     }
 
-    public FindCampaignCodesRequest(Integer offset, Integer count, String serviceId) {
+    public FindCampaignCodesRequest(Integer offset, Integer count, String applicationId, String serviceId) {
         super(offset, count);
+        this.applicationId = applicationId;
         this.serviceId = serviceId;
+    }
+
+    public String getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(String applicationId) {
+        this.applicationId = applicationId;
     }
 
     public String getServiceId() {
