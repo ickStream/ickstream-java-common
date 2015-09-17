@@ -904,14 +904,14 @@ public class StreamJsonRpcServiceTest extends AbstractJsonRpcTest {
     }
 
     @Test
-    public void testWithDateParameter_ShouldPreferNumber() throws IOException {
+    public void testWithDateParameter_ShouldPickEitherNumberOrDate() throws IOException {
         StreamJsonRpcService service = new StreamJsonRpcService(new SimpleTypeMethodsImpl(), SimpleTypeMethods.class);
         StringWriter outputString = new StringWriter();
         Date dateValue = new Date();
         service.handle(IOUtils.toInputStream(createJsonRequest("1", "testMethod", "{\"param1\":" + dateValue.getTime() + "}")), new WriterOutputStream(outputString));
 
 
-        Assert.assertEquals("testMethodParam1Number", getParamFromJson(outputString.toString(), "result"));
+        Assert.assertTrue("testMethodParam1Number".equals(getParamFromJson(outputString.toString(), "result")) || "testMethodParam1Date".equals(getParamFromJson(outputString.toString(), "result")));
     }
 
     @Test
